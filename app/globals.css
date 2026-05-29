@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand-mapped shadcn tokens.
+       Navy #0A1929, Teal #00897B, Gold #C9A961 */
+    --background: 0 0% 100%;
+    --foreground: 210 60% 10%; /* navy */
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 60% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 60% 10%;
+
+    /* Teal as primary CTA */
+    --primary: 174 100% 27%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 33% 96%; /* light gray #F5F7FA */
+    --secondary-foreground: 210 60% 10%;
+
+    --muted: 210 33% 96%;
+    --muted-foreground: 210 12% 45%;
+
+    /* Gold accent */
+    --accent: 41 47% 59%;
+    --accent-foreground: 210 60% 10%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 24% 90%;
+    --input: 210 24% 90%;
+    --ring: 174 100% 27%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    -webkit-font-smoothing: antialiased;
+  }
+}
