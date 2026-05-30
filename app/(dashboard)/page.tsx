@@ -13,6 +13,7 @@ import { ConversionFunnelChart } from "@/components/features/conversion-funnel-c
 import { useDashboardToday } from "@/lib/hooks/use-dashboard";
 import { ROICard } from "@/components/features/roi-card";
 import { RecallWidget } from "@/components/features/recall-widget";
+import { RecentCallsPanel } from "@/components/features/recent-calls-panel";
 
 function timeGreeting(d: Date): string {
   const h = d.getHours();
@@ -76,14 +77,19 @@ export default function DashboardHomePage() {
         </div>
       )}
 
-      {/* Live call + ROI */}
+      {/* Recent calls + Live call — mockup hero row */}
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <RecentCallsPanel />
+        </div>
         <div className="lg:col-span-1">
           <LiveCallPanel />
         </div>
-        <div className="lg:col-span-2">
-          <ROICard />
-        </div>
+      </div>
+
+      {/* ROI */}
+      <div className="mt-4">
+        <ROICard />
       </div>
 
       {/* Patient Recall widget */}

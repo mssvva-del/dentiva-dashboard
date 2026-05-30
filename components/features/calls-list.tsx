@@ -56,22 +56,27 @@ function SentimentChip({ sentiment }: { sentiment: string }) {
 function IntentChip({ intent }: { intent: string }) {
   if (intent === "other" || intent === "general_faq") return null;
   const labels: Record<string, string> = {
-    scheduling_new: "New Apt",
+    scheduling_new: "New Patient",
     scheduling_existing: "Existing Pt",
     reschedule: "Reschedule",
     cancellation: "Cancel",
     insurance_question: "Insurance",
     emergency: "Emergency",
     post_treatment: "Post-Tx",
+    reactivation: "Reactivation",
   };
-  const isUrgent = intent === "emergency";
+  const style =
+    intent === "emergency"
+      ? { background: "#FED7D7", color: "#C53030" } // urgent — red
+      : intent === "scheduling_new"
+        ? { background: "#E0F2F1", color: "#00897B" } // new patient — teal highlight
+        : intent === "reactivation"
+          ? { background: "#FEF3C7", color: "#B7791F" } // recall — gold
+          : { background: "#EDE9FE", color: "#6D28D9" }; // default — violet
   return (
     <span
       className="hidden rounded-full px-2 py-0.5 text-[11px] font-medium sm:inline"
-      style={isUrgent
-        ? { background: "#FED7D7", color: "#C53030" }
-        : { background: "#EDE9FE", color: "#6D28D9" }
-      }
+      style={style}
     >
       {labels[intent] ?? intent}
     </span>
