@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { use } from "react";
 import Link from "next/link";
 import { ArrowLeft, PhoneIncoming, PhoneOutgoing } from "lucide-react";
@@ -14,7 +15,6 @@ import {
   formatPhone,
 } from "@/lib/utils/format";
 import { NAV, COPY } from "@/lib/constants";
-import { cn } from "@/lib/utils";
 import type { CallDetail } from "@/lib/schemas/calls";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -24,10 +24,10 @@ import type { CallDetail } from "@/lib/schemas/calls";
 function OutcomeBadge({ outcome }: { outcome: string | null | undefined }) {
   if (!outcome) return null;
 
-  const styles: Record<string, string> = {
-    booked: "bg-emerald-100 text-emerald-700",
-    missed: "bg-red-100 text-red-700",
-    info_only: "bg-gray-100 text-gray-600",
+  const styleMap: Record<string, React.CSSProperties> = {
+    booked: { background: "#C6F6D5", color: "#2F855A" },
+    missed: { background: "#FED7D7", color: "#C53030" },
+    info_only: { background: "#E2E8F0", color: "#4A5568" },
   };
   const label: Record<string, string> = {
     booked: "Booked",
@@ -35,15 +35,12 @@ function OutcomeBadge({ outcome }: { outcome: string | null | undefined }) {
     info_only: "Info only",
   };
 
-  const style = styles[outcome] ?? "bg-secondary text-muted-foreground";
   const text = label[outcome] ?? outcome;
 
   return (
     <span
-      className={cn(
-        "rounded-full px-3 py-0.5 text-xs font-semibold capitalize",
-        style
-      )}
+      className="rounded-full px-3 py-0.5 text-xs font-semibold capitalize"
+      style={styleMap[outcome] ?? { background: "#F5F7FA", color: "#718096" }}
     >
       {text}
     </span>

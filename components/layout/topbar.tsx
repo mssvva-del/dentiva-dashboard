@@ -11,15 +11,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { SidebarNav, SidebarBrand } from "./sidebar";
-import { usePracticeMe } from "@/lib/hooks/use-dashboard";
-import { APP_NAME } from "@/lib/constants";
 
 export function Topbar() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const { data: practice } = usePracticeMe();
 
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-white px-4 md:px-6">
+    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 backdrop-blur-sm md:px-8">
       <div className="flex items-center gap-3">
         {/* Mobile nav trigger */}
         <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -39,18 +36,21 @@ export function Topbar() {
             <SidebarNav onNavigate={() => setMobileOpen(false)} />
           </DialogContent>
         </Dialog>
-
-        <div>
-          <p className="text-sm font-medium text-navy">
-            {practice?.name ?? APP_NAME}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            AI Receptionist
-          </p>
-        </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
+        {/* AI Status pill */}
+        <div
+          className="hidden items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold sm:inline-flex"
+          style={{ background: "#C6F6D5", color: "#2F855A" }}
+        >
+          <span
+            className="h-[7px] w-[7px] rounded-full pulse-ring"
+            style={{ background: "#2F855A" }}
+            aria-hidden
+          />
+          AI Online
+        </div>
         <UserButton
           afterSignOutUrl="/login"
           appearance={{ elements: { avatarBox: "h-8 w-8" } }}

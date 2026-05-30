@@ -10,9 +10,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        navy: { DEFAULT: "#0A1929", light: "#0F2440" },
+        navy: { DEFAULT: "#0A1929", 2: "#0F2440", 3: "#163055", light: "#0F2440" },
         teal: { DEFAULT: "#00897B", light: "#4DB6AC", bg: "#E0F2F1" },
-        gold: { DEFAULT: "#C9A961", light: "#E8D9A8" },
+        gold: { DEFAULT: "#C9A961", light: "#E8D9A8", bg: "#FAF0D7" },
+        gray: {
+          50: "#FAFBFC",
+          100: "#F5F7FA",
+          200: "#E2E8F0",
+          300: "#CBD5E0",
+          400: "#A0AEC0",
+          500: "#718096",
+          700: "#4A5568",
+          900: "#1A2027",
+        },
+        success: { DEFAULT: "#2F855A", bg: "#C6F6D5" },
+        warning: { DEFAULT: "#B7791F", bg: "#FEF3C7" },
+        danger: { DEFAULT: "#C53030", bg: "#FED7D7" },
+        info: { DEFAULT: "#1E40AF", bg: "#DBEAFE" },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -47,6 +61,13 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        xs: "0 1px 2px rgba(10, 25, 41, 0.04)",
+        sm: "0 2px 6px rgba(10, 25, 41, 0.05)",
+        "brand-md": "0 4px 12px rgba(10, 25, 41, 0.07)",
+        "brand-lg": "0 12px 32px rgba(10, 25, 41, 0.10)",
+        glow: "0 0 0 4px rgba(0, 137, 123, 0.12)",
       },
       fontFamily: {
         display: ["var(--font-fraunces)", "serif"],

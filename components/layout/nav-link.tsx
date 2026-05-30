@@ -25,13 +25,20 @@ export function NavLink({
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+        "relative flex items-center gap-3 rounded-[10px] px-3 py-[9px] text-[13.5px] font-medium transition-all duration-150",
         active
-          ? "bg-teal text-white"
-          : "text-slate-300 hover:bg-navy-light hover:text-white"
+          ? "bg-teal/[0.18] text-white"
+          : "text-white/75 hover:bg-white/[0.06] hover:text-white"
       )}
     >
-      <Icon className="h-4 w-4 shrink-0" aria-hidden />
+      {/* Active left-edge indicator */}
+      {active && (
+        <span
+          className="absolute -left-3 bottom-2 top-2 w-[3px] rounded-r-[3px] bg-teal"
+          aria-hidden
+        />
+      )}
+      <Icon className="h-[18px] w-[18px] shrink-0 opacity-90" aria-hidden />
       <span>{label}</span>
     </Link>
   );

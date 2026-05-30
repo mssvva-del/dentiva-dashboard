@@ -35,7 +35,7 @@ export function TranscriptViewer({
       role="log"
       aria-label="Call transcript"
       aria-live="off"
-      className="flex max-h-[480px] flex-col gap-3 overflow-y-auto pr-1"
+      className="flex max-h-[520px] flex-col gap-3 overflow-y-auto pr-1"
     >
       {turns.map((turn, i) => {
         const isAgent = turn.role === "agent";
@@ -47,10 +47,9 @@ export function TranscriptViewer({
             <div
               className={cn(
                 "max-w-[80%] space-y-0.5 rounded-2xl px-4 py-2.5 text-sm",
-                isAgent
-                  ? "rounded-tl-sm bg-teal text-white"
-                  : "rounded-tr-sm bg-navy text-white"
+                isAgent ? "rounded-tl-sm bg-teal text-white" : "rounded-tr-sm text-white"
               )}
+              style={!isAgent ? { background: "#0F2440" } : undefined}
             >
               {/* Speaker label + timestamp */}
               <div className="flex items-center justify-between gap-3">
