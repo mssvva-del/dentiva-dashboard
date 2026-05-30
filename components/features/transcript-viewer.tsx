@@ -1,18 +1,42 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { formatTranscriptTs } from "@/lib/utils/format";
+import { COPY } from "@/lib/constants";
 import type { TranscriptTurn } from "@/lib/schemas/calls";
 
-export function TranscriptViewer({ turns }: { turns: TranscriptTurn[] }) {
+interface TranscriptViewerProps {
+  turns: TranscriptTurn[];
+  agentName?: string;
+}
+
+export function TranscriptViewer({
+  turns,
+  agentName = "Grace",
+}: TranscriptViewerProps) {
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom on load / when turns change
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "instant" });
+  }, [turns]);
+
   if (turns.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-muted-foreground">
-        No transcript available.
+        {COPY.callDetailNoTranscript}
       </p>
     );
   }
+
   return (
-    <div className="flex flex-col gap-3" role="log" aria-label="Call transcript">
+    <div
+      role="log"
+      aria-label="Call transcript"
+      aria-live="off"
+      className="flex max-h-[480px] flex-col gap-3 overflow-y-auto pr-1"
+    >
       {turns.map((turn, i) => {
         const isAgent = turn.role === "agent";
         return (
@@ -22,20 +46,33 @@ export function TranscriptViewer({ turns }: { turns: TranscriptTurn[] }) {
           >
             <div
               className={cn(
-                "max-w-[80%] rounded-lg px-3 py-2 text-sm",
+                "max-w-[80%] space-y-0.5 rounded-2xl px-4 py-2.5 text-sm",
                 isAgent
-                  ? "bg-teal-bg text-navy"
-                  : "bg-secondary text-foreground"
+                  ? "rounded-tl-sm bg-teal text-white"
+                  : "rounded-tr-sm bg-navy text-white"
               )}
             >
-              <p className="mb-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                {isAgent ? "Agent" : "Patient"}
-              </p>
-              <p>{turn.text}</p>
+              {/* Speaker label + timestamp */}
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[10px] font-semibold uppercase tracking-wider opacity-75">
+                  {isAgent ? agentName : "Patient"}
+                </span>
+                <time
+                  className="text-[10px] tabular-nums opacity-60"
+                  dateTime={`PT${Math.round(turn.ts)}S`}
+                  aria-label={`at ${formatTranscriptTs(turn.ts)}`}
+                >
+                  {formatTranscriptTs(turn.ts)}
+                </time>
+              </div>
+              {/* Message text */}
+              <p className="leading-relaxed">{turn.text}</p>
             </div>
           </div>
         );
       })}
+      {/* Scroll anchor */}
+      <div ref={bottomRef} aria-hidden />
     </div>
   );
 }

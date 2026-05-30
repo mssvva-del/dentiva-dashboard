@@ -2,15 +2,152 @@
 
 import { use } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, PhoneIncoming, PhoneOutgoing } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
 import { TranscriptViewer } from "@/components/features/transcript-viewer";
 import { useCallDetail } from "@/lib/hooks/use-calls";
-import { formatDateTime, formatDuration, formatPhone } from "@/lib/utils/format";
-import { NAV } from "@/lib/constants";
+import {
+  formatDateTime,
+  formatDurationLong,
+  formatPhone,
+} from "@/lib/utils/format";
+import { NAV, COPY } from "@/lib/constants";
+import { cn } from "@/lib/utils";
+import type { CallDetail } from "@/lib/schemas/calls";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Outcome badge
+// ─────────────────────────────────────────────────────────────────────────────
+
+function OutcomeBadge({ outcome }: { outcome: string | null | undefined }) {
+  if (!outcome) return null;
+
+  const styles: Record<string, string> = {
+    booked: "bg-emerald-100 text-emerald-700",
+    missed: "bg-red-100 text-red-700",
+    info_only: "bg-gray-100 text-gray-600",
+  };
+  const label: Record<string, string> = {
+    booked: "Booked",
+    missed: "Missed",
+    info_only: "Info only",
+  };
+
+  const style = styles[outcome] ?? "bg-secondary text-muted-foreground";
+  const text = label[outcome] ?? outcome;
+
+  return (
+    <span
+      className={cn(
+        "rounded-full px-3 py-0.5 text-xs font-semibold capitalize",
+        style
+      )}
+    >
+      {text}
+    </span>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Call summary card
+// ─────────────────────────────────────────────────────────────────────────────
+
+function CallSummaryCard({ call }: { call: CallDetail }) {
+  const isInbound = call.direction === "inbound";
+  const DirIcon = isInbound ? PhoneIncoming : PhoneOutgoing;
+  const dirLabel = isInbound ? "Inbound ↙" : "Outbound ↗";
+
+  return (
+    <Card>
+      <CardContent className="p-6">
+        {/* Top row: patient + direction + outcome */}
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-navy">
+              {call.patient_name_redacted ?? "Unknown Patient"}
+            </h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {formatDateTime(call.started_at)}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <OutcomeBadge outcome={call.outcome} />
+          </div>
+        </div>
+
+        {/* Metrics row */}
+        <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
+          <Metric
+            label="Duration"
+            value={formatDurationLong(call.duration_seconds)}
+          />
+          <Metric
+            label="Direction"
+            value={
+              <span className="inline-flex items-center gap-1">
+                <DirIcon className="h-3.5 w-3.5" aria-hidden />
+                {dirLabel}
+              </span>
+            }
+          />
+          <Metric label="From" value={formatPhone(call.from_number)} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Metric({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-0.5 font-medium text-navy">{value}</p>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Recording section
+// ─────────────────────────────────────────────────────────────────────────────
+
+function RecordingSection({ url }: { url: string | null | undefined }) {
+  return (
+    <Card>
+      <CardHeader className="pb-2 pt-4">
+        <CardTitle className="text-base">{COPY.callDetailRecordingLabel}</CardTitle>
+      </CardHeader>
+      <CardContent className="pb-4">
+        {url ? (
+          /* eslint-disable-next-line jsx-a11y/media-has-caption */
+          <audio
+            controls
+            src={url}
+            className="w-full"
+            aria-label="Call recording"
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            {COPY.callDetailNoRecording}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Page
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function CallDetailPage({
   params,
@@ -26,7 +163,8 @@ export default function CallDetailPage({
         href="/calls"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-navy"
       >
-        <ArrowLeft className="h-4 w-4" aria-hidden /> {NAV.calls}
+        <ArrowLeft className="h-4 w-4" aria-hidden />
+        {NAV.calls}
       </Link>
 
       {isLoading ? (
@@ -34,65 +172,32 @@ export default function CallDetailPage({
       ) : isError ? (
         <ErrorState onRetry={() => refetch()} />
       ) : data ? (
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-1">
+        <div className="grid gap-5 lg:grid-cols-5">
+          {/* Left column: summary + recording */}
+          <div className="space-y-4 lg:col-span-2">
             <PageHeader
               title={data.patient_name_redacted ?? "Call"}
               subtitle={formatDateTime(data.started_at)}
             />
-            <Card>
-              <CardContent className="space-y-3 p-6 text-sm">
-                <Detail label="From" value={formatPhone(data.from_number)} />
-                <Detail label="To" value={formatPhone(data.to_number)} />
-                <Detail
-                  label="Duration"
-                  value={formatDuration(data.duration_seconds)}
-                />
-                <Detail label="Status" value={data.status} />
-                {data.outcome ? (
-                  <Detail label="Outcome" value={data.outcome} />
-                ) : null}
-                {data.booking_id ? (
-                  <Detail label="Booking" value={data.booking_id} />
-                ) : null}
-              </CardContent>
-            </Card>
+            <CallSummaryCard call={data} />
+            <RecordingSection url={data.recording_url} />
           </div>
 
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Transcript</CardTitle>
+          {/* Right column: transcript */}
+          <div className="lg:col-span-3">
+            <Card className="h-full">
+              <CardHeader className="pb-2 pt-4">
+                <CardTitle className="text-base">
+                  {COPY.callDetailTranscriptLabel}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <TranscriptViewer turns={data.transcript ?? []} />
               </CardContent>
             </Card>
-            {data.recording_url ? (
-              <div className="mt-4">
-                <Button asChild variant="outline" size="sm">
-                  <a
-                    href={data.recording_url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Play recording
-                  </a>
-                </Button>
-              </div>
-            ) : null}
           </div>
         </div>
       ) : null}
-    </div>
-  );
-}
-
-function Detail({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium capitalize text-navy">{value}</span>
     </div>
   );
 }
