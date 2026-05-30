@@ -43,6 +43,9 @@ export interface ListBookingsParams {
   from_date?: string;
   to_date?: string;
   status?: "confirmed" | "cancelled" | "no_show" | "completed";
+  /** Forward-compat: backend may or may not honour these. */
+  limit?: number;
+  offset?: number;
 }
 
 export const bookingsApi = {

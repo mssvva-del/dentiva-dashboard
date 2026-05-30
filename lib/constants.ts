@@ -35,6 +35,37 @@ export const COPY = {
   settingsTitle: "Settings",
   settingsSubtitle: "Practice configuration.",
 
+  // Pagination
+  paginationPrev: "Previous",
+  paginationNext: "Next",
+  paginationShowing: "Showing",
+  paginationOf: "of",
+  paginationCalls: "calls",
+  paginationBookings: "bookings",
+
+  // Filters
+  filterAll: "All",
+  filterDirection: "Direction",
+  filterStatus: "Status",
+  filterClear: "Clear filters",
+  filterInbound: "Inbound",
+  filterOutbound: "Outbound",
+  filterCompleted: "Completed",
+  filterMissed: "Missed",
+  filterVoicemail: "Voicemail",
+  filterConfirmed: "Confirmed",
+  filterCancelled: "Cancelled",
+  filterNoShow: "No Show",
+  filterBookingCompleted: "Completed",
+  filterFromDate: "From",
+  filterToDate: "To",
+
+  // Call detail
+  callDetailNoTranscript: "No transcript available for this call.",
+  callDetailNoRecording: "Recording not available.",
+  callDetailTranscriptLabel: "Transcript",
+  callDetailRecordingLabel: "Recording",
+
   // Generic states
   loading: "Loading…",
   errorTitle: "Couldn't load data",

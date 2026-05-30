@@ -7,6 +7,23 @@ export function formatDuration(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+/** Returns "2m 22s" style (for call detail card). */
+export function formatDurationLong(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds < 0) return "—";
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  if (m === 0) return `${s}s`;
+  return `${m}m ${s}s`;
+}
+
+/** Returns "0:04" from a fractional seconds offset (transcript ts). */
+export function formatTranscriptTs(ts: number): string {
+  if (!Number.isFinite(ts) || ts < 0) return "0:00";
+  const m = Math.floor(ts / 60);
+  const s = Math.floor(ts % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 export function formatDateTime(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);

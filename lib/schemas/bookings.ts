@@ -26,5 +26,7 @@ export type Booking = z.infer<typeof BookingSchema>;
 export const ListBookingsResponseSchema = z.object({
   bookings: z.array(BookingSchema),
   total: z.number(),
+  /** Optional — backend may add in the future. */
+  has_more: z.boolean().optional(),
 });
 export type ListBookingsResponse = z.infer<typeof ListBookingsResponseSchema>;
