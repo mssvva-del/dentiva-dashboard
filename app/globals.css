@@ -10,6 +10,19 @@
   animation: pulse-ring 2s ease-in-out infinite;
 }
 
+/* Live-call voice waveform */
+@keyframes wave-bounce {
+  0%, 100% { transform: scaleY(0.28); }
+  50% { transform: scaleY(1); }
+}
+.wave-bar {
+  transform-origin: center bottom;
+  animation: wave-bounce 0.9s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wave-bar { animation: none; transform: scaleY(0.6); }
+}
+
 @layer base {
   :root {
     /* Brand-mapped shadcn tokens.

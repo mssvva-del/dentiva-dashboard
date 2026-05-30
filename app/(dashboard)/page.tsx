@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { HeroMetricCard, StatCard } from "@/components/features/metric-card";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
 import { ActiveCallBanner } from "@/components/features/active-call-banner";
+import { LiveCallPanel } from "@/components/features/live-call-panel";
 import { DailyBriefingCard } from "@/components/features/daily-briefing-card";
 import { WeeklyChart } from "@/components/features/weekly-chart";
 import { PeakHoursChart } from "@/components/features/peak-hours-chart";
@@ -75,9 +76,14 @@ export default function DashboardHomePage() {
         </div>
       )}
 
-      {/* ROI card full width */}
-      <div className="mt-4">
-        <ROICard />
+      {/* Live call + ROI */}
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-1">
+          <LiveCallPanel />
+        </div>
+        <div className="lg:col-span-2">
+          <ROICard />
+        </div>
       </div>
 
       {/* Patient Recall widget */}
