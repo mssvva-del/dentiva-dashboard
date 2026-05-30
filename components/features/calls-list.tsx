@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Phone, PhoneIncoming, PhoneOutgoing, X } from "lucide-react";
@@ -145,8 +145,10 @@ function CallRow({ call }: { call: CallSummary }) {
 interface FilterBarProps {
   direction: DirectionFilter;
   status: StatusFilter;
+  search: string;
   onDirectionChange: (v: DirectionFilter) => void;
   onStatusChange: (v: StatusFilter) => void;
+  onSearchChange: (v: string) => void;
   onClear: () => void;
 }
 
@@ -156,11 +158,13 @@ const selectClass =
 function FilterBar({
   direction,
   status,
+  search,
   onDirectionChange,
   onStatusChange,
+  onSearchChange,
   onClear,
 }: FilterBarProps) {
-  const hasFilter = direction !== "" || status !== "";
+  const hasFilter = direction !== "" || status !== "" || search !== "";
 
   return (
     <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -195,6 +199,16 @@ function FilterBar({
         </select>
       </label>
 
+      {/* Search */}
+      <input
+        type="search"
+        placeholder="Search by phone..."
+        value={search}
+        onChange={(e) => onSearchChange(e.target.value)}
+        className={cn(selectClass, "w-48")}
+        aria-label="Search calls by phone number"
+      />
+
       {/* Clear */}
       {hasFilter && (
         <Button
@@ -223,8 +237,17 @@ export function CallsList() {
   // Parse URL state ──────────────────────────────────────────────────────────
   const direction = (searchParams.get("direction") ?? "") as DirectionFilter;
   const status = (searchParams.get("status") ?? "") as StatusFilter;
+  const searchFromUrl = searchParams.get("search") ?? "";
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
   const offset = (page - 1) * CALLS_PAGE_SIZE;
+
+  // Local search state (debounced before pushing to URL) ────────────────────
+  const [search, setSearch] = useState(searchFromUrl);
+
+  // Sync local state when URL search param changes externally
+  useEffect(() => {
+    setSearch(searchFromUrl);
+  }, [searchFromUrl]);
 
   // URL writer ───────────────────────────────────────────────────────────────
   const pushParams = useCallback(
@@ -250,7 +273,21 @@ export function CallsList() {
     pushParams({ status: v, page: "1" });
   };
 
+  const handleSearchChange = (v: string) => {
+    setSearch(v);
+  };
+
+  // Debounce search → push to URL after 400ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      pushParams({ search: search, page: "1" });
+    }, 400);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
   const handleClearFilters = () => {
+    setSearch("");
     router.push("/calls");
   };
 
@@ -265,6 +302,7 @@ export function CallsList() {
     offset,
     ...(direction !== "" ? { direction } : {}),
     ...(status !== "" ? { status } : {}),
+    ...(searchFromUrl !== "" ? { search: searchFromUrl } : {}),
   };
 
   const { data, isLoading, isError, isPlaceholderData, refetch } =
@@ -276,8 +314,10 @@ export function CallsList() {
       <FilterBar
         direction={direction}
         status={status}
+        search={search}
         onDirectionChange={handleDirectionChange}
         onStatusChange={handleStatusChange}
+        onSearchChange={handleSearchChange}
         onClear={handleClearFilters}
       />
 

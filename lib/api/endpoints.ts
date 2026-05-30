@@ -25,6 +25,8 @@ import {
   type CallsByHourResponse,
   ConversionResponseSchema,
   type ConversionResponse,
+  ROIResponseSchema,
+  type ROIResponse,
 } from "@/lib/schemas/dashboard";
 
 export interface ListCallsParams {
@@ -32,6 +34,7 @@ export interface ListCallsParams {
   offset?: number;
   direction?: "inbound" | "outbound";
   status?: "completed" | "missed" | "voicemail";
+  search?: string;
 }
 
 export const callsApi = {
@@ -114,10 +117,15 @@ export const dashboardApi = {
       schema: ConversionResponseSchema,
       token,
     }),
+  roi: (token?: string | null) =>
+    apiClient<ROIResponse>("/api/dashboard/roi", {
+      schema: ROIResponseSchema,
+      token,
+    }),
 };
 
 // Re-export types so consumers can import from endpoints without reaching into schemas
-export type { DailyBriefingResponse, WeeklyStatsResponse, CallsByHourResponse, ConversionResponse };
+export type { DailyBriefingResponse, WeeklyStatsResponse, CallsByHourResponse, ConversionResponse, ROIResponse };
 
 export interface ActiveCallSummary {
   id: string;

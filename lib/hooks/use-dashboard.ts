@@ -82,3 +82,13 @@ export function usePatchPracticeMe() {
     },
   });
 }
+
+export function useDashboardROI() {
+  const getToken = useApiToken();
+  return useQuery({
+    queryKey: ["dashboard", "roi"],
+    queryFn: async () => dashboardApi.roi(await getToken()),
+    refetchInterval: 300_000, // 5 min
+    staleTime: 240_000,
+  });
+}

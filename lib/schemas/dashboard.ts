@@ -93,3 +93,17 @@ export const ConversionResponseSchema = z.object({
 
 export type ProcedureCount = z.infer<typeof ProcedureCountSchema>;
 export type ConversionResponse = z.infer<typeof ConversionResponseSchema>;
+
+/** Matches GET /api/dashboard/roi */
+export const ROIResponseSchema = z.object({
+  period_days: z.number(),
+  calls_handled_by_ai: z.number(),
+  calls_missed: z.number(),
+  bookings_by_ai: z.number(),
+  total_talk_time_minutes: z.number(),
+  minutes_saved: z.number(),
+  cost_saved_usd: z.number(),
+  revenue_protected_usd: z.number(),
+  ai_answer_rate_pct: z.number(),
+});
+export type ROIResponse = z.infer<typeof ROIResponseSchema>;
