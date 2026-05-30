@@ -70,6 +70,7 @@ export interface PatchPracticeMeData {
   name?: string;
   phone_number?: string;
   timezone?: string;
+  business_hours?: import("@/lib/schemas/practice").BusinessHours;
 }
 
 export const practiceApi = {

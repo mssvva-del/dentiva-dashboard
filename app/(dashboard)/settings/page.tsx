@@ -9,7 +9,10 @@ import { LoadingState, ErrorState } from "@/components/features/page-states";
 import { usePracticeMe, usePatchPracticeMe } from "@/lib/hooks/use-dashboard";
 import { COPY } from "@/lib/constants";
 import { formatPhone } from "@/lib/utils/format";
+import { cn } from "@/lib/utils";
 import type { BusinessHours } from "@/lib/schemas/practice";
+
+type DayHours = { open: string; close: string } | null;
 
 const DAYS: { key: keyof BusinessHours; label: string }[] = [
   { key: "mon", label: "Monday" },
@@ -42,6 +45,11 @@ export default function SettingsPage() {
   const [formPhone, setFormPhone] = useState("");
   const [formTimezone, setFormTimezone] = useState("");
 
+  const [isEditingHours, setIsEditingHours] = useState(false);
+  const [hoursForm, setHoursForm] = useState<BusinessHours>({
+    mon: null, tue: null, wed: null, thu: null, fri: null, sat: null, sun: null,
+  });
+
   function enterEditMode() {
     if (!data) return;
     setFormName(data.name);
@@ -52,6 +60,38 @@ export default function SettingsPage() {
 
   function cancelEdit() {
     setIsEditing(false);
+  }
+
+  function enterEditHours() {
+    if (!data) return;
+    setHoursForm({ ...data.business_hours });
+    setIsEditingHours(true);
+  }
+
+  function cancelEditHours() {
+    setIsEditingHours(false);
+  }
+
+  function toggleDay(key: keyof BusinessHours) {
+    setHoursForm((prev) => ({
+      ...prev,
+      [key]: prev[key] === null ? { open: "09:00", close: "17:00" } : null,
+    }));
+  }
+
+  function updateDayHours(key: keyof BusinessHours, field: "open" | "close", value: string) {
+    setHoursForm((prev) => {
+      const existing = prev[key];
+      if (!existing) return prev;
+      return { ...prev, [key]: { ...existing, [field]: value } };
+    });
+  }
+
+  function handleSaveHours() {
+    patchMutation.mutate(
+      { business_hours: hoursForm },
+      { onSuccess: () => setIsEditingHours(false) }
+    );
   }
 
   function handleSave() {
@@ -229,39 +269,130 @@ export default function SettingsPage() {
           {/* ── Card 2: Business Hours ────────────────────────────── */}
           <Card className="overflow-hidden shadow-sm">
             <CardHeader className="px-6 py-5 border-b border-gray-100">
-              <CardTitle
-                className="font-display font-semibold tracking-tight text-navy"
-                style={{ fontSize: 17 }}
-              >
-                Business Hours
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle
+                  className="font-display font-semibold tracking-tight text-navy"
+                  style={{ fontSize: 17 }}
+                >
+                  Business Hours
+                </CardTitle>
+                {!isEditingHours && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-shrink-0"
+                    onClick={enterEditHours}
+                  >
+                    Edit
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="divide-y divide-gray-100">
-                {DAYS.map(({ key, label }) => {
-                  const hours = data.business_hours[key];
-                  const isToday = key === todayKey;
-                  return (
-                    <div
-                      key={key}
-                      className="flex items-center justify-between py-2.5 px-2 -mx-2 rounded-md text-sm"
-                      style={isToday ? { background: "#E0F2F1" } : undefined}
-                    >
-                      <span className="font-medium text-navy">{label}</span>
-                      {hours ? (
-                        <span
-                          className="font-mono tracking-wide"
-                          style={{ color: "#00897B" }}
+              {isEditingHours ? (
+                /* ── Edit mode ── */
+                <div>
+                  <div className="divide-y divide-gray-100">
+                    {DAYS.map(({ key, label }) => {
+                      const isToday = key === todayKey;
+                      const dayVal = hoursForm[key] as DayHours;
+                      return (
+                        <div
+                          key={key}
+                          className="flex items-center gap-3 py-2.5 px-2 -mx-2 rounded-md"
+                          style={isToday ? { background: "#E0F2F1" } : undefined}
                         >
-                          {hours.open} – {hours.close}
-                        </span>
-                      ) : (
-                        <span className="italic text-gray-400">Closed</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                          <span className="w-24 font-medium text-navy text-sm">{label}</span>
+
+                          {/* Toggle open/closed */}
+                          <button
+                            onClick={() => toggleDay(key)}
+                            disabled={isSaving}
+                            className={cn(
+                              "text-xs rounded-full px-2.5 py-0.5 font-semibold transition-colors",
+                              dayVal ? "text-teal" : "text-gray-400"
+                            )}
+                            style={
+                              dayVal
+                                ? { background: "#E0F2F1", color: "#00897B" }
+                                : { background: "#F3F4F6", color: "#9CA3AF" }
+                            }
+                          >
+                            {dayVal ? "Open" : "Closed"}
+                          </button>
+
+                          {/* Time inputs only when open */}
+                          {dayVal && (
+                            <>
+                              <input
+                                type="time"
+                                value={dayVal.open}
+                                onChange={(e) => updateDayHours(key, "open", e.target.value)}
+                                className="rounded border border-gray-200 px-2 py-1 text-sm text-navy w-28"
+                                disabled={isSaving}
+                              />
+                              <span className="text-gray-400 text-sm">–</span>
+                              <input
+                                type="time"
+                                value={dayVal.close}
+                                onChange={(e) => updateDayHours(key, "close", e.target.value)}
+                                className="rounded border border-gray-200 px-2 py-1 text-sm text-navy w-28"
+                                disabled={isSaving}
+                              />
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex gap-2 pt-4">
+                    <Button
+                      size="sm"
+                      disabled={isSaving}
+                      onClick={handleSaveHours}
+                      style={{ background: "#00897B" }}
+                      className="text-white hover:opacity-90"
+                    >
+                      {isSaving ? "Saving…" : "Save"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={isSaving}
+                      onClick={cancelEditHours}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                /* ── Read-only mode ── */
+                <div className="divide-y divide-gray-100">
+                  {DAYS.map(({ key, label }) => {
+                    const hours = data.business_hours[key];
+                    const isToday = key === todayKey;
+                    return (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between py-2.5 px-2 -mx-2 rounded-md text-sm"
+                        style={isToday ? { background: "#E0F2F1" } : undefined}
+                      >
+                        <span className="font-medium text-navy">{label}</span>
+                        {hours ? (
+                          <span
+                            className="font-mono tracking-wide"
+                            style={{ color: "#00897B" }}
+                          >
+                            {hours.open} – {hours.close}
+                          </span>
+                        ) : (
+                          <span className="italic text-gray-400">Closed</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
 
