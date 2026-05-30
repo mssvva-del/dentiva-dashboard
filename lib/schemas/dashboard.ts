@@ -72,3 +72,24 @@ export type WeeklyStatsResponse = z.infer<typeof WeeklyStatsResponseSchema>;
 export type CallsByHourResponse = z.infer<typeof CallsByHourResponseSchema>;
 export type DailyStat = z.infer<typeof DailyStatSchema>;
 export type HourlyCount = z.infer<typeof HourlyCountSchema>;
+
+/** Matches GET /api/dashboard/conversion */
+export const ProcedureCountSchema = z.object({
+  procedure: z.string(),
+  count: z.number(),
+});
+
+export const ConversionResponseSchema = z.object({
+  period_days: z.number(),
+  calls_total: z.number(),
+  calls_completed: z.number(),
+  calls_with_booking_intent: z.number(),
+  bookings_created: z.number(),
+  conversion_rate: z.number(),
+  ai_answer_rate: z.number(),
+  avg_call_duration_seconds: z.number(),
+  top_procedures: z.array(ProcedureCountSchema),
+});
+
+export type ProcedureCount = z.infer<typeof ProcedureCountSchema>;
+export type ConversionResponse = z.infer<typeof ConversionResponseSchema>;

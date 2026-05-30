@@ -7,6 +7,7 @@ import { ActiveCallBanner } from "@/components/features/active-call-banner";
 import { DailyBriefingCard } from "@/components/features/daily-briefing-card";
 import { WeeklyChart } from "@/components/features/weekly-chart";
 import { PeakHoursChart } from "@/components/features/peak-hours-chart";
+import { ConversionFunnelChart } from "@/components/features/conversion-funnel-chart";
 import { useDashboardToday } from "@/lib/hooks/use-dashboard";
 
 export default function DashboardHomePage() {
@@ -59,9 +60,10 @@ export default function DashboardHomePage() {
         </div>
       )}
 
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <WeeklyChart />
         <PeakHoursChart />
+        <ConversionFunnelChart />
       </div>
     </div>
   );

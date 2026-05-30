@@ -49,6 +49,16 @@ export function useCallsByHour() {
   });
 }
 
+export function useConversionFunnel() {
+  const getToken = useApiToken();
+  return useQuery({
+    queryKey: ["dashboard", "conversion"],
+    queryFn: async () => dashboardApi.conversion(await getToken()),
+    refetchInterval: 10 * 60 * 1000,
+    staleTime: 9 * 60 * 1000,
+  });
+}
+
 export function usePracticeMe() {
   const getToken = useApiToken();
   return useQuery({
