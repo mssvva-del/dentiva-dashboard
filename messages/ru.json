@@ -1,0 +1,68 @@
+{
+  "nav": {
+    "dashboard": "Сегодня",
+    "calls": "Звонки",
+    "bookings": "Записи",
+    "settings": "Настройки"
+  },
+  "dashboard": {
+    "title": "Сегодня",
+    "subtitle": "Живой обзор работы ИИ-ресепшониста вашей клиники.",
+    "metricCallsToday": "Звонков сегодня",
+    "metricAnsweredByAi": "Обработано ИИ",
+    "metricCallsMissed": "Пропущено",
+    "metricBookingsToday": "Записей создано сегодня",
+    "metricUpcomingToday": "Предстоящих приёмов сегодня"
+  },
+  "calls": {
+    "title": "Звонки",
+    "subtitle": "Последние звонки, обработанные ИИ-ресепшионистом.",
+    "empty": "Звонков ещё нет. Они появятся здесь по мере поступления."
+  },
+  "bookings": {
+    "title": "Записи",
+    "subtitle": "Предстоящие и недавние приёмы.",
+    "empty": "Записей ещё нет."
+  },
+  "settings": {
+    "title": "Настройки",
+    "subtitle": "Конфигурация клиники."
+  },
+  "pagination": {
+    "prev": "Назад",
+    "next": "Вперёд",
+    "showing": "Показано",
+    "of": "из",
+    "calls": "звонков",
+    "bookings": "записей"
+  },
+  "filters": {
+    "all": "Все",
+    "direction": "Направление",
+    "status": "Статус",
+    "clear": "Сбросить фильтры",
+    "inbound": "Входящие",
+    "outbound": "Исходящие",
+    "completed": "Завершённые",
+    "missed": "Пропущенные",
+    "voicemail": "Голосовая почта",
+    "confirmed": "Подтверждённые",
+    "cancelled": "Отменённые",
+    "noShow": "Не явился",
+    "bookingCompleted": "Завершённые",
+    "fromDate": "С",
+    "toDate": "По"
+  },
+  "callDetail": {
+    "noTranscript": "Транскрипт для этого звонка недоступен.",
+    "noRecording": "Запись недоступна.",
+    "transcriptLabel": "Транскрипт",
+    "recordingLabel": "Запись"
+  },
+  "common": {
+    "loading": "Загрузка…",
+    "errorTitle": "Не удалось загрузить данные",
+    "errorBody": "Возможно, бэкенд ещё не запущен. Данные появятся, когда API станет доступен.",
+    "retry": "Повторить"
+  }
+}

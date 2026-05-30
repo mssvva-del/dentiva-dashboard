@@ -1,0 +1,68 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "calls": "Calls",
+    "bookings": "Bookings",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Today",
+    "subtitle": "Live overview of your practice's AI receptionist.",
+    "metricCallsToday": "Calls today",
+    "metricAnsweredByAi": "Answered by AI",
+    "metricCallsMissed": "Missed",
+    "metricBookingsToday": "Bookings made today",
+    "metricUpcomingToday": "Upcoming appointments today"
+  },
+  "calls": {
+    "title": "Calls",
+    "subtitle": "Recent calls handled by your AI receptionist.",
+    "empty": "No calls yet. They'll appear here as they come in."
+  },
+  "bookings": {
+    "title": "Bookings",
+    "subtitle": "Upcoming and recent appointments.",
+    "empty": "No bookings yet."
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Practice configuration."
+  },
+  "pagination": {
+    "prev": "Previous",
+    "next": "Next",
+    "showing": "Showing",
+    "of": "of",
+    "calls": "calls",
+    "bookings": "bookings"
+  },
+  "filters": {
+    "all": "All",
+    "direction": "Direction",
+    "status": "Status",
+    "clear": "Clear filters",
+    "inbound": "Inbound",
+    "outbound": "Outbound",
+    "completed": "Completed",
+    "missed": "Missed",
+    "voicemail": "Voicemail",
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled",
+    "noShow": "No Show",
+    "bookingCompleted": "Completed",
+    "fromDate": "From",
+    "toDate": "To"
+  },
+  "callDetail": {
+    "noTranscript": "No transcript available for this call.",
+    "noRecording": "Recording not available.",
+    "transcriptLabel": "Transcript",
+    "recordingLabel": "Recording"
+  },
+  "common": {
+    "loading": "Loading…",
+    "errorTitle": "Couldn't load data",
+    "errorBody": "The backend may not be running yet. Data will appear once the API is reachable.",
+    "retry": "Retry"
+  }
+}

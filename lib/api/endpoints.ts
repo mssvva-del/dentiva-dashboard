@@ -17,6 +17,8 @@ import {
 import {
   DashboardTodaySchema,
   type DashboardToday,
+  DailyBriefingResponseSchema,
+  type DailyBriefingResponse,
 } from "@/lib/schemas/dashboard";
 
 export interface ListCallsParams {
@@ -85,7 +87,15 @@ export const dashboardApi = {
       schema: DashboardTodaySchema,
       token,
     }),
+  briefing: (token?: string | null) =>
+    apiClient<DailyBriefingResponse>("/api/dashboard/briefing", {
+      schema: DailyBriefingResponseSchema,
+      token,
+    }),
 };
+
+// Re-export types so consumers can import from endpoints without reaching into schemas
+export type { DailyBriefingResponse };
 
 export interface ActiveCallSummary {
   id: string;

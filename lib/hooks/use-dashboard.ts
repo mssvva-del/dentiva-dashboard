@@ -2,7 +2,11 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApiToken } from "./use-api-token";
-import { dashboardApi, practiceApi, type PatchPracticeMeData } from "@/lib/api/endpoints";
+import {
+  dashboardApi,
+  practiceApi,
+  type PatchPracticeMeData,
+} from "@/lib/api/endpoints";
 import { POLL_INTERVAL_MS } from "@/lib/constants";
 import { showToast } from "@/lib/toast";
 
@@ -12,6 +16,16 @@ export function useDashboardToday() {
     queryKey: ["dashboard", "today"],
     queryFn: async () => dashboardApi.today(await getToken()),
     refetchInterval: POLL_INTERVAL_MS,
+  });
+}
+
+export function useDailyBriefing() {
+  const getToken = useApiToken();
+  return useQuery({
+    queryKey: ["dashboard", "briefing"],
+    queryFn: async () => dashboardApi.briefing(await getToken()),
+    refetchInterval: 5 * 60 * 1000, // refresh every 5 min
+    staleTime: 4 * 60 * 1000,
   });
 }
 

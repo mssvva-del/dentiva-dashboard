@@ -1,0 +1,68 @@
+{
+  "nav": {
+    "dashboard": "Hoy",
+    "calls": "Llamadas",
+    "bookings": "Citas",
+    "settings": "Configuración"
+  },
+  "dashboard": {
+    "title": "Hoy",
+    "subtitle": "Vista en vivo del recepcionista de IA de tu clínica.",
+    "metricCallsToday": "Llamadas hoy",
+    "metricAnsweredByAi": "Respondidas por IA",
+    "metricCallsMissed": "Perdidas",
+    "metricBookingsToday": "Citas registradas hoy",
+    "metricUpcomingToday": "Próximas citas hoy"
+  },
+  "calls": {
+    "title": "Llamadas",
+    "subtitle": "Llamadas recientes gestionadas por tu recepcionista de IA.",
+    "empty": "Aún no hay llamadas. Aparecerán aquí a medida que entren."
+  },
+  "bookings": {
+    "title": "Citas",
+    "subtitle": "Próximas citas y citas recientes.",
+    "empty": "Aún no hay citas."
+  },
+  "settings": {
+    "title": "Configuración",
+    "subtitle": "Configuración de la clínica."
+  },
+  "pagination": {
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "showing": "Mostrando",
+    "of": "de",
+    "calls": "llamadas",
+    "bookings": "citas"
+  },
+  "filters": {
+    "all": "Todos",
+    "direction": "Dirección",
+    "status": "Estado",
+    "clear": "Borrar filtros",
+    "inbound": "Entrante",
+    "outbound": "Saliente",
+    "completed": "Completada",
+    "missed": "Perdida",
+    "voicemail": "Buzón de voz",
+    "confirmed": "Confirmada",
+    "cancelled": "Cancelada",
+    "noShow": "No se presentó",
+    "bookingCompleted": "Completada",
+    "fromDate": "Desde",
+    "toDate": "Hasta"
+  },
+  "callDetail": {
+    "noTranscript": "No hay transcripción disponible para esta llamada.",
+    "noRecording": "Grabación no disponible.",
+    "transcriptLabel": "Transcripción",
+    "recordingLabel": "Grabación"
+  },
+  "common": {
+    "loading": "Cargando…",
+    "errorTitle": "No se pudo cargar la información",
+    "errorBody": "Es posible que el servidor no esté en ejecución. Los datos aparecerán cuando la API sea accesible.",
+    "retry": "Reintentar"
+  }
+}
