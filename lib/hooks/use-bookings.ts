@@ -14,3 +14,12 @@ export function useBookingsList(params: ListBookingsParams = {}) {
     placeholderData: keepPreviousData,
   });
 }
+
+export function useBookingDetail(bookingId: string) {
+  const getToken = useApiToken();
+  return useQuery({
+    queryKey: ["booking", bookingId],
+    queryFn: async () => bookingsApi.get(bookingId, await getToken()),
+    enabled: !!bookingId,
+  });
+}

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -143,6 +144,8 @@ function BookingFilterBar({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function BookingsTable() {
+  const router = useRouter();
+
   // Local state for filters (bookings don't need sharable URL per spec)
   const [statusFilter, setStatusFilter] = useState<BookingStatusFilter>("");
   const [fromDate, setFromDate] = useState("");
@@ -230,7 +233,8 @@ export function BookingsTable() {
                   {data.bookings.map((b) => (
                     <tr
                       key={b.id}
-                      className="border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50"
+                      className="border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => router.push(`/bookings/${b.id}`)}
                     >
                       <td className="px-5 py-3.5 text-[13.5px] font-semibold text-navy">
                         {b.patient_name_redacted ?? "—"}

@@ -64,6 +64,9 @@ export const COPY = {
   filterFromDate: "From",
   filterToDate: "To",
 
+  // Booking detail
+  bookingSourceCallLabel: "This booking was created during an AI call.",
+
   // Call detail
   callDetailNoTranscript: "No transcript available for this call.",
   callDetailNoRecording: "Recording not available.",

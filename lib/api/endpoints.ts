@@ -7,7 +7,9 @@ import {
   type CallDetail,
 } from "@/lib/schemas/calls";
 import {
+  BookingSchema,
   ListBookingsResponseSchema,
+  type Booking,
   type ListBookingsResponse,
 } from "@/lib/schemas/bookings";
 import {
@@ -65,6 +67,11 @@ export const bookingsApi = {
     apiClient<ListBookingsResponse>("/api/bookings", {
       schema: ListBookingsResponseSchema,
       params: params as Record<string, string | number | undefined>,
+      token,
+    }),
+  get: (bookingId: string, token?: string | null) =>
+    apiClient<Booking>("/api/bookings/" + bookingId, {
+      schema: BookingSchema,
       token,
     }),
 };
