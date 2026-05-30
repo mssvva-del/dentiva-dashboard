@@ -3,6 +3,7 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { HeroMetricCard, StatCard } from "@/components/features/metric-card";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
+import { ActiveCallBanner } from "@/components/features/active-call-banner";
 import { useDashboardToday } from "@/lib/hooks/use-dashboard";
 
 export default function DashboardHomePage() {
@@ -15,6 +16,7 @@ export default function DashboardHomePage() {
 
   return (
     <div>
+      <ActiveCallBanner />
       <PageHeader title="Today's Overview" subtitle={today} />
 
       {isLoading ? (

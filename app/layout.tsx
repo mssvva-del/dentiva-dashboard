@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { Toaster } from "sonner";
 import { APP_NAME } from "@/lib/constants";
 import "./globals.css";
 
@@ -38,6 +39,7 @@ export default function RootLayout({
           className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable} font-sans antialiased`}
         >
           <QueryProvider>{children}</QueryProvider>
+          <Toaster position="bottom-right" richColors />
         </body>
       </html>
     </ClerkProvider>

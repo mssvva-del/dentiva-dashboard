@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
-import { usePracticeMe } from "@/lib/hooks/use-dashboard";
+import { usePracticeMe, usePatchPracticeMe } from "@/lib/hooks/use-dashboard";
 import { COPY } from "@/lib/constants";
 import { formatPhone } from "@/lib/utils/format";
 import type { BusinessHours } from "@/lib/schemas/practice";
@@ -31,7 +34,41 @@ const DAY_INDEX_MAP: Record<number, keyof BusinessHours> = {
 
 export default function SettingsPage() {
   const { data, isLoading, isError, refetch } = usePracticeMe();
+  const patchMutation = usePatchPracticeMe();
   const todayKey = DAY_INDEX_MAP[new Date().getDay()];
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [formName, setFormName] = useState("");
+  const [formPhone, setFormPhone] = useState("");
+  const [formTimezone, setFormTimezone] = useState("");
+
+  function enterEditMode() {
+    if (!data) return;
+    setFormName(data.name);
+    setFormPhone(data.phone_number ?? "");
+    setFormTimezone(data.timezone);
+    setIsEditing(true);
+  }
+
+  function cancelEdit() {
+    setIsEditing(false);
+  }
+
+  function handleSave() {
+    if (!data) return;
+    const changed: { name?: string; phone_number?: string; timezone?: string } = {};
+    if (formName !== data.name) changed.name = formName;
+    if (formPhone !== (data.phone_number ?? "")) changed.phone_number = formPhone;
+    if (formTimezone !== data.timezone) changed.timezone = formTimezone;
+
+    patchMutation.mutate(changed, {
+      onSuccess: () => {
+        setIsEditing(false);
+      },
+    });
+  }
+
+  const isSaving = patchMutation.isPending;
 
   return (
     <div className="max-w-2xl">
@@ -60,7 +97,7 @@ export default function SettingsPage() {
                 >
                   {data.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex flex-1 items-center gap-3 min-w-0">
                   <CardTitle
                     className="font-display font-semibold leading-tight tracking-tight text-navy truncate"
                     style={{ fontSize: 24 }}
@@ -75,33 +112,117 @@ export default function SettingsPage() {
                     Active Practice
                   </span>
                 </div>
+                {/* Edit button — only shown when not editing */}
+                {!isEditing && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-shrink-0"
+                    onClick={enterEditMode}
+                  >
+                    Edit
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="grid grid-cols-2 gap-x-6 gap-y-5">
-                <Metric
-                  label="Phone"
-                  value={data.phone_number ? formatPhone(data.phone_number) : "—"}
-                />
-                <Metric label="Timezone" value={data.timezone} />
-                <Metric
-                  label="Languages"
-                  value={data.languages_enabled.join(", ").toUpperCase()}
-                />
-                <Metric label="PMS System" value={data.pms_system ?? "—"} />
-                <Metric
-                  label="PMS Connected"
-                  value={
-                    data.pms_connected ? (
-                      <span style={{ color: "#2F855A" }} className="font-medium">
-                        ✓ Connected
-                      </span>
-                    ) : (
-                      <span className="text-gray-400">— Not connected</span>
-                    )
-                  }
-                />
-              </div>
+              {isEditing ? (
+                /* ── Edit mode ── */
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label
+                      className="font-semibold uppercase tracking-widest text-gray-500"
+                      style={{ fontSize: 10 }}
+                      htmlFor="edit-name"
+                    >
+                      Practice Name
+                    </label>
+                    <Input
+                      id="edit-name"
+                      value={formName}
+                      onChange={(e) => setFormName(e.target.value)}
+                      disabled={isSaving}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label
+                      className="font-semibold uppercase tracking-widest text-gray-500"
+                      style={{ fontSize: 10 }}
+                      htmlFor="edit-phone"
+                    >
+                      Phone
+                    </label>
+                    <Input
+                      id="edit-phone"
+                      value={formPhone}
+                      onChange={(e) => setFormPhone(e.target.value)}
+                      disabled={isSaving}
+                      placeholder="+1XXXXXXXXXX"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label
+                      className="font-semibold uppercase tracking-widest text-gray-500"
+                      style={{ fontSize: 10 }}
+                      htmlFor="edit-timezone"
+                    >
+                      Timezone
+                    </label>
+                    <Input
+                      id="edit-timezone"
+                      value={formTimezone}
+                      onChange={(e) => setFormTimezone(e.target.value)}
+                      disabled={isSaving}
+                      placeholder="America/New_York"
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      size="sm"
+                      disabled={isSaving}
+                      onClick={handleSave}
+                      style={{ background: "#00897B" }}
+                      className="text-white hover:opacity-90"
+                    >
+                      {isSaving ? "Saving…" : "Save"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={isSaving}
+                      onClick={cancelEdit}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                /* ── Read-only mode ── */
+                <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+                  <Metric
+                    label="Phone"
+                    value={data.phone_number ? formatPhone(data.phone_number) : "—"}
+                  />
+                  <Metric label="Timezone" value={data.timezone} />
+                  <Metric
+                    label="Languages"
+                    value={data.languages_enabled.join(", ").toUpperCase()}
+                  />
+                  <Metric label="PMS System" value={data.pms_system ?? "—"} />
+                  <Metric
+                    label="PMS Connected"
+                    value={
+                      data.pms_connected ? (
+                        <span style={{ color: "#2F855A" }} className="font-medium">
+                          ✓ Connected
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">— Not connected</span>
+                      )
+                    }
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
 

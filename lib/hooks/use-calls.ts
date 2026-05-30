@@ -2,7 +2,8 @@
 
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useApiToken } from "./use-api-token";
-import { callsApi, type ListCallsParams } from "@/lib/api/endpoints";
+import { callsApi, activeCallsApi, type ListCallsParams, type ActiveCallSummary } from "@/lib/api/endpoints";
+export type { ActiveCallSummary };
 import { POLL_INTERVAL_MS } from "@/lib/constants";
 
 export function useCallsList(params: ListCallsParams = {}) {
@@ -21,5 +22,15 @@ export function useCallDetail(callId: string) {
     queryKey: ["calls", callId],
     queryFn: async () => callsApi.get(callId, await getToken()),
     enabled: Boolean(callId),
+  });
+}
+
+export function useActiveCalls() {
+  const getToken = useApiToken();
+  return useQuery({
+    queryKey: ["calls", "active"],
+    queryFn: async () => activeCallsApi.get(await getToken()),
+    refetchInterval: 3000,
+    staleTime: 0,
   });
 }

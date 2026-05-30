@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { apiClient } from "./client";
 import {
   ListCallsResponseSchema,
@@ -57,10 +58,23 @@ export const bookingsApi = {
     }),
 };
 
+export interface PatchPracticeMeData {
+  name?: string;
+  phone_number?: string;
+  timezone?: string;
+}
+
 export const practiceApi = {
   me: (token?: string | null) =>
     apiClient<Practice>("/api/practice/me", {
       schema: GetPracticeMeResponseSchema,
+      token,
+    }),
+  patch: (data: PatchPracticeMeData, token?: string | null) =>
+    apiClient<Practice>("/api/practice/me", {
+      schema: GetPracticeMeResponseSchema,
+      method: "PATCH",
+      body: data,
       token,
     }),
 };
@@ -69,6 +83,30 @@ export const dashboardApi = {
   today: (token?: string | null) =>
     apiClient<DashboardToday>("/api/dashboard/today", {
       schema: DashboardTodaySchema,
+      token,
+    }),
+};
+
+export interface ActiveCallSummary {
+  id: string;
+  retell_call_id: string;
+  direction: "inbound" | "outbound";
+  from_number: string;
+  started_at: string;
+  duration_seconds_so_far: number;
+}
+
+export interface ActiveCallsResponse {
+  active_calls: ActiveCallSummary[];
+  count: number;
+}
+
+const ActiveCallsResponseSchema = z.any();
+
+export const activeCallsApi = {
+  get: (token?: string | null) =>
+    apiClient<ActiveCallsResponse>("/api/calls/active", {
+      schema: ActiveCallsResponseSchema,
       token,
     }),
 };
