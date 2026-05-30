@@ -5,6 +5,8 @@ import { HeroMetricCard, StatCard } from "@/components/features/metric-card";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
 import { ActiveCallBanner } from "@/components/features/active-call-banner";
 import { DailyBriefingCard } from "@/components/features/daily-briefing-card";
+import { WeeklyChart } from "@/components/features/weekly-chart";
+import { PeakHoursChart } from "@/components/features/peak-hours-chart";
 import { useDashboardToday } from "@/lib/hooks/use-dashboard";
 
 export default function DashboardHomePage() {
@@ -56,6 +58,11 @@ export default function DashboardHomePage() {
           />
         </div>
       )}
+
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <WeeklyChart />
+        <PeakHoursChart />
+      </div>
     </div>
   );
 }

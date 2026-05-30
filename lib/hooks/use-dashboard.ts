@@ -29,6 +29,26 @@ export function useDailyBriefing() {
   });
 }
 
+export function useWeeklyStats() {
+  const getToken = useApiToken();
+  return useQuery({
+    queryKey: ["dashboard", "weekly"],
+    queryFn: async () => dashboardApi.weekly(await getToken()),
+    refetchInterval: 5 * 60 * 1000,
+    staleTime: 4 * 60 * 1000,
+  });
+}
+
+export function useCallsByHour() {
+  const getToken = useApiToken();
+  return useQuery({
+    queryKey: ["dashboard", "calls-by-hour"],
+    queryFn: async () => dashboardApi.callsByHour(await getToken()),
+    refetchInterval: 10 * 60 * 1000,
+    staleTime: 9 * 60 * 1000,
+  });
+}
+
 export function usePracticeMe() {
   const getToken = useApiToken();
   return useQuery({

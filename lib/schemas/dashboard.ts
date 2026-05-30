@@ -34,3 +34,41 @@ export const DailyBriefingResponseSchema = z.object({
   ai_generated: z.boolean(),
 });
 export type DailyBriefingResponse = z.infer<typeof DailyBriefingResponseSchema>;
+
+export const DailyStatSchema = z.object({
+  date: z.string(),
+  calls_total: z.number(),
+  calls_answered_by_ai: z.number(),
+  calls_missed: z.number(),
+  bookings_created: z.number(),
+  avg_duration_seconds: z.number(),
+});
+
+export const WeeklyTotalsSchema = z.object({
+  calls_total: z.number(),
+  calls_answered_by_ai: z.number(),
+  calls_missed: z.number(),
+  bookings_created: z.number(),
+  ai_answer_rate: z.number(),
+});
+
+export const WeeklyStatsResponseSchema = z.object({
+  days: z.array(DailyStatSchema),
+  totals: WeeklyTotalsSchema,
+});
+
+export const HourlyCountSchema = z.object({
+  hour: z.number(),
+  count: z.number(),
+});
+
+export const CallsByHourResponseSchema = z.object({
+  hours: z.array(HourlyCountSchema),
+  peak_hour: z.number(),
+  peak_count: z.number(),
+});
+
+export type WeeklyStatsResponse = z.infer<typeof WeeklyStatsResponseSchema>;
+export type CallsByHourResponse = z.infer<typeof CallsByHourResponseSchema>;
+export type DailyStat = z.infer<typeof DailyStatSchema>;
+export type HourlyCount = z.infer<typeof HourlyCountSchema>;

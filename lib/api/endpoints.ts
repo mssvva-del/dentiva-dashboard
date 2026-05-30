@@ -19,6 +19,10 @@ import {
   type DashboardToday,
   DailyBriefingResponseSchema,
   type DailyBriefingResponse,
+  WeeklyStatsResponseSchema,
+  type WeeklyStatsResponse,
+  CallsByHourResponseSchema,
+  type CallsByHourResponse,
 } from "@/lib/schemas/dashboard";
 
 export interface ListCallsParams {
@@ -92,10 +96,20 @@ export const dashboardApi = {
       schema: DailyBriefingResponseSchema,
       token,
     }),
+  weekly: (token?: string | null) =>
+    apiClient<WeeklyStatsResponse>("/api/dashboard/weekly", {
+      schema: WeeklyStatsResponseSchema,
+      token,
+    }),
+  callsByHour: (token?: string | null) =>
+    apiClient<CallsByHourResponse>("/api/dashboard/calls-by-hour", {
+      schema: CallsByHourResponseSchema,
+      token,
+    }),
 };
 
 // Re-export types so consumers can import from endpoints without reaching into schemas
-export type { DailyBriefingResponse };
+export type { DailyBriefingResponse, WeeklyStatsResponse, CallsByHourResponse };
 
 export interface ActiveCallSummary {
   id: string;
