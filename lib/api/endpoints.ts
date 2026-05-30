@@ -30,6 +30,7 @@ import {
   ROIResponseSchema,
   type ROIResponse,
 } from "@/lib/schemas/dashboard";
+import { RecallResponseSchema, type RecallResponse } from "@/lib/schemas/patients";
 
 export interface ListCallsParams {
   limit?: number;
@@ -127,6 +128,15 @@ export const dashboardApi = {
   roi: (token?: string | null) =>
     apiClient<ROIResponse>("/api/dashboard/roi", {
       schema: ROIResponseSchema,
+      token,
+    }),
+};
+
+export const patientsApi = {
+  recall: (threshold_months = 6, limit = 20, token?: string | null) =>
+    apiClient<RecallResponse>("/api/patients/recall", {
+      schema: RecallResponseSchema,
+      params: { threshold_months, limit },
       token,
     }),
 };

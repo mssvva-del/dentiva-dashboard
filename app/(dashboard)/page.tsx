@@ -10,6 +10,7 @@ import { PeakHoursChart } from "@/components/features/peak-hours-chart";
 import { ConversionFunnelChart } from "@/components/features/conversion-funnel-chart";
 import { useDashboardToday } from "@/lib/hooks/use-dashboard";
 import { ROICard } from "@/components/features/roi-card";
+import { RecallWidget } from "@/components/features/recall-widget";
 
 export default function DashboardHomePage() {
   const { data, isLoading, isError, refetch } = useDashboardToday();
@@ -64,6 +65,11 @@ export default function DashboardHomePage() {
       {/* ROI card full width */}
       <div className="mt-4">
         <ROICard />
+      </div>
+
+      {/* Patient Recall widget */}
+      <div className="mt-4">
+        <RecallWidget />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
