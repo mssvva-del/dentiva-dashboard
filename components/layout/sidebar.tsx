@@ -1,35 +1,64 @@
 "use client";
 
-import { LayoutDashboard, Phone, CalendarCheck, Settings } from "lucide-react";
+import {
+  LayoutDashboard,
+  Phone,
+  CalendarCheck,
+  Settings,
+  Users,
+  RotateCcw,
+  ClipboardList,
+  ScanLine,
+  Boxes,
+  Store,
+} from "lucide-react";
 import { NavLink } from "./nav-link";
 import { NAV } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { usePracticeMe } from "@/lib/hooks/use-dashboard";
+import { usePracticeMe, useDashboardToday } from "@/lib/hooks/use-dashboard";
 
-const NAV_ITEMS = [
-  { href: "/", label: NAV.dashboard, icon: LayoutDashboard },
-  { href: "/calls", label: NAV.calls, icon: Phone },
-  { href: "/bookings", label: NAV.bookings, icon: CalendarCheck },
-] as const;
+function GroupLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="px-2 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-widest text-white/[0.35]">
+      {children}
+    </p>
+  );
+}
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+  const { data: today } = useDashboardToday();
+  // Front Desk badge surfaces calls that still need a human glance.
+  const frontDeskCount = today?.calls_missed ?? 0;
+
   return (
-    <nav aria-label="Primary" className="mt-4 flex flex-col gap-0.5 px-3">
-      <p className="px-2 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-widest text-white/[0.35]">
-        Main
-      </p>
-      {NAV_ITEMS.map((item) => (
-        <NavLink
-          key={item.href}
-          href={item.href}
-          label={item.label}
-          icon={item.icon}
-          onNavigate={onNavigate}
-        />
-      ))}
-      <p className="px-2 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-widest text-white/[0.35]">
-        Practice
-      </p>
+    <nav aria-label="Primary" className="mt-2 flex flex-col gap-0.5 px-3">
+      <GroupLabel>Today</GroupLabel>
+      <NavLink href="/" label="Overview" icon={LayoutDashboard} onNavigate={onNavigate} />
+      <NavLink
+        href="/calls"
+        label="Front Desk"
+        icon={Phone}
+        count={frontDeskCount}
+        onNavigate={onNavigate}
+      />
+      <NavLink
+        href="/bookings"
+        label="Schedule"
+        icon={CalendarCheck}
+        onNavigate={onNavigate}
+      />
+      <NavLink href="#" label="Patients" icon={Users} comingSoon />
+
+      <GroupLabel>Engagement</GroupLabel>
+      <NavLink href="#" label="Reactivation" icon={RotateCcw} comingSoon />
+      <NavLink href="#" label="Treatment Plans" icon={ClipboardList} comingSoon />
+
+      <GroupLabel>Clinical</GroupLabel>
+      <NavLink href="#" label="X-Ray AI" icon={ScanLine} comingSoon />
+      <NavLink href="#" label="Implant Planner" icon={Boxes} comingSoon />
+      <NavLink href="#" label="Marketplace" icon={Store} comingSoon />
+
+      <GroupLabel>Practice</GroupLabel>
       <NavLink
         href="/settings"
         label={NAV.settings}
@@ -71,23 +100,37 @@ export function SidebarBrand() {
   );
 }
 
+const LANG_LABELS: Record<string, string> = {
+  en: "EN",
+  es: "ES",
+  ru: "RU",
+};
+
 function PracticeCard() {
   const { data: practice } = usePracticeMe();
   if (!practice) return null;
+
+  const langs = practice.languages_enabled?.length
+    ? practice.languages_enabled
+    : ["en"];
+  const meta = [practice.pms_system, practice.pms_connected ? "Connected" : null]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
     <div className="m-3 mt-auto rounded-[10px] border border-white/[0.08] bg-white/[0.04] p-4">
-      <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/[0.50]">
-        Practice
-      </p>
       <p className="text-sm font-semibold text-white">{practice.name}</p>
-      <p className="mt-0.5 text-[11px] text-white/[0.55]">AI Receptionist</p>
+      {meta && <p className="mt-0.5 text-[11px] text-white/[0.55]">{meta}</p>}
       <div className="mt-3 flex gap-1">
-        <span
-          className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-          style={{ background: "rgba(0, 137, 123, 0.20)", color: "#4DB6AC" }}
-        >
-          EN
-        </span>
+        {langs.map((code) => (
+          <span
+            key={code}
+            className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+            style={{ background: "rgba(0, 137, 123, 0.20)", color: "#4DB6AC" }}
+          >
+            {LANG_LABELS[code.toLowerCase()] ?? code.toUpperCase()}
+          </span>
+        ))}
       </div>
     </div>
   );

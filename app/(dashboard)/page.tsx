@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import { PageHeader } from "@/components/layout/page-header";
 import { HeroMetricCard, StatCard } from "@/components/features/metric-card";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
@@ -12,19 +13,31 @@ import { useDashboardToday } from "@/lib/hooks/use-dashboard";
 import { ROICard } from "@/components/features/roi-card";
 import { RecallWidget } from "@/components/features/recall-widget";
 
+function timeGreeting(d: Date): string {
+  const h = d.getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function DashboardHomePage() {
   const { data, isLoading, isError, refetch } = useDashboardToday();
-  const today = new Date().toLocaleDateString("en-US", {
+  const { user } = useUser();
+  const now = new Date();
+  const today = now.toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
   });
+  const firstName = user?.firstName?.trim();
+  const greetingName = firstName ? `Dr. ${firstName}` : "Doctor";
+  const greeting = `${timeGreeting(now)}, ${greetingName}.`;
 
   return (
     <div>
       <ActiveCallBanner />
       <DailyBriefingCard />
-      <PageHeader title="Today's Overview" subtitle={today} />
+      <PageHeader breadcrumb="Dashboard / Today" title={greeting} subtitle={today} />
 
       {isLoading ? (
         <LoadingState />
