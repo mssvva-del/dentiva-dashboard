@@ -43,5 +43,6 @@ export const CallDetailSchema = CallSummarySchema.extend({
   ended_at: z.string().nullable().optional(),
   recording_url: z.string().nullable().optional(),
   transcript: z.array(TranscriptTurnSchema).optional(),
+  language_detected: z.string().nullable().optional(),
 });
 export type CallDetail = z.infer<typeof CallDetailSchema>;

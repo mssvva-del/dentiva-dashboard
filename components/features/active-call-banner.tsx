@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Phone } from "lucide-react";
 import { useActiveCalls, type ActiveCallSummary } from "@/lib/hooks/use-calls";
 import { formatDuration } from "@/lib/utils/format";
@@ -33,6 +34,13 @@ export function ActiveCallBanner() {
           {more > 0 && ` · +${more} more`}
         </p>
       </div>
+      {/* View link */}
+      <Link
+        href={`/calls/${call.id}`}
+        className="flex-shrink-0 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white hover:bg-white/30 transition-colors"
+      >
+        View
+      </Link>
       {/* Pulsing live dot */}
       <div className="flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1">
         <span

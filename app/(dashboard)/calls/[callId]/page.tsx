@@ -163,6 +163,22 @@ function CallSummaryCard({ call }: { call: CallDetail }) {
               }
             />
           )}
+          {call.language_detected && (
+            <Metric
+              label="Language"
+              value={
+                <span className="inline-flex items-center gap-1">
+                  {call.language_detected === "en-US" || call.language_detected?.startsWith("en")
+                    ? "🇺🇸 English"
+                    : call.language_detected?.startsWith("es")
+                    ? "🇲🇽 Spanish"
+                    : call.language_detected?.startsWith("ru")
+                    ? "🇷🇺 Russian"
+                    : call.language_detected}
+                </span>
+              }
+            />
+          )}
         </div>
       </CardContent>
     </Card>
