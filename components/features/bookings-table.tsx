@@ -3,7 +3,8 @@
 import * as React from "react";
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
+import { Download, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
@@ -69,6 +70,8 @@ interface BookingFilterBarProps {
   onFromDateChange: (v: string) => void;
   onToDateChange: (v: string) => void;
   onClear: () => void;
+  onExport: () => void;
+  isExporting: boolean;
 }
 
 function BookingFilterBar({
@@ -79,6 +82,8 @@ function BookingFilterBar({
   onFromDateChange,
   onToDateChange,
   onClear,
+  onExport,
+  isExporting,
 }: BookingFilterBarProps) {
   const hasFilter = status !== "" || fromDate !== "" || toDate !== "";
 
@@ -135,6 +140,18 @@ function BookingFilterBar({
           {COPY.filterClear}
         </Button>
       )}
+
+      {/* Export CSV */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onExport}
+        disabled={isExporting}
+        className="ml-auto h-8 gap-1.5"
+      >
+        <Download className="h-3.5 w-3.5" aria-hidden />
+        {isExporting ? "Exporting…" : "Export CSV"}
+      </Button>
     </div>
   );
 }
@@ -145,12 +162,14 @@ function BookingFilterBar({
 
 export function BookingsTable() {
   const router = useRouter();
+  const { getToken } = useAuth();
 
   // Local state for filters (bookings don't need sharable URL per spec)
   const [statusFilter, setStatusFilter] = useState<BookingStatusFilter>("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [offset, setOffset] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
 
   const resetPage = useCallback(() => setOffset(0), []);
 
@@ -174,6 +193,34 @@ export function BookingsTable() {
     setFromDate("");
     setToDate("");
     resetPage();
+  };
+
+  const exportCSV = async () => {
+    setIsExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (statusFilter) params.set("status", statusFilter);
+      if (fromDate) params.set("from_date", fromDate);
+      if (toDate) params.set("to_date", toDate);
+
+      const token = await getToken();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/bookings/export?${params}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!response.ok) return;
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const disposition = response.headers.get("Content-Disposition") || "";
+      const filename = disposition.match(/filename=(.+)/)?.[1] || "bookings.csv";
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const params: ListBookingsParams = {
@@ -202,6 +249,8 @@ export function BookingsTable() {
         onFromDateChange={handleFromDateChange}
         onToDateChange={handleToDateChange}
         onClear={handleClearFilters}
+        onExport={exportCSV}
+        isExporting={isExporting}
       />
 
       {isLoading ? (
