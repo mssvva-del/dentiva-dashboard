@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useCallback, useState } from "react";
 import { X } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -30,20 +31,24 @@ type BookingStatusFilter = "confirmed" | "cancelled" | "no_show" | "completed" |
 // ─────────────────────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: Booking["status"] }) {
-  const styles: Record<Booking["status"], string> = {
-    confirmed: "bg-teal-bg text-teal",
-    completed: "bg-secondary text-muted-foreground",
-    cancelled: "bg-red-50 text-destructive",
-    no_show: "bg-gold-light/40 text-navy",
+  const styleMap: Record<Booking["status"], React.CSSProperties> = {
+    confirmed: { background: "#E0F2F1", color: "#00897B" },
+    completed: { background: "#E2E8F0", color: "#4A5568" },
+    cancelled:  { background: "#FED7D7", color: "#C53030" },
+    no_show:    { background: "#FEF3C7", color: "#B7791F" },
+  };
+  const labelMap: Record<Booking["status"], string> = {
+    confirmed: "Confirmed",
+    completed: "Completed",
+    cancelled:  "Cancelled",
+    no_show:    "No Show",
   };
   return (
     <span
-      className={cn(
-        "rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-        styles[status]
-      )}
+      className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+      style={styleMap[status]}
     >
-      {status.replace("_", " ")}
+      {labelMap[status]}
     </span>
   );
 }
@@ -213,28 +218,31 @@ export function BookingsTable() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
-                    <th className="px-4 py-3 font-medium">Patient</th>
-                    <th className="px-4 py-3 font-medium">When</th>
-                    <th className="px-4 py-3 font-medium">Procedure</th>
-                    <th className="px-4 py-3 font-medium">Provider</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
+                  <tr className="border-b border-gray-100 bg-gray-50 text-left">
+                    <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-gray-500">Patient</th>
+                    <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-gray-500">When</th>
+                    <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-gray-500">Procedure</th>
+                    <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-gray-500">Provider</th>
+                    <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-gray-500">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.bookings.map((b) => (
-                    <tr key={b.id} className="border-b last:border-b-0">
-                      <td className="px-4 py-3 font-medium text-navy">
+                    <tr
+                      key={b.id}
+                      className="border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50"
+                    >
+                      <td className="px-5 py-3.5 text-[13.5px] font-semibold text-navy">
                         {b.patient_name_redacted ?? "—"}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-5 py-3.5 text-[12px] text-gray-500">
                         {formatDateTime(b.appointment_at)}
                       </td>
-                      <td className="px-4 py-3">{b.procedure_type}</td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-5 py-3.5 text-sm text-gray-700">{b.procedure_type}</td>
+                      <td className="px-5 py-3.5 text-[12px] text-gray-500">
                         {b.provider_name ?? "—"}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-3.5">
                         <StatusBadge status={b.status} />
                       </td>
                     </tr>
