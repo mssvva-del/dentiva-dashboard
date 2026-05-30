@@ -48,6 +48,38 @@ function OutcomeBadge({ outcome }: { outcome: string | null | undefined }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Sentiment / intent helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SENTIMENT_LABELS: Record<string, string> = {
+  positive: "😊 Positive",
+  neutral: "😐 Neutral",
+  frustrated: "😠 Frustrated",
+  anxious: "😰 Anxious",
+  urgent: "🚨 Urgent",
+};
+
+const SENTIMENT_STYLES: Record<string, React.CSSProperties> = {
+  positive:   { background: "#E0F2F1", color: "#00897B" },
+  neutral:    { background: "#F3F4F6", color: "#6B7280" },
+  frustrated: { background: "#FED7D7", color: "#C53030" },
+  anxious:    { background: "#FEF3C7", color: "#B7791F" },
+  urgent:     { background: "#FED7D7", color: "#C53030" },
+};
+
+const INTENT_LABELS: Record<string, string> = {
+  scheduling_new: "New Appointment Scheduling",
+  scheduling_existing: "Existing Patient",
+  reschedule: "Reschedule",
+  cancellation: "Cancellation",
+  insurance_question: "Insurance Question",
+  emergency: "Emergency",
+  post_treatment: "Post-Treatment",
+  general_faq: "General FAQ",
+  other: "Other",
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Call summary card
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -90,6 +122,47 @@ function CallSummaryCard({ call }: { call: CallDetail }) {
             }
           />
           <Metric label="From" value={formatPhone(call.from_number)} />
+          {call.call_intent && (
+            <Metric
+              label="Call Intent"
+              value={INTENT_LABELS[call.call_intent] ?? call.call_intent}
+            />
+          )}
+          {call.patient_sentiment && (
+            <Metric
+              label="Patient Mood"
+              value={
+                <span
+                  className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                  style={
+                    SENTIMENT_STYLES[call.patient_sentiment] ?? {
+                      background: "#F3F4F6",
+                      color: "#6B7280",
+                    }
+                  }
+                >
+                  {SENTIMENT_LABELS[call.patient_sentiment] ?? call.patient_sentiment}
+                </span>
+              }
+            />
+          )}
+          {call.escalation_needed != null && (
+            <Metric
+              label="Escalated"
+              value={
+                call.escalation_needed ? (
+                  <span
+                    className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                    style={{ background: "#FEE2E2", color: "#B91C1C" }}
+                  >
+                    ⚠ Yes
+                  </span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">No</span>
+                )
+              }
+            />
+          )}
         </div>
       </CardContent>
     </Card>

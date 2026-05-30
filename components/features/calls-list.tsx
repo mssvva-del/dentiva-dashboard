@@ -33,6 +33,51 @@ type StatusFilter = "completed" | "missed" | "voicemail" | "";
 // Sub-components
 // ─────────────────────────────────────────────────────────────────────────────
 
+function SentimentChip({ sentiment }: { sentiment: string }) {
+  const map: Record<string, React.CSSProperties> = {
+    positive:   { background: "#E0F2F1", color: "#00897B" },
+    neutral:    { background: "#F3F4F6", color: "#6B7280" },
+    frustrated: { background: "#FED7D7", color: "#C53030" },
+    anxious:    { background: "#FEF3C7", color: "#B7791F" },
+    urgent:     { background: "#FED7D7", color: "#C53030" },
+  };
+  const labels: Record<string, string> = {
+    positive: "😊 Positive", neutral: "😐 Neutral",
+    frustrated: "😠 Frustrated", anxious: "😰 Anxious", urgent: "🚨 Urgent",
+  };
+  const style = map[sentiment] ?? { background: "#F3F4F6", color: "#6B7280" };
+  return (
+    <span className="hidden rounded-full px-2 py-0.5 text-[11px] font-medium sm:inline" style={style}>
+      {labels[sentiment] ?? sentiment}
+    </span>
+  );
+}
+
+function IntentChip({ intent }: { intent: string }) {
+  if (intent === "other" || intent === "general_faq") return null;
+  const labels: Record<string, string> = {
+    scheduling_new: "New Apt",
+    scheduling_existing: "Existing Pt",
+    reschedule: "Reschedule",
+    cancellation: "Cancel",
+    insurance_question: "Insurance",
+    emergency: "Emergency",
+    post_treatment: "Post-Tx",
+  };
+  const isUrgent = intent === "emergency";
+  return (
+    <span
+      className="hidden rounded-full px-2 py-0.5 text-[11px] font-medium sm:inline"
+      style={isUrgent
+        ? { background: "#FED7D7", color: "#C53030" }
+        : { background: "#EDE9FE", color: "#6D28D9" }
+      }
+    >
+      {labels[intent] ?? intent}
+    </span>
+  );
+}
+
 function StatusBadge({ status }: { status: CallSummary["status"] }) {
   const styleMap: Record<CallSummary["status"], React.CSSProperties> = {
     completed: { background: "#E0F2F1", color: "#00897B" },
@@ -80,6 +125,14 @@ function CallRow({ call }: { call: CallSummary }) {
           {call.outcome}
         </span>
       ) : null}
+      {call.call_intent && <IntentChip intent={call.call_intent} />}
+      {call.patient_sentiment && <SentimentChip sentiment={call.patient_sentiment} />}
+      {call.escalation_needed && (
+        <span className="hidden rounded-full px-2 py-0.5 text-[11px] font-medium sm:inline"
+          style={{ background: "#FEE2E2", color: "#B91C1C" }}>
+          ⚠ Escalated
+        </span>
+      )}
       <StatusBadge status={call.status} />
     </Link>
   );

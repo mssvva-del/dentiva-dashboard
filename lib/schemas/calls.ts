@@ -18,6 +18,9 @@ export const CallSummarySchema = z.object({
   outcome: z.string().nullable().optional(),
   booking_id: z.string().nullable().optional(),
   transcript_available: z.boolean().optional(),
+  call_intent: z.string().nullable().optional(),
+  patient_sentiment: z.string().nullable().optional(),
+  escalation_needed: z.boolean().nullable().optional(),
 });
 export type CallSummary = z.infer<typeof CallSummarySchema>;
 
