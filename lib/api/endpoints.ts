@@ -31,6 +31,8 @@ import {
   type ROIResponse,
   ActivityResponseSchema,
   type ActivityResponse,
+  EngagementResponseSchema,
+  type EngagementResponse,
 } from "@/lib/schemas/dashboard";
 import {
   RecallResponseSchema,
@@ -39,6 +41,8 @@ import {
   type PatientsListResponse,
   RecallSmsResponseSchema,
   type RecallSmsResponse,
+  PatientDetailResponseSchema,
+  type PatientDetailResponse,
 } from "@/lib/schemas/patients";
 import {
   CallbackListResponseSchema,
@@ -116,6 +120,7 @@ export interface PatchPracticeMeData {
   phone_number?: string;
   timezone?: string;
   business_hours?: import("@/lib/schemas/practice").BusinessHours;
+  reminders_enabled?: boolean;
 }
 
 export const practiceApi = {
@@ -169,6 +174,11 @@ export const dashboardApi = {
       schema: ActivityResponseSchema,
       token,
     }),
+  engagement: (token?: string | null) =>
+    apiClient<EngagementResponse>("/api/dashboard/engagement", {
+      schema: EngagementResponseSchema,
+      token,
+    }),
 };
 
 export interface ListPatientsParams {
@@ -196,7 +206,14 @@ export const patientsApi = {
       method: "POST",
       token,
     }),
+  detail: (patientId: string, token?: string | null) =>
+    apiClient<PatientDetailResponse>(`/api/patients/${patientId}`, {
+      schema: PatientDetailResponseSchema,
+      token,
+    }),
 };
+
+export type { PatientDetailResponse };
 
 export interface ListCallbacksParams {
   status?: CallbackStatus;
@@ -251,7 +268,7 @@ export const waitlistApi = {
 };
 
 // Re-export types so consumers can import from endpoints without reaching into schemas
-export type { DailyBriefingResponse, WeeklyStatsResponse, CallsByHourResponse, ConversionResponse, ROIResponse, ActivityResponse };
+export type { DailyBriefingResponse, WeeklyStatsResponse, CallsByHourResponse, ConversionResponse, ROIResponse, ActivityResponse, EngagementResponse };
 export type { WaitlistListResponse, WaitlistSummary, WaitlistStatus };
 
 export interface ActiveCallSummary {

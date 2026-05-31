@@ -95,6 +95,7 @@ describe("API contract schemas", () => {
         sat: null,
         sun: null,
       },
+      reminders_enabled: true,
     };
     expect(GetPracticeMeResponseSchema.parse(sample).name).toBe(
       "Smile Dental NJ"
@@ -132,6 +133,6 @@ describe("API contract schemas", () => {
     };
     const parsed = CallbackListResponseSchema.parse(sample);
     expect(parsed.pending_urgent).toBe(1);
-    expect(parsed.callbacks[0].urgent).toBe(true);
+    expect(parsed.callbacks[0]?.urgent).toBe(true);
   });
 });

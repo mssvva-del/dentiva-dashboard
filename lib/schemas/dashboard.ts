@@ -132,3 +132,16 @@ export const ActivityResponseSchema = z.object({
 
 export type ActivityDay = z.infer<typeof ActivityDaySchema>;
 export type ActivityResponse = z.infer<typeof ActivityResponseSchema>;
+
+/** Matches GET /api/dashboard/engagement */
+export const EngagementResponseSchema = z.object({
+  period_days: z.number(),
+  waitlist_joined: z.number(),
+  waitlist_notified: z.number(),
+  waitlist_conversion_rate: z.number(),
+  sms_confirmed: z.number(),
+  sms_cancelled: z.number(),
+  recall_sms_sent: z.number(),
+  sms_opt_outs: z.number(),
+});
+export type EngagementResponse = z.infer<typeof EngagementResponseSchema>;

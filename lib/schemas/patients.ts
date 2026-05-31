@@ -48,3 +48,42 @@ export const RecallSmsResponseSchema = z.object({
   detail: z.string().nullable().optional(),
 });
 export type RecallSmsResponse = z.infer<typeof RecallSmsResponseSchema>;
+
+/** Matches GET /api/patients/{id} (detail). */
+export const PatientBookingRowSchema = z.object({
+  id: z.string(),
+  appointment_at: z.string(),
+  procedure_type: z.string().nullable().optional(),
+  provider_name: z.string().nullable().optional(),
+  status: z.string(),
+  source: z.string().nullable().optional(),
+  created_at: z.string(),
+});
+
+export const PatientWaitlistRowSchema = z.object({
+  id: z.string(),
+  procedure_type: z.string().nullable().optional(),
+  preferred_date: z.string().nullable().optional(),
+  preferred_time_window: z.string().nullable().optional(),
+  status: z.string(),
+  created_at: z.string(),
+});
+
+export const PatientDetailResponseSchema = z.object({
+  patient_id: z.string(),
+  name_redacted: z.string().nullable().optional(),
+  phone_masked: z.string().nullable().optional(),
+  status: PatientStatusSchema,
+  last_visit_date: z.string().nullable().optional(),
+  next_visit_date: z.string().nullable().optional(),
+  total_visits: z.number(),
+  no_show_count: z.number(),
+  sms_opt_out: z.boolean(),
+  created_at: z.string(),
+  bookings: z.array(PatientBookingRowSchema),
+  waitlist: z.array(PatientWaitlistRowSchema),
+});
+
+export type PatientBookingRow = z.infer<typeof PatientBookingRowSchema>;
+export type PatientWaitlistRow = z.infer<typeof PatientWaitlistRowSchema>;
+export type PatientDetailResponse = z.infer<typeof PatientDetailResponseSchema>;

@@ -28,6 +28,7 @@ export const PracticeSchema = z.object({
   pms_connected: z.boolean(),
   languages_enabled: z.array(z.string()),
   business_hours: BusinessHoursSchema,
+  reminders_enabled: z.boolean(),
 });
 export type Practice = z.infer<typeof PracticeSchema>;
 export const GetPracticeMeResponseSchema = PracticeSchema;

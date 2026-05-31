@@ -6,6 +6,7 @@ import { PeakHoursChart } from "@/components/features/peak-hours-chart";
 import { ConversionFunnelChart } from "@/components/features/conversion-funnel-chart";
 import { ROICard } from "@/components/features/roi-card";
 import { AppointmentActivityChart } from "@/components/features/appointment-activity-chart";
+import { EngagementCard } from "@/components/features/engagement-card";
 
 export default function AnalyticsPage() {
   return (
@@ -24,6 +25,11 @@ export default function AnalyticsPage() {
       {/* Appointment lifecycle — surfaces reschedules & cancellations */}
       <div className="mt-4">
         <AppointmentActivityChart />
+      </div>
+
+      {/* Patient engagement — waitlist + two-way SMS funnel */}
+      <div className="mt-4">
+        <EngagementCard />
       </div>
 
       {/* Trend + funnel grid */}

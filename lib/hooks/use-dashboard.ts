@@ -102,3 +102,13 @@ export function useAppointmentActivity() {
     staleTime: 9 * 60 * 1000,
   });
 }
+
+export function useEngagement() {
+  const getToken = useApiToken();
+  return useQuery({
+    queryKey: ["dashboard", "engagement"],
+    queryFn: async () => dashboardApi.engagement(await getToken()),
+    refetchInterval: 10 * 60 * 1000,
+    staleTime: 9 * 60 * 1000,
+  });
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Users, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,10 @@ function StatusChip({ status }: { status: PatientStatus }) {
 
 function PatientRow({ patient }: { patient: PatientSummary }) {
   return (
-    <div className="flex items-center gap-4 border-b border-gray-100 px-5 py-3.5 last:border-b-0">
+    <Link
+      href={`/patients/${patient.patient_id}`}
+      className="flex items-center gap-4 border-b border-gray-100 px-5 py-3.5 transition-colors last:border-b-0 hover:bg-gray-50"
+    >
       <div
         className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[12px] font-semibold text-teal"
         style={{ background: "rgba(0,137,123,0.10)" }}
@@ -76,7 +80,7 @@ function PatientRow({ patient }: { patient: PatientSummary }) {
         {patient.total_visits}
       </div>
       <StatusChip status={patient.status} />
-    </div>
+    </Link>
   );
 }
 

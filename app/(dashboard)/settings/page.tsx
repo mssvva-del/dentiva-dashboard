@@ -396,6 +396,52 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
+          {/* ── Card: Notifications (reminder toggle) ─────────────── */}
+          <Card className="overflow-hidden shadow-sm">
+            <CardHeader className="px-6 py-5 border-b border-gray-100">
+              <CardTitle
+                className="font-display font-semibold tracking-tight text-navy"
+                style={{ fontSize: 17 }}
+              >
+                Patient Notifications
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-navy">Appointment reminders</p>
+                  <p className="mt-0.5 text-[12.5px] text-gray-500">
+                    Automatically text patients ~24h and ~2h before their visit.
+                    Patients who reply STOP are never texted.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={data.reminders_enabled}
+                  aria-label="Toggle appointment reminders"
+                  disabled={isSaving}
+                  onClick={() =>
+                    patchMutation.mutate({ reminders_enabled: !data.reminders_enabled })
+                  }
+                  className={cn(
+                    "relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50",
+                  )}
+                  style={{ background: data.reminders_enabled ? "#00897B" : "#CBD5E1" }}
+                >
+                  <span
+                    className="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform"
+                    style={{
+                      transform: data.reminders_enabled
+                        ? "translateX(22px)"
+                        : "translateX(2px)",
+                    }}
+                  />
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* ── Card 3: Voice Agent Configuration (read-only) ─────── */}
           <Card className="overflow-hidden shadow-sm">
             <CardHeader className="px-6 py-5 border-b border-gray-100">

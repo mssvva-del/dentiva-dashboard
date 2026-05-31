@@ -35,6 +35,15 @@ export function usePatientsList(params: ListPatientsParams = {}) {
   });
 }
 
+export function usePatientDetail(patientId: string) {
+  const { getToken } = useAuth();
+  return useQuery({
+    queryKey: ["patients", "detail", patientId],
+    queryFn: async () => patientsApi.detail(patientId, await getToken()),
+    enabled: !!patientId,
+  });
+}
+
 export function useSendRecallSms() {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
