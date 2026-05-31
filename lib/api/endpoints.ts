@@ -36,6 +36,13 @@ import {
   PatientsListResponseSchema,
   type PatientsListResponse,
 } from "@/lib/schemas/patients";
+import {
+  CallbackListResponseSchema,
+  CallbackSummarySchema,
+  type CallbackListResponse,
+  type CallbackSummary,
+  type CallbackStatus,
+} from "@/lib/schemas/callbacks";
 
 export interface ListCallsParams {
   limit?: number;
@@ -154,6 +161,32 @@ export const patientsApi = {
     apiClient<PatientsListResponse>("/api/patients", {
       schema: PatientsListResponseSchema,
       params: { ...params },
+      token,
+    }),
+};
+
+export interface ListCallbacksParams {
+  status?: CallbackStatus;
+  limit?: number;
+  offset?: number;
+}
+
+export const callbacksApi = {
+  list: (params: ListCallbacksParams = {}, token?: string | null) =>
+    apiClient<CallbackListResponse>("/api/callbacks", {
+      schema: CallbackListResponseSchema,
+      params: { ...params },
+      token,
+    }),
+  updateStatus: (
+    callbackId: string,
+    status: CallbackStatus,
+    token?: string | null
+  ) =>
+    apiClient<CallbackSummary>(`/api/callbacks/${callbackId}`, {
+      schema: CallbackSummarySchema,
+      method: "PATCH",
+      body: { status },
       token,
     }),
 };

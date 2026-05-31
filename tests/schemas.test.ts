@@ -3,6 +3,7 @@ import { ListCallsResponseSchema, CallDetailSchema } from "@/lib/schemas/calls";
 import { ListBookingsResponseSchema } from "@/lib/schemas/bookings";
 import { GetPracticeMeResponseSchema } from "@/lib/schemas/practice";
 import { DashboardTodaySchema } from "@/lib/schemas/dashboard";
+import { CallbackListResponseSchema } from "@/lib/schemas/callbacks";
 
 // Fixtures mirror the examples in _shared/API_CONTRACT.md verbatim.
 
@@ -109,5 +110,28 @@ describe("API contract schemas", () => {
       upcoming_appointments_today: 12,
     };
     expect(DashboardTodaySchema.parse(sample).calls_today).toBe(23);
+  });
+
+  it("parses GET /api/callbacks", () => {
+    const sample = {
+      callbacks: [
+        {
+          id: "cb_aaa111",
+          call_id: "call_abc123",
+          patient_name_redacted: "Ann",
+          phone_last4: "0351",
+          reason: "bleeding",
+          urgent: true,
+          status: "pending",
+          created_at: "2026-05-30T14:24:45Z",
+        },
+      ],
+      total: 2,
+      has_more: false,
+      pending_urgent: 1,
+    };
+    const parsed = CallbackListResponseSchema.parse(sample);
+    expect(parsed.pending_urgent).toBe(1);
+    expect(parsed.callbacks[0].urgent).toBe(true);
   });
 });

@@ -3,6 +3,7 @@
 import {
   LayoutDashboard,
   Phone,
+  PhoneCall,
   CalendarCheck,
   Settings,
   Users,
@@ -16,6 +17,7 @@ import { NavLink } from "./nav-link";
 import { NAV } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { usePracticeMe, useDashboardToday } from "@/lib/hooks/use-dashboard";
+import { useCallbacksList } from "@/lib/hooks/use-callbacks";
 
 function GroupLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -29,6 +31,9 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { data: today } = useDashboardToday();
   // Front Desk badge surfaces calls that still need a human glance.
   const frontDeskCount = today?.calls_missed ?? 0;
+  // Callbacks badge surfaces pending urgent call-back requests.
+  const { data: callbacks } = useCallbacksList({ status: "pending" });
+  const urgentCallbacks = callbacks?.pending_urgent ?? 0;
 
   return (
     <nav aria-label="Primary" className="mt-2 flex flex-col gap-0.5 px-3">
@@ -48,6 +53,13 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         onNavigate={onNavigate}
       />
       <NavLink href="/patients" label="Patients" icon={Users} onNavigate={onNavigate} />
+      <NavLink
+        href="/callbacks"
+        label="Callbacks"
+        icon={PhoneCall}
+        count={urgentCallbacks}
+        onNavigate={onNavigate}
+      />
 
       <GroupLabel>Engagement</GroupLabel>
       <NavLink
