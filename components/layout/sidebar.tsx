@@ -13,12 +13,14 @@ import {
   Boxes,
   Store,
   BarChart3,
+  Clock,
 } from "lucide-react";
 import { NavLink } from "./nav-link";
 import { NAV } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { usePracticeMe, useDashboardToday } from "@/lib/hooks/use-dashboard";
 import { useCallbacksList } from "@/lib/hooks/use-callbacks";
+import { useWaitlistList } from "@/lib/hooks/use-waitlist";
 
 function GroupLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -35,6 +37,9 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   // Callbacks badge surfaces pending urgent call-back requests.
   const { data: callbacks } = useCallbacksList({ status: "pending" });
   const urgentCallbacks = callbacks?.pending_urgent ?? 0;
+  // Waitlist badge surfaces how many callers are still waiting for a slot.
+  const { data: waitlist } = useWaitlistList({ status: "waiting" });
+  const waitingCount = waitlist?.waiting ?? 0;
 
   return (
     <nav aria-label="Primary" className="mt-2 flex flex-col gap-0.5 px-3">
@@ -69,6 +74,13 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       />
 
       <GroupLabel>Engagement</GroupLabel>
+      <NavLink
+        href="/waitlist"
+        label="Waitlist"
+        icon={Clock}
+        count={waitingCount}
+        onNavigate={onNavigate}
+      />
       <NavLink
         href="/reactivation"
         label="Reactivation"

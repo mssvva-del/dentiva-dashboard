@@ -1,7 +1,13 @@
 "use client";
 import { useAuth } from "@clerk/nextjs";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { patientsApi, type ListPatientsParams } from "@/lib/api/endpoints";
+import { showToast } from "@/lib/toast";
 
 export function usePatientRecall(threshold = 6, limit = 10) {
   const { getToken } = useAuth();
@@ -26,5 +32,27 @@ export function usePatientsList(params: ListPatientsParams = {}) {
     },
     refetchInterval: 600_000,
     placeholderData: keepPreviousData,
+  });
+}
+
+export function useSendRecallSms() {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (patientId: string) =>
+      patientsApi.sendRecallSms(patientId, await getToken()),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["patients"] });
+      if (data.sent) {
+        showToast.success("Recall text sent");
+      } else if (data.status === "skipped") {
+        showToast.error("SMS isn't enabled yet — nothing was sent");
+      } else {
+        showToast.error("Couldn't send the recall text");
+      }
+    },
+    onError: () => {
+      showToast.error("Couldn't send the recall text");
+    },
   });
 }

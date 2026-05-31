@@ -13,7 +13,7 @@ import {
   ErrorState,
   EmptyState,
 } from "@/components/features/page-states";
-import { useBookingsList } from "@/lib/hooks/use-bookings";
+import { useBookingsList, useUpdateBookingStatus } from "@/lib/hooks/use-bookings";
 import { formatDateTime } from "@/lib/utils/format";
 import { COPY } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -234,6 +234,8 @@ export function BookingsTable() {
   const { data, isLoading, isError, isPlaceholderData, refetch } =
     useBookingsList(params);
 
+  const updateStatus = useUpdateBookingStatus();
+
   // Compute has_more: if API provides it, use it; otherwise compute from total
   const hasMore =
     data?.has_more ??
@@ -276,6 +278,7 @@ export function BookingsTable() {
                     <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-gray-500">Procedure</th>
                     <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-gray-500">Provider</th>
                     <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-gray-500">Status</th>
+                    <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-widest text-gray-500">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -297,6 +300,26 @@ export function BookingsTable() {
                       </td>
                       <td className="px-5 py-3.5">
                         <StatusBadge status={b.status} />
+                      </td>
+                      <td className="px-5 py-3.5 text-right">
+                        {b.status === "confirmed" &&
+                        new Date(b.appointment_at) < new Date() ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-[12px]"
+                            disabled={updateStatus.isPending}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateStatus.mutate({ id: b.id, status: "no_show" });
+                            }}
+                            aria-label="Mark appointment as no-show"
+                          >
+                            Mark no-show
+                          </Button>
+                        ) : (
+                          <span className="text-[12px] text-gray-300">—</span>
+                        )}
                       </td>
                     </tr>
                   ))}

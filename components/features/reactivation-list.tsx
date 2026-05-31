@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { RotateCcw, PhoneOutgoing } from "lucide-react";
+import { RotateCcw, PhoneOutgoing, MessageSquare } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { LoadingState, ErrorState, EmptyState } from "@/components/features/page-states";
-import { usePatientRecall } from "@/lib/hooks/use-patients";
+import { usePatientRecall, useSendRecallSms } from "@/lib/hooks/use-patients";
 import { formatDate } from "@/lib/utils/format";
 import type { RecallPatient } from "@/lib/schemas/patients";
 
@@ -29,6 +29,7 @@ function SummaryStat({ label, value, accent }: { label: string; value: number; a
 
 function Row({ patient }: { patient: RecallPatient }) {
   const t = tier(patient.months_since_visit);
+  const sendRecall = useSendRecallSms();
   return (
     <div className="flex items-center gap-4 border-b border-gray-100 px-5 py-3.5 last:border-b-0">
       <div
@@ -57,16 +58,27 @@ function Row({ patient }: { patient: RecallPatient }) {
       </span>
       <button
         type="button"
+        disabled={sendRecall.isPending}
+        onClick={() => sendRecall.mutate(patient.patient_id)}
+        title="Text this patient a recall / reactivation message"
+        className="hidden items-center gap-1.5 rounded-[8px] px-2.5 py-1.5 text-[12px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50 md:inline-flex"
+        style={{ background: "linear-gradient(135deg, #00897B 0%, #4DB6AC 100%)" }}
+      >
+        <MessageSquare className="h-3.5 w-3.5" aria-hidden />
+        {sendRecall.isPending ? "Sending…" : "Send text"}
+      </button>
+      <button
+        type="button"
         disabled
         title="AI auto-dial campaigns arrive in Phase 2"
-        className="hidden cursor-not-allowed items-center gap-1.5 rounded-[8px] px-2.5 py-1.5 text-[12px] font-semibold text-white opacity-90 md:inline-flex"
-        style={{ background: "linear-gradient(135deg, #00897B 0%, #4DB6AC 100%)" }}
+        className="hidden cursor-not-allowed items-center gap-1.5 rounded-[8px] px-2.5 py-1.5 text-[12px] font-semibold text-gray-500 opacity-90 lg:inline-flex"
+        style={{ background: "#EEF1F5" }}
       >
         <PhoneOutgoing className="h-3.5 w-3.5" aria-hidden />
         Queue call
         <span
           className="rounded-full px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider"
-          style={{ background: "rgba(255,255,255,0.22)" }}
+          style={{ background: "rgba(10,25,41,0.08)" }}
         >
           Soon
         </span>
@@ -105,8 +117,8 @@ export function ReactivationList() {
         <div>
           <p className="text-[13.5px] font-semibold text-navy">Win back lapsed patients</p>
           <p className="mt-0.5 text-[12.5px] text-gray-600">
-            These patients haven&apos;t been in for 6+ months and have no upcoming visit. Your AI can
-            call them back automatically to re-book — auto-dial campaigns arrive in Phase 2.
+            These patients haven&apos;t been in for 6+ months and have no upcoming visit. Send a
+            recall text to invite them back — AI auto-dial campaigns arrive in Phase 2.
           </p>
         </div>
       </div>

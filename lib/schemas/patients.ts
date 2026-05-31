@@ -27,6 +27,7 @@ export const PatientSummarySchema = z.object({
   last_visit_date: z.string().nullable().optional(),
   next_visit_date: z.string().nullable().optional(),
   total_visits: z.number(),
+  no_show_count: z.number(),
   status: PatientStatusSchema,
 });
 
@@ -39,3 +40,11 @@ export const PatientsListResponseSchema = z.object({
 export type PatientStatus = z.infer<typeof PatientStatusSchema>;
 export type PatientSummary = z.infer<typeof PatientSummarySchema>;
 export type PatientsListResponse = z.infer<typeof PatientsListResponseSchema>;
+
+/** Matches POST /api/patients/{id}/recall-sms */
+export const RecallSmsResponseSchema = z.object({
+  sent: z.boolean(),
+  status: z.enum(["sent", "skipped", "error"]),
+  detail: z.string().nullable().optional(),
+});
+export type RecallSmsResponse = z.infer<typeof RecallSmsResponseSchema>;

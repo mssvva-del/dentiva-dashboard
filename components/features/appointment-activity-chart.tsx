@@ -6,6 +6,7 @@ import type { ActivityDay } from "@/lib/schemas/dashboard";
 const TEAL = "#00897B";
 const GOLD = "#C9A961";
 const DANGER = "#D9534F";
+const NOSHOW = "#8859C7";
 
 interface WeekBucket {
   label: string;
@@ -58,6 +59,7 @@ export function AppointmentActivityChart() {
           <Legend color={TEAL} label="Booked" />
           <Legend color={GOLD} label="Rescheduled" />
           <Legend color={DANGER} label="Cancelled" />
+          <Legend color={NOSHOW} label="No-show" />
         </div>
       </div>
 
@@ -86,6 +88,8 @@ export function AppointmentActivityChart() {
             <div className="h-4 w-px bg-gray-200" />
             <Chip label="Cancelled" value={`${data.cancelled}`} color={DANGER} />
             <div className="h-4 w-px bg-gray-200" />
+            <Chip label="No-show" value={`${data.no_show}`} color={NOSHOW} />
+            <div className="h-4 w-px bg-gray-200" />
             <Chip
               label="Net Added"
               value={data.net_added >= 0 ? `+${data.net_added}` : `${data.net_added}`}
@@ -110,6 +114,12 @@ export function AppointmentActivityChart() {
               Cancellation rate:{" "}
               <span className="font-semibold" style={{ color: DANGER }}>
                 {(data.cancellation_rate * 100).toFixed(0)}%
+              </span>
+            </span>
+            <span className="text-[11px] text-gray-500">
+              No-show rate:{" "}
+              <span className="font-semibold" style={{ color: NOSHOW }}>
+                {(data.no_show_rate * 100).toFixed(0)}%
               </span>
             </span>
           </div>

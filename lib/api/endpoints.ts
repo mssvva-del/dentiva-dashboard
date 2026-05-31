@@ -37,6 +37,8 @@ import {
   type RecallResponse,
   PatientsListResponseSchema,
   type PatientsListResponse,
+  RecallSmsResponseSchema,
+  type RecallSmsResponse,
 } from "@/lib/schemas/patients";
 import {
   CallbackListResponseSchema,
@@ -45,6 +47,13 @@ import {
   type CallbackSummary,
   type CallbackStatus,
 } from "@/lib/schemas/callbacks";
+import {
+  WaitlistListResponseSchema,
+  WaitlistSummarySchema,
+  type WaitlistListResponse,
+  type WaitlistSummary,
+  type WaitlistStatus,
+} from "@/lib/schemas/waitlist";
 
 export interface ListCallsParams {
   limit?: number;
@@ -87,6 +96,17 @@ export const bookingsApi = {
   get: (bookingId: string, token?: string | null) =>
     apiClient<Booking>("/api/bookings/" + bookingId, {
       schema: BookingSchema,
+      token,
+    }),
+  updateStatus: (
+    bookingId: string,
+    status: Booking["status"],
+    token?: string | null
+  ) =>
+    apiClient<Booking>("/api/bookings/" + bookingId + "/status", {
+      schema: BookingSchema,
+      method: "PATCH",
+      body: { status },
       token,
     }),
 };
@@ -170,6 +190,12 @@ export const patientsApi = {
       params: { ...params },
       token,
     }),
+  sendRecallSms: (patientId: string, token?: string | null) =>
+    apiClient<RecallSmsResponse>(`/api/patients/${patientId}/recall-sms`, {
+      schema: RecallSmsResponseSchema,
+      method: "POST",
+      token,
+    }),
 };
 
 export interface ListCallbacksParams {
@@ -198,8 +224,35 @@ export const callbacksApi = {
     }),
 };
 
+export interface ListWaitlistParams {
+  status?: WaitlistStatus;
+  limit?: number;
+  offset?: number;
+}
+
+export const waitlistApi = {
+  list: (params: ListWaitlistParams = {}, token?: string | null) =>
+    apiClient<WaitlistListResponse>("/api/waitlist", {
+      schema: WaitlistListResponseSchema,
+      params: { ...params },
+      token,
+    }),
+  updateStatus: (
+    entryId: string,
+    status: WaitlistStatus,
+    token?: string | null
+  ) =>
+    apiClient<WaitlistSummary>(`/api/waitlist/${entryId}`, {
+      schema: WaitlistSummarySchema,
+      method: "PATCH",
+      body: { status },
+      token,
+    }),
+};
+
 // Re-export types so consumers can import from endpoints without reaching into schemas
 export type { DailyBriefingResponse, WeeklyStatsResponse, CallsByHourResponse, ConversionResponse, ROIResponse, ActivityResponse };
+export type { WaitlistListResponse, WaitlistSummary, WaitlistStatus };
 
 export interface ActiveCallSummary {
   id: string;

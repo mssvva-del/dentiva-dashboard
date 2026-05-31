@@ -114,6 +114,7 @@ export const ActivityDaySchema = z.object({
   created: z.number(),
   rescheduled: z.number(),
   cancelled: z.number(),
+  no_show: z.number(),
 });
 
 export const ActivityResponseSchema = z.object({
@@ -121,9 +122,11 @@ export const ActivityResponseSchema = z.object({
   created: z.number(),
   rescheduled: z.number(),
   cancelled: z.number(),
+  no_show: z.number(),
   net_added: z.number(),
   reschedule_rate: z.number(),
   cancellation_rate: z.number(),
+  no_show_rate: z.number(),
   days: z.array(ActivityDaySchema),
 });
 

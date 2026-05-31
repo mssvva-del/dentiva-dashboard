@@ -47,8 +47,17 @@ function PatientRow({ patient }: { patient: PatientSummary }) {
         {(patient.name_redacted ?? "?").slice(0, 1).toUpperCase()}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13.5px] font-semibold text-navy">
+        <p className="flex items-center gap-2 truncate text-[13.5px] font-semibold text-navy">
           {patient.name_redacted ?? "Unknown patient"}
+          {patient.no_show_count > 0 && (
+            <span
+              className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+              style={{ background: "rgba(136,89,199,0.12)", color: "#8859C7" }}
+              title={`${patient.no_show_count} missed appointment${patient.no_show_count === 1 ? "" : "s"}`}
+            >
+              {patient.no_show_count} no-show{patient.no_show_count === 1 ? "" : "s"}
+            </span>
+          )}
         </p>
         <p className="truncate text-[11px] text-gray-500">
           {patient.phone_masked ?? "No phone on file"}
