@@ -47,10 +47,15 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         icon={CalendarCheck}
         onNavigate={onNavigate}
       />
-      <NavLink href="#" label="Patients" icon={Users} comingSoon />
+      <NavLink href="/patients" label="Patients" icon={Users} onNavigate={onNavigate} />
 
       <GroupLabel>Engagement</GroupLabel>
-      <NavLink href="#" label="Reactivation" icon={RotateCcw} comingSoon />
+      <NavLink
+        href="/reactivation"
+        label="Reactivation"
+        icon={RotateCcw}
+        onNavigate={onNavigate}
+      />
       <NavLink href="#" label="Treatment Plans" icon={ClipboardList} comingSoon />
 
       <GroupLabel>Clinical</GroupLabel>

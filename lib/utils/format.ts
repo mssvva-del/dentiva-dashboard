@@ -36,6 +36,15 @@ export function formatDateTime(iso: string | null | undefined): string {
   });
 }
 
+/** Date-only display: "May 19, 2026" from an ISO date string. */
+export function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  // Treat a bare YYYY-MM-DD as a local date (avoid UTC off-by-one).
+  const d = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? new Date(`${iso}T00:00:00`) : new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
 /** Compact relative time: "just now", "5m ago", "2h ago", else short date. */
 export function formatRelativeTime(iso: string | null | undefined): string {
   if (!iso) return "—";
