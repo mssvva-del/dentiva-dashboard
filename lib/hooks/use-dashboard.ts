@@ -92,3 +92,13 @@ export function useDashboardROI() {
     staleTime: 240_000,
   });
 }
+
+export function useAppointmentActivity() {
+  const getToken = useApiToken();
+  return useQuery({
+    queryKey: ["dashboard", "activity"],
+    queryFn: async () => dashboardApi.activity(await getToken()),
+    refetchInterval: 10 * 60 * 1000,
+    staleTime: 9 * 60 * 1000,
+  });
+}

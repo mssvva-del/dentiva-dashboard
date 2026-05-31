@@ -107,3 +107,25 @@ export const ROIResponseSchema = z.object({
   ai_answer_rate_pct: z.number(),
 });
 export type ROIResponse = z.infer<typeof ROIResponseSchema>;
+
+/** Matches GET /api/dashboard/activity */
+export const ActivityDaySchema = z.object({
+  date: z.string(),
+  created: z.number(),
+  rescheduled: z.number(),
+  cancelled: z.number(),
+});
+
+export const ActivityResponseSchema = z.object({
+  period_days: z.number(),
+  created: z.number(),
+  rescheduled: z.number(),
+  cancelled: z.number(),
+  net_added: z.number(),
+  reschedule_rate: z.number(),
+  cancellation_rate: z.number(),
+  days: z.array(ActivityDaySchema),
+});
+
+export type ActivityDay = z.infer<typeof ActivityDaySchema>;
+export type ActivityResponse = z.infer<typeof ActivityResponseSchema>;

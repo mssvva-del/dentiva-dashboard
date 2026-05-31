@@ -29,6 +29,8 @@ import {
   type ConversionResponse,
   ROIResponseSchema,
   type ROIResponse,
+  ActivityResponseSchema,
+  type ActivityResponse,
 } from "@/lib/schemas/dashboard";
 import {
   RecallResponseSchema,
@@ -142,6 +144,11 @@ export const dashboardApi = {
       schema: ROIResponseSchema,
       token,
     }),
+  activity: (token?: string | null) =>
+    apiClient<ActivityResponse>("/api/dashboard/activity", {
+      schema: ActivityResponseSchema,
+      token,
+    }),
 };
 
 export interface ListPatientsParams {
@@ -192,7 +199,7 @@ export const callbacksApi = {
 };
 
 // Re-export types so consumers can import from endpoints without reaching into schemas
-export type { DailyBriefingResponse, WeeklyStatsResponse, CallsByHourResponse, ConversionResponse, ROIResponse };
+export type { DailyBriefingResponse, WeeklyStatsResponse, CallsByHourResponse, ConversionResponse, ROIResponse, ActivityResponse };
 
 export interface ActiveCallSummary {
   id: string;

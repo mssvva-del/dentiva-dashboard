@@ -12,6 +12,7 @@ import {
   ScanLine,
   Boxes,
   Store,
+  BarChart3,
 } from "lucide-react";
 import { NavLink } from "./nav-link";
 import { NAV } from "@/lib/constants";
@@ -58,6 +59,12 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         label="Callbacks"
         icon={PhoneCall}
         count={urgentCallbacks}
+        onNavigate={onNavigate}
+      />
+      <NavLink
+        href="/analytics"
+        label="Analytics"
+        icon={BarChart3}
         onNavigate={onNavigate}
       />
 
