@@ -33,8 +33,36 @@ export function TalkToReceptionist() {
   async function start() {
     if (state !== "idle") return;
     setState("connecting");
+
+    // Step 1 — ask the browser for the microphone up front, with a clear
+    // message if it's blocked (most common failure).
     try {
-      const { access_token } = await voiceApi.webCall(await getToken());
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Release immediately; the SDK opens its own stream.
+      stream.getTracks().forEach((t) => t.stop());
+    } catch (err) {
+      console.error("mic permission error", err);
+      showToast.error(
+        "Microphone blocked. Click the 🎤 icon in the address bar → Allow, then try again."
+      );
+      setState("idle");
+      return;
+    }
+
+    // Step 2 — mint a token from our backend.
+    let accessToken: string;
+    try {
+      const res = await voiceApi.webCall(await getToken());
+      accessToken = res.access_token;
+    } catch (err) {
+      console.error("web-call token error", err);
+      showToast.error("Couldn't reach the voice service. Try again in a moment.");
+      setState("idle");
+      return;
+    }
+
+    // Step 3 — start the live call.
+    try {
       const client = new RetellWebClient();
       clientRef.current = client;
       client.on("call_started", () => setState("live"));
@@ -53,12 +81,10 @@ export function TalkToReceptionist() {
         setState("idle");
         clientRef.current = null;
       });
-      await client.startCall({ accessToken: access_token });
+      await client.startCall({ accessToken });
     } catch (err) {
-      console.error(err);
-      showToast.error(
-        "Couldn't start the call. Allow the microphone and try again."
-      );
+      console.error("startCall error", err);
+      showToast.error("Couldn't start the call. Please try again.");
       setState("idle");
       clientRef.current = null;
     }
