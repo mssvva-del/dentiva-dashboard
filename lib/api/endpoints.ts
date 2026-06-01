@@ -118,6 +118,7 @@ export const bookingsApi = {
 export interface PatchPracticeMeData {
   name?: string;
   phone_number?: string;
+  transfer_phone_number?: string;
   timezone?: string;
   business_hours?: import("@/lib/schemas/practice").BusinessHours;
   reminders_enabled?: boolean;
@@ -169,14 +170,16 @@ export const dashboardApi = {
       schema: ROIResponseSchema,
       token,
     }),
-  activity: (token?: string | null) =>
+  activity: (days?: number, token?: string | null) =>
     apiClient<ActivityResponse>("/api/dashboard/activity", {
       schema: ActivityResponseSchema,
+      params: days ? { days } : {},
       token,
     }),
-  engagement: (token?: string | null) =>
+  engagement: (days?: number, token?: string | null) =>
     apiClient<EngagementResponse>("/api/dashboard/engagement", {
       schema: EngagementResponseSchema,
+      params: days ? { days } : {},
       token,
     }),
 };

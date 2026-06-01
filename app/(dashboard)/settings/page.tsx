@@ -43,6 +43,7 @@ export default function SettingsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [formName, setFormName] = useState("");
   const [formPhone, setFormPhone] = useState("");
+  const [formTransfer, setFormTransfer] = useState("");
   const [formTimezone, setFormTimezone] = useState("");
 
   const [isEditingHours, setIsEditingHours] = useState(false);
@@ -54,6 +55,7 @@ export default function SettingsPage() {
     if (!data) return;
     setFormName(data.name);
     setFormPhone(data.phone_number ?? "");
+    setFormTransfer(data.transfer_phone_number ?? "");
     setFormTimezone(data.timezone);
     setIsEditing(true);
   }
@@ -96,9 +98,16 @@ export default function SettingsPage() {
 
   function handleSave() {
     if (!data) return;
-    const changed: { name?: string; phone_number?: string; timezone?: string } = {};
+    const changed: {
+      name?: string;
+      phone_number?: string;
+      transfer_phone_number?: string;
+      timezone?: string;
+    } = {};
     if (formName !== data.name) changed.name = formName;
     if (formPhone !== (data.phone_number ?? "")) changed.phone_number = formPhone;
+    if (formTransfer !== (data.transfer_phone_number ?? ""))
+      changed.transfer_phone_number = formTransfer;
     if (formTimezone !== data.timezone) changed.timezone = formTimezone;
 
     patchMutation.mutate(changed, {
@@ -204,6 +213,22 @@ export default function SettingsPage() {
                     <label
                       className="font-semibold uppercase tracking-widest text-gray-500"
                       style={{ fontSize: 10 }}
+                      htmlFor="edit-transfer"
+                    >
+                      Transfer-to-human number
+                    </label>
+                    <Input
+                      id="edit-transfer"
+                      value={formTransfer}
+                      onChange={(e) => setFormTransfer(e.target.value)}
+                      disabled={isSaving}
+                      placeholder="+1XXXXXXXXXX (front desk / on-call)"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label
+                      className="font-semibold uppercase tracking-widest text-gray-500"
+                      style={{ fontSize: 10 }}
                       htmlFor="edit-timezone"
                     >
                       Timezone
@@ -242,6 +267,14 @@ export default function SettingsPage() {
                   <Metric
                     label="Phone"
                     value={data.phone_number ? formatPhone(data.phone_number) : "—"}
+                  />
+                  <Metric
+                    label="Transfer Number"
+                    value={
+                      data.transfer_phone_number
+                        ? formatPhone(data.transfer_phone_number)
+                        : "—"
+                    }
                   />
                   <Metric label="Timezone" value={data.timezone} />
                   <Metric

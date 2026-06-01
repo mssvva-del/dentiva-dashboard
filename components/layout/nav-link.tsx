@@ -49,15 +49,31 @@ export function NavLink({
 
   // Coming-soon items render as a non-interactive, dimmed row with a gold chip.
   if (comingSoon) {
-    return (
-      <div
-        aria-disabled
-        title="Coming soon"
-        className="relative flex cursor-default items-center gap-3 rounded-[10px] px-3 py-[9px] text-[13.5px] font-medium text-white/40"
-      >
+    const csClass =
+      "relative flex items-center gap-3 rounded-[10px] px-3 py-[9px] text-[13.5px] font-medium text-white/40";
+    const csInner = (
+      <>
         <Icon className="h-[18px] w-[18px] shrink-0 opacity-60" aria-hidden />
         <span>{label}</span>
         <NavBadge comingSoon />
+      </>
+    );
+    // Clickable (to a preview page) when a real href is given; else inert row.
+    if (href && href !== "#") {
+      return (
+        <Link
+          href={href}
+          onClick={onNavigate}
+          title="Coming soon — preview"
+          className={cn(csClass, "transition-colors hover:text-white/70")}
+        >
+          {csInner}
+        </Link>
+      );
+    }
+    return (
+      <div aria-disabled title="Coming soon" className={cn(csClass, "cursor-default")}>
+        {csInner}
       </div>
     );
   }

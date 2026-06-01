@@ -34,8 +34,8 @@ function toWeeks(days: ActivityDay[]): WeekBucket[] {
   return weeks;
 }
 
-export function AppointmentActivityChart() {
-  const { data, isLoading } = useAppointmentActivity();
+export function AppointmentActivityChart({ days = 30 }: { days?: number }) {
+  const { data, isLoading } = useAppointmentActivity(days);
 
   return (
     <div
@@ -46,7 +46,7 @@ export function AppointmentActivityChart() {
       <div className="mb-5 flex items-center justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-500">
-            Last 30 Days
+            Last {days} Days
           </p>
           <p
             className="font-display text-[17px] font-semibold tracking-tight text-navy"

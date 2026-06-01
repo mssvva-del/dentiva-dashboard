@@ -36,8 +36,8 @@ function Metric({
   );
 }
 
-export function EngagementCard() {
-  const { data, isLoading } = useEngagement();
+export function EngagementCard({ days = 30 }: { days?: number }) {
+  const { data, isLoading } = useEngagement(days);
 
   return (
     <div
@@ -46,7 +46,7 @@ export function EngagementCard() {
     >
       <div className="mb-5">
         <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-500">
-          Last 30 Days
+          Last {days} Days
         </p>
         <p
           className="font-display text-[17px] font-semibold tracking-tight text-navy"

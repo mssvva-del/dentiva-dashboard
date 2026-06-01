@@ -90,9 +90,27 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       <NavLink href="#" label="Treatment Plans" icon={ClipboardList} comingSoon />
 
       <GroupLabel>Clinical</GroupLabel>
-      <NavLink href="#" label="X-Ray AI" icon={ScanLine} comingSoon />
-      <NavLink href="#" label="Implant Planner" icon={Boxes} comingSoon />
-      <NavLink href="#" label="Marketplace" icon={Store} comingSoon />
+      <NavLink
+        href="/coming-soon/xray-ai"
+        label="X-Ray AI"
+        icon={ScanLine}
+        comingSoon
+        onNavigate={onNavigate}
+      />
+      <NavLink
+        href="/coming-soon/implant-planner"
+        label="Implant Planner"
+        icon={Boxes}
+        comingSoon
+        onNavigate={onNavigate}
+      />
+      <NavLink
+        href="/coming-soon/marketplace"
+        label="Marketplace"
+        icon={Store}
+        comingSoon
+        onNavigate={onNavigate}
+      />
 
       <GroupLabel>Practice</GroupLabel>
       <NavLink

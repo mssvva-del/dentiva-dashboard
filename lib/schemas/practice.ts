@@ -24,6 +24,7 @@ export const PracticeSchema = z.object({
   name: z.string(),
   timezone: z.string(),
   phone_number: z.string().nullable().optional(),
+  transfer_phone_number: z.string().nullable().optional(),
   pms_system: z.string().nullable().optional(),
   pms_connected: z.boolean(),
   languages_enabled: z.array(z.string()),

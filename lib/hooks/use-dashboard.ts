@@ -93,21 +93,21 @@ export function useDashboardROI() {
   });
 }
 
-export function useAppointmentActivity() {
+export function useAppointmentActivity(days = 30) {
   const getToken = useApiToken();
   return useQuery({
-    queryKey: ["dashboard", "activity"],
-    queryFn: async () => dashboardApi.activity(await getToken()),
+    queryKey: ["dashboard", "activity", days],
+    queryFn: async () => dashboardApi.activity(days, await getToken()),
     refetchInterval: 10 * 60 * 1000,
     staleTime: 9 * 60 * 1000,
   });
 }
 
-export function useEngagement() {
+export function useEngagement(days = 30) {
   const getToken = useApiToken();
   return useQuery({
-    queryKey: ["dashboard", "engagement"],
-    queryFn: async () => dashboardApi.engagement(await getToken()),
+    queryKey: ["dashboard", "engagement", days],
+    queryFn: async () => dashboardApi.engagement(days, await getToken()),
     refetchInterval: 10 * 60 * 1000,
     staleTime: 9 * 60 * 1000,
   });
