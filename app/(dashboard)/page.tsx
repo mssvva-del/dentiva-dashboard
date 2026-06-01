@@ -14,6 +14,7 @@ import { useDashboardToday } from "@/lib/hooks/use-dashboard";
 import { ROICard } from "@/components/features/roi-card";
 import { RecallWidget } from "@/components/features/recall-widget";
 import { RecentCallsPanel } from "@/components/features/recent-calls-panel";
+import { TalkToReceptionist } from "@/components/features/talk-to-receptionist";
 
 function timeGreeting(d: Date): string {
   const h = d.getHours();
@@ -40,6 +41,11 @@ export default function DashboardHomePage() {
       <ActiveCallBanner />
       <DailyBriefingCard />
       <PageHeader breadcrumb="Dashboard / Today" title={greeting} subtitle={today} />
+
+      {/* Live voice demo — click to talk to the AI receptionist */}
+      <div className="mb-4">
+        <TalkToReceptionist />
+      </div>
 
       {isLoading ? (
         <LoadingState />

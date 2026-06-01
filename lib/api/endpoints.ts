@@ -297,3 +297,25 @@ export const activeCallsApi = {
       token,
     }),
 };
+
+// ── Voice demo (Retell web call) ──────────────────────────────────────────
+export interface WebCallToken {
+  access_token: string;
+  call_id?: string | null;
+  agent_id?: string | null;
+}
+
+const WebCallTokenSchema = z.object({
+  access_token: z.string(),
+  call_id: z.string().nullable().optional(),
+  agent_id: z.string().nullable().optional(),
+});
+
+export const voiceApi = {
+  webCall: (token?: string | null) =>
+    apiClient<WebCallToken>("/api/voice/web-call", {
+      schema: WebCallTokenSchema,
+      method: "POST",
+      token,
+    }),
+};
