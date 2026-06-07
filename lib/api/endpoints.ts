@@ -33,6 +33,21 @@ import {
   type Plan,
 } from "@/lib/schemas/billing";
 import {
+  ClinicsResponseSchema,
+  ClinicDetailSchema,
+  RevenueSchema,
+  StaffResponseSchema,
+  SystemHealthSchema,
+  FlagsResponseSchema,
+  FlagRowSchema,
+  AuditResponseSchema,
+  ImpersonateResponseSchema,
+  type ClinicRow,
+  type ClinicDetail,
+  type Revenue,
+  type SubscriptionRow,
+} from "@/lib/schemas/admin";
+import {
   OnboardingStateSchema,
   type OnboardingState,
   type ClinicStepInput,
@@ -430,6 +445,47 @@ export const teamApi = {
       method: "DELETE",
       token,
     }),
+};
+
+// Dentiva admin API (Platform Iter 1, Phase E). Internal-only, role-gated +
+// audited server-side. Imported lazily where needed.
+import { SubscriptionRowSchema } from "@/lib/schemas/admin";
+
+export const adminApi = {
+  clinics: (token?: string | null) =>
+    apiClient<ClinicRow[]>("/api/admin/clinics", { schema: ClinicsResponseSchema, token }),
+  clinic: (id: string, token?: string | null) =>
+    apiClient<ClinicDetail>(`/api/admin/clinics/${id}`, { schema: ClinicDetailSchema, token }),
+  impersonate: (id: string, token?: string | null) =>
+    apiClient(`/api/admin/clinics/${id}/impersonate`, {
+      schema: ImpersonateResponseSchema, method: "POST", token,
+    }),
+  overrideSubscription: (
+    id: string,
+    data: Record<string, unknown>,
+    token?: string | null,
+  ) =>
+    apiClient<SubscriptionRow>(`/api/admin/clinics/${id}/subscription`, {
+      schema: SubscriptionRowSchema, method: "PATCH", body: data, token,
+    }),
+  subscriptions: (token?: string | null) =>
+    apiClient<SubscriptionRow[]>("/api/admin/billing/subscriptions", {
+      schema: z.array(SubscriptionRowSchema), token,
+    }),
+  revenue: (token?: string | null) =>
+    apiClient<Revenue>("/api/admin/revenue", { schema: RevenueSchema, token }),
+  staff: (token?: string | null) =>
+    apiClient("/api/admin/staff", { schema: StaffResponseSchema, token }),
+  systemHealth: (token?: string | null) =>
+    apiClient("/api/admin/system-health", { schema: SystemHealthSchema, token }),
+  flags: (token?: string | null) =>
+    apiClient("/api/admin/feature-flags", { schema: FlagsResponseSchema, token }),
+  upsertFlag: (data: Record<string, unknown>, token?: string | null) =>
+    apiClient("/api/admin/feature-flags", {
+      schema: FlagRowSchema, method: "PUT", body: data, token,
+    }),
+  auditLogs: (token?: string | null) =>
+    apiClient("/api/admin/audit-logs", { schema: AuditResponseSchema, token }),
 };
 
 // Billing (Platform Iter 1, Phase D). summary/plans gated VIEW_BILLING;
