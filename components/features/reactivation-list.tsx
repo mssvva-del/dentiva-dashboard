@@ -5,6 +5,8 @@ import { RotateCcw, PhoneOutgoing, MessageSquare } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { LoadingState, ErrorState, EmptyState } from "@/components/features/page-states";
 import { usePatientRecall, useSendRecallSms } from "@/lib/hooks/use-patients";
+import { Can } from "@/components/auth/can";
+import { PERM } from "@/lib/schemas/me";
 import { formatDate } from "@/lib/utils/format";
 import type { RecallPatient } from "@/lib/schemas/patients";
 
@@ -56,17 +58,21 @@ function Row({ patient }: { patient: RecallPatient }) {
       >
         {t.label}
       </span>
-      <button
-        type="button"
-        disabled={sendRecall.isPending}
-        onClick={() => sendRecall.mutate(patient.patient_id)}
-        title="Text this patient a recall / reactivation message"
-        className="hidden items-center gap-1.5 rounded-[8px] px-2.5 py-1.5 text-[12px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50 md:inline-flex"
-        style={{ background: "linear-gradient(135deg, #00897B 0%, #4DB6AC 100%)" }}
-      >
-        <MessageSquare className="h-3.5 w-3.5" aria-hidden />
-        {sendRecall.isPending ? "Sending…" : "Send text"}
-      </button>
+      {/* Texting a lapsed patient needs SEND_SMS (staff+). Viewers see the
+          recall list but can't message — button hidden. Backend re-enforces. */}
+      <Can permission={PERM.SEND_SMS}>
+        <button
+          type="button"
+          disabled={sendRecall.isPending}
+          onClick={() => sendRecall.mutate(patient.patient_id)}
+          title="Text this patient a recall / reactivation message"
+          className="hidden items-center gap-1.5 rounded-[8px] px-2.5 py-1.5 text-[12px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50 md:inline-flex"
+          style={{ background: "linear-gradient(135deg, #00897B 0%, #4DB6AC 100%)" }}
+        >
+          <MessageSquare className="h-3.5 w-3.5" aria-hidden />
+          {sendRecall.isPending ? "Sending…" : "Send text"}
+        </button>
+      </Can>
       <button
         type="button"
         disabled

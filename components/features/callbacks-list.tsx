@@ -13,6 +13,8 @@ import {
   useCallbacksList,
   useUpdateCallbackStatus,
 } from "@/lib/hooks/use-callbacks";
+import { Can } from "@/components/auth/can";
+import { PERM } from "@/lib/schemas/me";
 import { formatRelativeTime } from "@/lib/utils/format";
 import { cn } from "@/lib/utils";
 import type {
@@ -96,43 +98,47 @@ function CallbackRow({ cb }: { cb: CallbackSummary }) {
 
       <StatusChip status={cb.status} />
 
-      {isPending ? (
-        <div className="flex shrink-0 items-center gap-1.5">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1 text-teal"
-            disabled={update.isPending}
-            onClick={() => update.mutate({ id: cb.id, status: "handled" })}
-            aria-label="Mark callback handled"
-          >
-            <Check className="h-3.5 w-3.5" aria-hidden />
-            Handled
-          </Button>
+      {/* Working a callback (handle/dismiss/reopen) needs MANAGE_CALLS (staff+).
+          Viewers see the list read-only — buttons hidden. Backend re-enforces. */}
+      <Can permission={PERM.MANAGE_CALLS}>
+        {isPending ? (
+          <div className="flex shrink-0 items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1 text-teal"
+              disabled={update.isPending}
+              onClick={() => update.mutate({ id: cb.id, status: "handled" })}
+              aria-label="Mark callback handled"
+            >
+              <Check className="h-3.5 w-3.5" aria-hidden />
+              Handled
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 text-muted-foreground"
+              disabled={update.isPending}
+              onClick={() => update.mutate({ id: cb.id, status: "dismissed" })}
+              aria-label="Dismiss callback"
+            >
+              <X className="h-3.5 w-3.5" aria-hidden />
+              Dismiss
+            </Button>
+          </div>
+        ) : (
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 gap-1 text-muted-foreground"
+            className="h-8 text-muted-foreground"
             disabled={update.isPending}
-            onClick={() => update.mutate({ id: cb.id, status: "dismissed" })}
-            aria-label="Dismiss callback"
+            onClick={() => update.mutate({ id: cb.id, status: "pending" })}
+            aria-label="Reopen callback"
           >
-            <X className="h-3.5 w-3.5" aria-hidden />
-            Dismiss
+            Reopen
           </Button>
-        </div>
-      ) : (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 text-muted-foreground"
-          disabled={update.isPending}
-          onClick={() => update.mutate({ id: cb.id, status: "pending" })}
-          aria-label="Reopen callback"
-        >
-          Reopen
-        </Button>
-      )}
+        )}
+      </Can>
     </div>
   );
 }

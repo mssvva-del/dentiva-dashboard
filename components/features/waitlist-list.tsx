@@ -13,6 +13,8 @@ import {
   useWaitlistList,
   useUpdateWaitlistStatus,
 } from "@/lib/hooks/use-waitlist";
+import { Can } from "@/components/auth/can";
+import { PERM } from "@/lib/schemas/me";
 import { formatRelativeTime } from "@/lib/utils/format";
 import { cn } from "@/lib/utils";
 import type { WaitlistStatus, WaitlistSummary } from "@/lib/schemas/waitlist";
@@ -84,56 +86,60 @@ function WaitlistRow({ e }: { e: WaitlistSummary }) {
 
       <StatusChip status={e.status} />
 
-      {isWaiting || isNotified ? (
-        <div className="flex shrink-0 items-center gap-1.5">
-          {isWaiting && (
+      {/* Working the waitlist (notify/book/remove/reopen) is a scheduling action
+          → MANAGE_APPOINTMENTS (staff+). Viewers see it read-only. Backend gates too. */}
+      <Can permission={PERM.MANAGE_APPOINTMENTS}>
+        {isWaiting || isNotified ? (
+          <div className="flex shrink-0 items-center gap-1.5">
+            {isWaiting && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1 text-teal"
+                disabled={update.isPending}
+                onClick={() => update.mutate({ id: e.id, status: "notified" })}
+                aria-label="Mark waitlist entry notified"
+              >
+                <BellRing className="h-3.5 w-3.5" aria-hidden />
+                Notified
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
               className="h-8 gap-1 text-teal"
               disabled={update.isPending}
-              onClick={() => update.mutate({ id: e.id, status: "notified" })}
-              aria-label="Mark waitlist entry notified"
+              onClick={() => update.mutate({ id: e.id, status: "booked" })}
+              aria-label="Mark waitlist entry booked"
             >
-              <BellRing className="h-3.5 w-3.5" aria-hidden />
-              Notified
+              <Check className="h-3.5 w-3.5" aria-hidden />
+              Booked
             </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1 text-teal"
-            disabled={update.isPending}
-            onClick={() => update.mutate({ id: e.id, status: "booked" })}
-            aria-label="Mark waitlist entry booked"
-          >
-            <Check className="h-3.5 w-3.5" aria-hidden />
-            Booked
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 text-muted-foreground"
+              disabled={update.isPending}
+              onClick={() => update.mutate({ id: e.id, status: "removed" })}
+              aria-label="Remove from waitlist"
+            >
+              <X className="h-3.5 w-3.5" aria-hidden />
+              Remove
+            </Button>
+          </div>
+        ) : (
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 gap-1 text-muted-foreground"
+            className="h-8 text-muted-foreground"
             disabled={update.isPending}
-            onClick={() => update.mutate({ id: e.id, status: "removed" })}
-            aria-label="Remove from waitlist"
+            onClick={() => update.mutate({ id: e.id, status: "waiting" })}
+            aria-label="Put back on waitlist"
           >
-            <X className="h-3.5 w-3.5" aria-hidden />
-            Remove
+            Reopen
           </Button>
-        </div>
-      ) : (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 text-muted-foreground"
-          disabled={update.isPending}
-          onClick={() => update.mutate({ id: e.id, status: "waiting" })}
-          aria-label="Put back on waitlist"
-        >
-          Reopen
-        </Button>
-      )}
+        )}
+      </Can>
     </div>
   );
 }

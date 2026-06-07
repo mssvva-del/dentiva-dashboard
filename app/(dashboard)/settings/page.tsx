@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
+import { Can } from "@/components/auth/can";
+import { PERM } from "@/lib/schemas/me";
 import { usePracticeMe, usePatchPracticeMe } from "@/lib/hooks/use-dashboard";
 import { COPY } from "@/lib/constants";
 import { formatPhone } from "@/lib/utils/format";
@@ -161,16 +163,19 @@ export default function SettingsPage() {
                     Active Practice
                   </span>
                 </div>
-                {/* Edit button — only shown when not editing */}
+                {/* Edit button — only when not editing AND the user may manage
+                    settings (manager+). Viewers/staff get a read-only view. */}
                 {!isEditing && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-shrink-0"
-                    onClick={enterEditMode}
-                  >
-                    Edit
-                  </Button>
+                  <Can permission={PERM.MANAGE_SETTINGS}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-shrink-0"
+                      onClick={enterEditMode}
+                    >
+                      Edit
+                    </Button>
+                  </Can>
                 )}
               </div>
             </CardHeader>
@@ -310,14 +315,16 @@ export default function SettingsPage() {
                   Business Hours
                 </CardTitle>
                 {!isEditingHours && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-shrink-0"
-                    onClick={enterEditHours}
-                  >
-                    Edit
-                  </Button>
+                  <Can permission={PERM.MANAGE_SETTINGS}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-shrink-0"
+                      onClick={enterEditHours}
+                    >
+                      Edit
+                    </Button>
+                  </Can>
                 )}
               </div>
             </CardHeader>
