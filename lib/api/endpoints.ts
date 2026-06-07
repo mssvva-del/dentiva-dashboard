@@ -16,6 +16,7 @@ import {
   GetPracticeMeResponseSchema,
   type Practice,
 } from "@/lib/schemas/practice";
+import { MeResponseSchema, type MeResponse } from "@/lib/schemas/me";
 import {
   DashboardTodaySchema,
   type DashboardToday,
@@ -316,6 +317,15 @@ export const voiceApi = {
     apiClient<WebCallToken>("/api/voice/web-call", {
       schema: WebCallTokenSchema,
       method: "POST",
+      token,
+    }),
+};
+
+// Identity + resolved permissions for the signed-in user (RBAC, Platform Iter 1).
+export const meApi = {
+  get: (token?: string | null) =>
+    apiClient<MeResponse>("/api/me", {
+      schema: MeResponseSchema,
       token,
     }),
 };

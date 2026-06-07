@@ -14,6 +14,7 @@ import {
   Store,
   BarChart3,
   Clock,
+  ShieldCheck,
 } from "lucide-react";
 import { NavLink } from "./nav-link";
 import { NAV } from "@/lib/constants";
@@ -21,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { usePracticeMe, useDashboardToday } from "@/lib/hooks/use-dashboard";
 import { useCallbacksList } from "@/lib/hooks/use-callbacks";
 import { useWaitlistList } from "@/lib/hooks/use-waitlist";
+import { useIsInternal } from "@/lib/hooks/use-me";
 
 function GroupLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -40,6 +42,10 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   // Waitlist badge surfaces how many callers are still waiting for a slot.
   const { data: waitlist } = useWaitlistList({ status: "waiting" });
   const waitingCount = waitlist?.waiting ?? 0;
+  // RBAC: the Admin section is only shown to Dentiva-internal staff. The /admin
+  // route itself is independently guarded (RequireInternal + backend), so this
+  // is purely so clinic users never see a link they can't use.
+  const { isInternal } = useIsInternal();
 
   return (
     <nav aria-label="Primary" className="mt-2 flex flex-col gap-0.5 px-3">
@@ -119,6 +125,19 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         icon={Settings}
         onNavigate={onNavigate}
       />
+
+      {/* Dentiva-internal only — clinic users never see this. */}
+      {isInternal && (
+        <>
+          <GroupLabel>Dentiva</GroupLabel>
+          <NavLink
+            href="/admin"
+            label="Admin Console"
+            icon={ShieldCheck}
+            onNavigate={onNavigate}
+          />
+        </>
+      )}
     </nav>
   );
 }
