@@ -18,6 +18,15 @@ import {
 } from "@/lib/schemas/practice";
 import { MeResponseSchema, type MeResponse } from "@/lib/schemas/me";
 import {
+  OnboardingStateSchema,
+  type OnboardingState,
+  type ClinicStepInput,
+  type HoursStepInput,
+  type PhoneStepInput,
+  type PmsStepInput,
+  type AgentStepInput,
+} from "@/lib/schemas/onboarding";
+import {
   DashboardTodaySchema,
   type DashboardToday,
   DailyBriefingResponseSchema,
@@ -326,6 +335,41 @@ export const meApi = {
   get: (token?: string | null) =>
     apiClient<MeResponse>("/api/me", {
       schema: MeResponseSchema,
+      token,
+    }),
+};
+
+// Onboarding wizard (Platform Iter 1, Phase B2). Each step PUTs its slice and
+// returns the updated state; the backend advances onboarding_step.
+function onboardingPut<B>(path: string, body: B, token?: string | null) {
+  return apiClient<OnboardingState>(path, {
+    schema: OnboardingStateSchema,
+    method: "PUT",
+    body,
+    token,
+  });
+}
+
+export const onboardingApi = {
+  state: (token?: string | null) =>
+    apiClient<OnboardingState>("/api/onboarding/state", {
+      schema: OnboardingStateSchema,
+      token,
+    }),
+  clinic: (data: ClinicStepInput, token?: string | null) =>
+    onboardingPut("/api/onboarding/clinic", data, token),
+  hours: (data: HoursStepInput, token?: string | null) =>
+    onboardingPut("/api/onboarding/hours", data, token),
+  phone: (data: PhoneStepInput, token?: string | null) =>
+    onboardingPut("/api/onboarding/phone", data, token),
+  pms: (data: PmsStepInput, token?: string | null) =>
+    onboardingPut("/api/onboarding/pms", data, token),
+  agent: (data: AgentStepInput, token?: string | null) =>
+    onboardingPut("/api/onboarding/agent", data, token),
+  complete: (token?: string | null) =>
+    apiClient<OnboardingState>("/api/onboarding/complete", {
+      schema: OnboardingStateSchema,
+      method: "POST",
       token,
     }),
 };
