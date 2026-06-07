@@ -18,6 +18,14 @@ import {
 } from "@/lib/schemas/practice";
 import { MeResponseSchema, type MeResponse } from "@/lib/schemas/me";
 import {
+  MembersResponseSchema,
+  InvitationsResponseSchema,
+  InvitationSchema,
+  type Member,
+  type Invitation,
+  type AssignableRole,
+} from "@/lib/schemas/team";
+import {
   OnboardingStateSchema,
   type OnboardingState,
   type ClinicStepInput,
@@ -370,6 +378,49 @@ export const onboardingApi = {
     apiClient<OnboardingState>("/api/onboarding/complete", {
       schema: OnboardingStateSchema,
       method: "POST",
+      token,
+    }),
+};
+
+// Team management (Platform Iter 1, Phase B3). All gated server-side by MANAGE_TEAM.
+export const teamApi = {
+  members: (token?: string | null) =>
+    apiClient<Member[]>("/api/team/members", {
+      schema: MembersResponseSchema,
+      token,
+    }),
+  invitations: (token?: string | null) =>
+    apiClient<Invitation[]>("/api/team/invitations", {
+      schema: InvitationsResponseSchema,
+      token,
+    }),
+  invite: (data: { email: string; role: AssignableRole }, token?: string | null) =>
+    apiClient<Invitation>("/api/team/invitations", {
+      schema: InvitationSchema,
+      method: "POST",
+      body: data,
+      token,
+    }),
+  revokeInvite: (id: string, token?: string | null) =>
+    apiClient<Invitation>(`/api/team/invitations/${id}/revoke`, {
+      schema: InvitationSchema,
+      method: "POST",
+      token,
+    }),
+  setRole: (userId: string, role: AssignableRole, token?: string | null) =>
+    apiClient<Member>(`/api/team/members/${userId}`, {
+      schema: z.object({
+        id: z.string(), email: z.string(), role: z.string(),
+        status: z.string(), is_self: z.boolean(),
+      }),
+      method: "PATCH",
+      body: { role },
+      token,
+    }),
+  remove: (userId: string, token?: string | null) =>
+    apiClient<{ status: string; removed: string }>(`/api/team/members/${userId}`, {
+      schema: z.object({ status: z.string(), removed: z.string() }),
+      method: "DELETE",
       token,
     }),
 };
