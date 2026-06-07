@@ -26,6 +26,13 @@ import {
   type AssignableRole,
 } from "@/lib/schemas/team";
 import {
+  BillingSummarySchema,
+  PlansResponseSchema,
+  CheckoutResponseSchema,
+  type BillingSummary,
+  type Plan,
+} from "@/lib/schemas/billing";
+import {
   OnboardingStateSchema,
   type OnboardingState,
   type ClinicStepInput,
@@ -421,6 +428,31 @@ export const teamApi = {
     apiClient<{ status: string; removed: string }>(`/api/team/members/${userId}`, {
       schema: z.object({ status: z.string(), removed: z.string() }),
       method: "DELETE",
+      token,
+    }),
+};
+
+// Billing (Platform Iter 1, Phase D). summary/plans gated VIEW_BILLING;
+// checkout gated MANAGE_BILLING (owner) — all re-enforced server-side.
+export const billingApi = {
+  summary: (token?: string | null) =>
+    apiClient<BillingSummary>("/api/billing/summary", {
+      schema: BillingSummarySchema,
+      token,
+    }),
+  plans: (token?: string | null) =>
+    apiClient<Plan[]>("/api/billing/plans", {
+      schema: PlansResponseSchema,
+      token,
+    }),
+  checkout: (
+    data: { plan: string; billing_cycle: "monthly" | "annual" },
+    token?: string | null,
+  ) =>
+    apiClient<{ url: string }>("/api/billing/checkout", {
+      schema: CheckoutResponseSchema,
+      method: "POST",
+      body: data,
       token,
     }),
 };

@@ -16,6 +16,7 @@ import {
   Clock,
   ShieldCheck,
   UserPlus,
+  CreditCard,
 } from "lucide-react";
 import { NavLink } from "./nav-link";
 import { NAV } from "@/lib/constants";
@@ -50,6 +51,8 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { isInternal } = useIsInternal();
   // Team management is owner/manager only (MANAGE_TEAM); the page + API re-check.
   const { allowed: canManageTeam } = useCan(PERM.MANAGE_TEAM);
+  // Billing is visible to manager+ (VIEW_BILLING); changing the plan is owner-only.
+  const { allowed: canViewBilling } = useCan(PERM.VIEW_BILLING);
 
   return (
     <nav aria-label="Primary" className="mt-2 flex flex-col gap-0.5 px-3">
@@ -134,6 +137,14 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           href="/settings/team"
           label="Team"
           icon={UserPlus}
+          onNavigate={onNavigate}
+        />
+      )}
+      {canViewBilling && (
+        <NavLink
+          href="/settings/billing"
+          label="Billing"
+          icon={CreditCard}
           onNavigate={onNavigate}
         />
       )}
