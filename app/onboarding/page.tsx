@@ -261,6 +261,7 @@ function HoursStep({ state, saving, onSave }: StepProps) {
 function PhoneStep({ state, saving, onSave }: StepProps) {
   const [mode, setMode] = useState<"forward" | "skip">(state.phone_number ? "forward" : "skip");
   const [number, setNumber] = useState(state.phone_number ?? "");
+  const [transfer, setTransfer] = useState(state.transfer_phone_number ?? "");
 
   return (
     <div>
@@ -284,10 +285,22 @@ function PhoneStep({ state, saving, onSave }: StepProps) {
             <p className="text-xs text-muted-foreground">Use web calls; set up phone later in Settings.</p>
           </div>
         </label>
+        <div className="rounded-lg border border-gray-200 p-3">
+          <p className="text-sm font-medium">Emergency transfer number</p>
+          <p className="text-xs text-muted-foreground">
+            Where the agent connects a caller to a live person (urgent cases).
+          </p>
+          <Input className="mt-2" placeholder="+13105550000" value={transfer}
+            onChange={(e) => setTransfer(e.target.value)} />
+        </div>
       </div>
       <Button className="mt-6" disabled={saving || (mode === "forward" && !number.trim())}
         onClick={() => onSave((t) =>
-          onboardingApi.phone({ mode, forward_number: mode === "forward" ? number.trim() : null }, t))}>
+          onboardingApi.phone({
+            mode,
+            forward_number: mode === "forward" ? number.trim() : null,
+            transfer_number: transfer.trim() || null,
+          }, t))}>
         Continue
       </Button>
     </div>

@@ -20,6 +20,7 @@ export const OnboardingStateSchema = z.object({
   timezone: z.string(),
   business_hours: z.record(z.string(), DayHoursSchema),
   phone_number: z.string().nullable(),
+  transfer_phone_number: z.string().nullable().optional(),
   pms_system: z.string(),
   languages_enabled: z.array(z.string()),
   agent_settings: z
@@ -45,6 +46,7 @@ export interface HoursStepInput {
 export interface PhoneStepInput {
   mode: "forward" | "skip";
   forward_number?: string | null;
+  transfer_number?: string | null;
 }
 export interface PmsStepInput {
   pms_system: "open_dental" | "nexhealth" | "none";
