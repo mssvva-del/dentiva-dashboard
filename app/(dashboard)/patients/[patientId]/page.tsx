@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { use } from "react";
 import Link from "next/link";
 import { ArrowLeft, Phone, CalendarCheck, Clock } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -46,9 +45,9 @@ function Stat({ label, value, accent }: { label: string; value: React.ReactNode;
 export default function PatientDetailPage({
   params,
 }: {
-  params: Promise<{ patientId: string }>;
+  params: { patientId: string };
 }) {
-  const { patientId } = use(params);
+  const { patientId } = params;
   const { data, isLoading, isError, refetch } = usePatientDetail(patientId);
 
   return (

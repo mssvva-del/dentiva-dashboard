@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { use } from "react";
 import Link from "next/link";
 import { ArrowLeft, PhoneIncoming, PhoneOutgoing } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -238,9 +237,9 @@ function RecordingSection({ url }: { url: string | null | undefined }) {
 export default function CallDetailPage({
   params,
 }: {
-  params: Promise<{ callId: string }>;
+  params: { callId: string };
 }) {
-  const { callId } = use(params);
+  const { callId } = params;
   const { data, isLoading, isError, refetch } = useCallDetail(callId);
 
   return (

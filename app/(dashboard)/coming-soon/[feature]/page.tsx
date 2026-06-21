@@ -1,6 +1,5 @@
 "use client";
 
-import { use } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ScanLine, Boxes, Store, ArrowLeft, Sparkles } from "lucide-react";
@@ -62,9 +61,9 @@ const FEATURES: Record<string, Feature> = {
 export default function ComingSoonPage({
   params,
 }: {
-  params: Promise<{ feature: string }>;
+  params: { feature: string };
 }) {
-  const { feature } = use(params);
+  const { feature } = params;
   const data = FEATURES[feature];
   if (!data) notFound();
   const Icon = data.icon;
