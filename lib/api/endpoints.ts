@@ -17,6 +17,11 @@ import {
   type Practice,
 } from "@/lib/schemas/practice";
 import {
+  KnowledgeBaseResponseSchema,
+  type KnowledgeBase,
+  type KnowledgeBaseResponse,
+} from "@/lib/schemas/knowledge-base";
+import {
   DashboardTodaySchema,
   type DashboardToday,
   DailyBriefingResponseSchema,
@@ -134,6 +139,21 @@ export const practiceApi = {
     apiClient<Practice>("/api/practice/me", {
       schema: GetPracticeMeResponseSchema,
       method: "PATCH",
+      body: data,
+      token,
+    }),
+};
+
+export const knowledgeBaseApi = {
+  get: (token?: string | null) =>
+    apiClient<KnowledgeBaseResponse>("/api/knowledge-base", {
+      schema: KnowledgeBaseResponseSchema,
+      token,
+    }),
+  put: (data: KnowledgeBase, token?: string | null) =>
+    apiClient<KnowledgeBaseResponse>("/api/knowledge-base", {
+      schema: KnowledgeBaseResponseSchema,
+      method: "PUT",
       body: data,
       token,
     }),
