@@ -12,6 +12,7 @@ export const NAV = {
   dashboard: "Dashboard",
   calls: "Calls",
   bookings: "Bookings",
+  knowledgeBase: "Knowledge Base",
   settings: "Settings",
 } as const;
 

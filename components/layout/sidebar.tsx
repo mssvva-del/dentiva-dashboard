@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   UserPlus,
   CreditCard,
+  BookOpen,
 } from "lucide-react";
 import { NavLink } from "./nav-link";
 import { NAV } from "@/lib/constants";
@@ -126,6 +127,12 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       />
 
       <GroupLabel>Practice</GroupLabel>
+      <NavLink
+        href="/knowledge-base"
+        label={NAV.knowledgeBase}
+        icon={BookOpen}
+        onNavigate={onNavigate}
+      />
       <NavLink
         href="/settings"
         label={NAV.settings}
