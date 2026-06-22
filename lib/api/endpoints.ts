@@ -16,6 +16,46 @@ import {
   GetPracticeMeResponseSchema,
   type Practice,
 } from "@/lib/schemas/practice";
+import { MeResponseSchema, type MeResponse } from "@/lib/schemas/me";
+import {
+  MembersResponseSchema,
+  InvitationsResponseSchema,
+  InvitationSchema,
+  type Member,
+  type Invitation,
+  type AssignableRole,
+} from "@/lib/schemas/team";
+import {
+  BillingSummarySchema,
+  PlansResponseSchema,
+  CheckoutResponseSchema,
+  type BillingSummary,
+  type Plan,
+} from "@/lib/schemas/billing";
+import {
+  ClinicsResponseSchema,
+  ClinicDetailSchema,
+  RevenueSchema,
+  StaffResponseSchema,
+  SystemHealthSchema,
+  FlagsResponseSchema,
+  FlagRowSchema,
+  AuditResponseSchema,
+  ImpersonateResponseSchema,
+  type ClinicRow,
+  type ClinicDetail,
+  type Revenue,
+  type SubscriptionRow,
+} from "@/lib/schemas/admin";
+import {
+  OnboardingStateSchema,
+  type OnboardingState,
+  type ClinicStepInput,
+  type HoursStepInput,
+  type PhoneStepInput,
+  type PmsStepInput,
+  type AgentStepInput,
+} from "@/lib/schemas/onboarding";
 import {
   DashboardTodaySchema,
   type DashboardToday,
@@ -316,6 +356,159 @@ export const voiceApi = {
     apiClient<WebCallToken>("/api/voice/web-call", {
       schema: WebCallTokenSchema,
       method: "POST",
+      token,
+    }),
+};
+
+// Identity + resolved permissions for the signed-in user (RBAC, Platform Iter 1).
+export const meApi = {
+  get: (token?: string | null) =>
+    apiClient<MeResponse>("/api/me", {
+      schema: MeResponseSchema,
+      token,
+    }),
+};
+
+// Onboarding wizard (Platform Iter 1, Phase B2). Each step PUTs its slice and
+// returns the updated state; the backend advances onboarding_step.
+function onboardingPut<B>(path: string, body: B, token?: string | null) {
+  return apiClient<OnboardingState>(path, {
+    schema: OnboardingStateSchema,
+    method: "PUT",
+    body,
+    token,
+  });
+}
+
+export const onboardingApi = {
+  state: (token?: string | null) =>
+    apiClient<OnboardingState>("/api/onboarding/state", {
+      schema: OnboardingStateSchema,
+      token,
+    }),
+  clinic: (data: ClinicStepInput, token?: string | null) =>
+    onboardingPut("/api/onboarding/clinic", data, token),
+  hours: (data: HoursStepInput, token?: string | null) =>
+    onboardingPut("/api/onboarding/hours", data, token),
+  phone: (data: PhoneStepInput, token?: string | null) =>
+    onboardingPut("/api/onboarding/phone", data, token),
+  pms: (data: PmsStepInput, token?: string | null) =>
+    onboardingPut("/api/onboarding/pms", data, token),
+  agent: (data: AgentStepInput, token?: string | null) =>
+    onboardingPut("/api/onboarding/agent", data, token),
+  complete: (token?: string | null) =>
+    apiClient<OnboardingState>("/api/onboarding/complete", {
+      schema: OnboardingStateSchema,
+      method: "POST",
+      token,
+    }),
+};
+
+// Team management (Platform Iter 1, Phase B3). All gated server-side by MANAGE_TEAM.
+export const teamApi = {
+  members: (token?: string | null) =>
+    apiClient<Member[]>("/api/team/members", {
+      schema: MembersResponseSchema,
+      token,
+    }),
+  invitations: (token?: string | null) =>
+    apiClient<Invitation[]>("/api/team/invitations", {
+      schema: InvitationsResponseSchema,
+      token,
+    }),
+  invite: (data: { email: string; role: AssignableRole }, token?: string | null) =>
+    apiClient<Invitation>("/api/team/invitations", {
+      schema: InvitationSchema,
+      method: "POST",
+      body: data,
+      token,
+    }),
+  revokeInvite: (id: string, token?: string | null) =>
+    apiClient<Invitation>(`/api/team/invitations/${id}/revoke`, {
+      schema: InvitationSchema,
+      method: "POST",
+      token,
+    }),
+  setRole: (userId: string, role: AssignableRole, token?: string | null) =>
+    apiClient<Member>(`/api/team/members/${userId}`, {
+      schema: z.object({
+        id: z.string(), email: z.string(), role: z.string(),
+        status: z.string(), is_self: z.boolean(),
+      }),
+      method: "PATCH",
+      body: { role },
+      token,
+    }),
+  remove: (userId: string, token?: string | null) =>
+    apiClient<{ status: string; removed: string }>(`/api/team/members/${userId}`, {
+      schema: z.object({ status: z.string(), removed: z.string() }),
+      method: "DELETE",
+      token,
+    }),
+};
+
+// Dentiva admin API (Platform Iter 1, Phase E). Internal-only, role-gated +
+// audited server-side. Imported lazily where needed.
+import { SubscriptionRowSchema } from "@/lib/schemas/admin";
+
+export const adminApi = {
+  clinics: (token?: string | null) =>
+    apiClient<ClinicRow[]>("/api/admin/clinics", { schema: ClinicsResponseSchema, token }),
+  clinic: (id: string, token?: string | null) =>
+    apiClient<ClinicDetail>(`/api/admin/clinics/${id}`, { schema: ClinicDetailSchema, token }),
+  impersonate: (id: string, token?: string | null) =>
+    apiClient(`/api/admin/clinics/${id}/impersonate`, {
+      schema: ImpersonateResponseSchema, method: "POST", token,
+    }),
+  overrideSubscription: (
+    id: string,
+    data: Record<string, unknown>,
+    token?: string | null,
+  ) =>
+    apiClient<SubscriptionRow>(`/api/admin/clinics/${id}/subscription`, {
+      schema: SubscriptionRowSchema, method: "PATCH", body: data, token,
+    }),
+  subscriptions: (token?: string | null) =>
+    apiClient<SubscriptionRow[]>("/api/admin/billing/subscriptions", {
+      schema: z.array(SubscriptionRowSchema), token,
+    }),
+  revenue: (token?: string | null) =>
+    apiClient<Revenue>("/api/admin/revenue", { schema: RevenueSchema, token }),
+  staff: (token?: string | null) =>
+    apiClient("/api/admin/staff", { schema: StaffResponseSchema, token }),
+  systemHealth: (token?: string | null) =>
+    apiClient("/api/admin/system-health", { schema: SystemHealthSchema, token }),
+  flags: (token?: string | null) =>
+    apiClient("/api/admin/feature-flags", { schema: FlagsResponseSchema, token }),
+  upsertFlag: (data: Record<string, unknown>, token?: string | null) =>
+    apiClient("/api/admin/feature-flags", {
+      schema: FlagRowSchema, method: "PUT", body: data, token,
+    }),
+  auditLogs: (token?: string | null) =>
+    apiClient("/api/admin/audit-logs", { schema: AuditResponseSchema, token }),
+};
+
+// Billing (Platform Iter 1, Phase D). summary/plans gated VIEW_BILLING;
+// checkout gated MANAGE_BILLING (owner) — all re-enforced server-side.
+export const billingApi = {
+  summary: (token?: string | null) =>
+    apiClient<BillingSummary>("/api/billing/summary", {
+      schema: BillingSummarySchema,
+      token,
+    }),
+  plans: (token?: string | null) =>
+    apiClient<Plan[]>("/api/billing/plans", {
+      schema: PlansResponseSchema,
+      token,
+    }),
+  checkout: (
+    data: { plan: string; billing_cycle: "monthly" | "annual" },
+    token?: string | null,
+  ) =>
+    apiClient<{ url: string }>("/api/billing/checkout", {
+      schema: CheckoutResponseSchema,
+      method: "POST",
+      body: data,
       token,
     }),
 };

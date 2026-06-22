@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { use } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -61,9 +60,9 @@ function DetailRow({
 export default function BookingDetailPage({
   params,
 }: {
-  params: Promise<{ bookingId: string }>;
+  params: { bookingId: string };
 }) {
-  const { bookingId } = use(params);
+  const { bookingId } = params;
   const { data, isLoading, isError, refetch } = useBookingDetail(bookingId);
 
   const statusLabel = data?.status
