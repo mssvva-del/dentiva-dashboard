@@ -14,9 +14,9 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Dentiva — AI Receptionist for Dental Practices",
+  title: "Dentovox — AI Receptionist for Dental Practices",
   description:
-    "Dentiva answers every call, books and reschedules appointments, fills cancellations and follows up with patients — by phone and text, 24/7.",
+    "Dentovox answers every call, books and reschedules appointments, fills cancellations and follows up with patients — by phone and text, 24/7.",
 };
 
 const NAVY = "#0A1929";
@@ -70,7 +70,7 @@ const STEPS = [
   {
     n: "1",
     title: "A patient calls",
-    body: "Dentiva picks up instantly — no hold music, no voicemail, no missed revenue.",
+    body: "Dentovox picks up instantly — no hold music, no voicemail, no missed revenue.",
   },
   {
     n: "2",
@@ -95,7 +95,7 @@ function Logo() {
         <Phone className="h-4 w-4" />
       </span>
       <span className="font-display text-[19px] font-semibold tracking-tight text-white">
-        Dentiva
+        Dentovox
       </span>
     </span>
   );
@@ -146,7 +146,7 @@ export default function WelcomePage() {
             patient call.
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-[16px] leading-relaxed text-white/70">
-            Dentiva answers the phone 24/7, books and reschedules appointments,
+            Dentovox answers the phone 24/7, books and reschedules appointments,
             fills cancellations from the waitlist, and follows up by text — so
             your front desk can focus on the patients in the chair.
           </p>
@@ -230,7 +230,7 @@ export default function WelcomePage() {
               Everything the front desk does — automated
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-[15px] text-gray-500">
-              Not just an answering service. Dentiva runs the whole booking
+              Not just an answering service. Dentovox runs the whole booking
               lifecycle and shows you the results.
             </p>
           </div>
@@ -298,7 +298,7 @@ export default function WelcomePage() {
             >
               <Phone className="h-3 w-3" />
             </span>
-            Dentiva
+            Dentovox
           </span>
           <p className="text-[12px] text-gray-400">
             AI receptionist for dental practices · Demo environment

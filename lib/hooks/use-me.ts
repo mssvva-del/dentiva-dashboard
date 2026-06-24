@@ -52,7 +52,7 @@ export function useCan(permission: Permission): {
 }
 
 /**
- * Convenience for the two-world split. `isInternal` distinguishes Dentiva staff
+ * Convenience for the two-world split. `isInternal` distinguishes Dentovox staff
  * (admin panel) from clinic users. Used to guard the /admin route tree.
  */
 export function useIsInternal(): { isInternal: boolean; pending: boolean } {

@@ -55,7 +55,7 @@ export function RequirePermission({
 }
 
 /**
- * /admin route guard — only Dentiva-internal staff may enter the admin tree.
+ * /admin route guard — only Dentovox-internal staff may enter the admin tree.
  * Clinic users (owners included) are denied. This mirrors the backend
  * require_internal() gate; the server still enforces it on every /admin/* call.
  */
@@ -72,7 +72,7 @@ function AccessDenied() {
       <p className="text-lg font-semibold text-foreground">Access restricted</p>
       <p className="max-w-sm text-sm text-muted-foreground">
         You don&apos;t have permission to view this page. If you think this is a
-        mistake, ask your practice owner or a Dentiva administrator.
+        mistake, ask your practice owner or a Dentovox administrator.
       </p>
     </div>
   );

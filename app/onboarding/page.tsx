@@ -87,7 +87,7 @@ export default function OnboardingPage() {
       const token = await getToken();
       const final = await onboardingApi.complete(token);
       if (final.complete) {
-        showToast.success("You're live! Welcome to Dentiva.");
+        showToast.success("You're live! Welcome to Dentovox.");
         router.replace("/");
       }
     } catch {
@@ -404,7 +404,7 @@ function ReviewStep(
         <Row label="Languages" value={(state.languages_enabled ?? []).join(", ").toUpperCase()} />
       </dl>
       <div className="mt-5 rounded-lg bg-teal/5 p-3 text-xs text-muted-foreground">
-        Billing is set up separately with your Dentiva contact (pilot pricing). You
+        Billing is set up separately with your Dentovox contact (pilot pricing). You
         can go live now and we&apos;ll handle the plan.
       </div>
       <Button className="mt-6" disabled={saving} onClick={onGoLive}>

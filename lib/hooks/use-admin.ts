@@ -6,7 +6,7 @@ import { adminApi } from "@/lib/api/endpoints";
 import { showToast } from "@/lib/toast";
 
 /**
- * Dentiva admin hooks (Phase E). Every call is internal-only + role-gated +
+ * Dentovox admin hooks (Phase E). Every call is internal-only + role-gated +
  * audited server-side; these are thin wrappers. We don't cache aggressively —
  * admins expect fresh cross-tenant data.
  */

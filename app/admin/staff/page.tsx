@@ -3,7 +3,7 @@
 import { useAdminStaff } from "@/lib/hooks/use-admin";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
 
-/** Dentiva staff list (Phase E) — MANAGE_DENTIVA_STAFF. */
+/** Dentovox staff list (Phase E) — MANAGE_DENTIVA_STAFF. */
 export default function AdminStaffPage() {
   const { data, isLoading, isError, refetch } = useAdminStaff();
   if (isLoading) return <LoadingState label="Loading staff…" />;
@@ -11,7 +11,7 @@ export default function AdminStaffPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="font-display text-2xl font-semibold text-foreground">Dentiva staff</h1>
+      <h1 className="font-display text-2xl font-semibold text-foreground">Dentovox staff</h1>
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
