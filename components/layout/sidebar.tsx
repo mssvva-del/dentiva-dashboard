@@ -46,7 +46,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   // Waitlist badge surfaces how many callers are still waiting for a slot.
   const { data: waitlist } = useWaitlistList({ status: "waiting" });
   const waitingCount = waitlist?.waiting ?? 0;
-  // RBAC: the Admin section is only shown to Dentiva-internal staff. The /admin
+  // RBAC: the Admin section is only shown to Dentovox-internal staff. The /admin
   // route itself is independently guarded (RequireInternal + backend), so this
   // is purely so clinic users never see a link they can't use.
   const { isInternal } = useIsInternal();
@@ -156,10 +156,10 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         />
       )}
 
-      {/* Dentiva-internal only — clinic users never see this. */}
+      {/* Dentovox-internal only — clinic users never see this. */}
       {isInternal && (
         <>
-          <GroupLabel>Dentiva</GroupLabel>
+          <GroupLabel>Dentovox</GroupLabel>
           <NavLink
             href="/admin"
             label="Admin Console"
@@ -193,7 +193,7 @@ export function SidebarBrand() {
       {/* Name + tagline */}
       <div>
         <span className="block font-display text-xl font-semibold leading-none tracking-tight text-white">
-          Dentiva
+          Dentovox
         </span>
         <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-widest text-white/[0.40]">
           AI Receptionist

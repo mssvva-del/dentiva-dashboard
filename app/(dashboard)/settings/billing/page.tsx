@@ -6,7 +6,7 @@
  * Wrapped in RequirePermission(VIEW_BILLING) so only manager+ see it; the
  * "Choose / change plan" actions are additionally gated by MANAGE_BILLING (owner)
  * via <Can>. Everything is re-enforced server-side. Until Stripe keys are wired,
- * checkout returns a friendly "set up by your Dentiva contact" message.
+ * checkout returns a friendly "set up by your Dentovox contact" message.
  */
 
 import { useState } from "react";

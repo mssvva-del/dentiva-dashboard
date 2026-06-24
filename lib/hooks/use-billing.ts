@@ -29,7 +29,7 @@ export function usePlans() {
 /**
  * Start Stripe Checkout. On success we redirect to the hosted URL. Until Stripe
  * keys are configured the backend returns 503 — we surface a clear message
- * rather than a generic error (Iter 1: billing set up by the Dentiva contact).
+ * rather than a generic error (Iter 1: billing set up by the Dentovox contact).
  */
 export function useStartCheckout() {
   const { getToken } = useAuth();
@@ -42,7 +42,7 @@ export function useStartCheckout() {
     onError: (e) => {
       if (e instanceof ApiError && e.status === 503) {
         showToast.info(
-          "Billing isn't set up yet — your Dentiva contact will handle your plan.",
+          "Billing isn't set up yet — your Dentovox contact will handle your plan.",
         );
       } else {
         showToast.error("Couldn't start checkout. Please try again.");

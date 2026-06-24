@@ -6,7 +6,7 @@
  * Future: components will use useTranslations() from next-intl.
  * Migration will happen in Iter 1 when ES/RU support is activated.
  */
-export const APP_NAME = "Dentiva";
+export const APP_NAME = "Dentovox";
 
 export const NAV = {
   dashboard: "Dashboard",

@@ -467,7 +467,7 @@ export const teamApi = {
     }),
 };
 
-// Dentiva admin API (Platform Iter 1, Phase E). Internal-only, role-gated +
+// Dentovox admin API (Platform Iter 1, Phase E). Internal-only, role-gated +
 // audited server-side. Imported lazily where needed.
 import { SubscriptionRowSchema } from "@/lib/schemas/admin";
 

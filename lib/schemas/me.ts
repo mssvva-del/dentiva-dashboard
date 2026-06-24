@@ -16,7 +16,7 @@ export const MeResponseSchema = z.object({
   is_internal: z.boolean(),
   practice_id: z.string().nullable(),
   role: z.string(), // clinic role, or "" for pure-internal users
-  staff_role: z.string().nullable(), // Dentiva-internal role when is_internal
+  staff_role: z.string().nullable(), // Dentovox-internal role when is_internal
   permissions: z.array(z.string()), // resolved permission strings for this caller
 });
 export type MeResponse = z.infer<typeof MeResponseSchema>;
@@ -46,7 +46,7 @@ export const PERM = {
   MANAGE_TEAM: "manage_team",
   MANAGE_BILLING: "manage_billing",
   VIEW_BILLING: "view_billing",
-  // ── Dentiva-internal (admin) world ────────────────────────────────────────
+  // ── Dentovox-internal (admin) world ────────────────────────────────────────
   VIEW_ALL_CLINICS: "view_all_clinics",
   VIEW_CLINIC_DETAIL: "view_clinic_detail",
   IMPERSONATE_CLINIC: "impersonate_clinic",

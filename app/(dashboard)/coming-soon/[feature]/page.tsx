@@ -48,12 +48,12 @@ const FEATURES: Record<string, Feature> = {
     icon: Store,
     tagline: "Supplies, services & add-ons in one place",
     blurb:
-      "Order consumables, book labs, and enable Dentiva add-on modules — billed alongside your subscription.",
+      "Order consumables, book labs, and enable Dentovox add-on modules — billed alongside your subscription.",
     bullets: [
       "Curated supplies & lab services",
       "One-click add-on modules",
       "Consolidated invoicing via your account",
-      "Partner offers for Dentiva practices",
+      "Partner offers for Dentovox practices",
     ],
   },
 };
