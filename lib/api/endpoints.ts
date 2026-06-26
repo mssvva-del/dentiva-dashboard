@@ -18,6 +18,10 @@ import {
 } from "@/lib/schemas/practice";
 import { MeResponseSchema, type MeResponse } from "@/lib/schemas/me";
 import {
+  ReactivationRoiSchema,
+  type ReactivationRoi,
+} from "@/lib/schemas/reactivation";
+import {
   MembersResponseSchema,
   InvitationsResponseSchema,
   InvitationSchema,
@@ -240,6 +244,14 @@ export const dashboardApi = {
     apiClient<EngagementResponse>("/api/dashboard/engagement", {
       schema: EngagementResponseSchema,
       params: days ? { days } : {},
+      token,
+    }),
+};
+
+export const reactivationApi = {
+  roi: (token?: string | null) =>
+    apiClient<ReactivationRoi>("/api/reactivation/roi", {
+      schema: ReactivationRoiSchema,
       token,
     }),
 };
