@@ -3,7 +3,7 @@
 import * as React from "react";
 import { DollarSign, Users, MessageSquare, CalendarCheck, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { LoadingState, ErrorState } from "@/components/features/page-states";
+import { LoadingState } from "@/components/features/page-states";
 import { useReactivationRoi } from "@/lib/hooks/use-reactivation";
 
 function Metric({
@@ -43,10 +43,12 @@ function Metric({
  * the dormant→contacted→booked funnel + conversion. Drives the sales demo.
  */
 export function ReactivationRoi() {
-  const { data, isLoading, isError, refetch } = useReactivationRoi();
+  const { data, isLoading, isError } = useReactivationRoi();
 
   if (isLoading) return <LoadingState />;
-  if (isError || !data) return <ErrorState onRetry={() => refetch()} />;
+  // Degrade gracefully: if the endpoint isn't deployed (404) or errors, hide the
+  // strip rather than showing an error card. The reactivation list still renders.
+  if (isError || !data) return null;
 
   const dollars = data.revenue_recovered_dollars.toLocaleString("en-US", {
     style: "currency",
