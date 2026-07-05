@@ -107,6 +107,12 @@ import {
   type WaitlistSummary,
   type WaitlistStatus,
 } from "@/lib/schemas/waitlist";
+import {
+  PricingResponseSchema,
+  type PricingResponse,
+  type PricingPlan,
+  type PricingConfig,
+} from "@/lib/schemas/pricing";
 
 export interface ListCallsParams {
   limit?: number;
@@ -518,6 +524,35 @@ export const adminApi = {
     }),
   auditLogs: (token?: string | null) =>
     apiClient("/api/admin/audit-logs", { schema: AuditResponseSchema, token }),
+};
+
+// Pricing editor (feat/admin-v2). Read is the source of truth; the two PUTs do
+// partial updates and their return shape isn't relied upon — callers refetch
+// GET /api/admin/pricing on success, so responses are parsed loosely.
+export const pricingApi = {
+  get: (token?: string | null) =>
+    apiClient<PricingResponse>("/api/admin/pricing", {
+      schema: PricingResponseSchema,
+      token,
+    }),
+  updatePlan: (
+    planKey: string,
+    data: Partial<PricingPlan>,
+    token?: string | null,
+  ) =>
+    apiClient<unknown>(`/api/admin/pricing/${planKey}`, {
+      schema: z.unknown(),
+      method: "PUT",
+      body: data,
+      token,
+    }),
+  updateConfig: (data: Partial<PricingConfig>, token?: string | null) =>
+    apiClient<unknown>("/api/admin/pricing-config", {
+      schema: z.unknown(),
+      method: "PUT",
+      body: data,
+      token,
+    }),
 };
 
 // Billing (Platform Iter 1, Phase D). summary/plans gated VIEW_BILLING;
