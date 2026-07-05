@@ -107,6 +107,13 @@ import {
   type WaitlistSummary,
   type WaitlistStatus,
 } from "@/lib/schemas/waitlist";
+import {
+  LeadSchema,
+  LeadsResponseSchema,
+  type Lead,
+  type LeadStatus,
+  type LeadPatch,
+} from "@/lib/schemas/leads";
 
 export interface ListCallsParams {
   limit?: number;
@@ -518,6 +525,24 @@ export const adminApi = {
     }),
   auditLogs: (token?: string | null) =>
     apiClient("/api/admin/audit-logs", { schema: AuditResponseSchema, token }),
+};
+
+// Leads inbox (feat/admin-v2) — MANAGE_LEADS (super_admin, sales). Server caps
+// the list at 500 newest; an optional status filter narrows it.
+export const leadsApi = {
+  list: (status?: LeadStatus, token?: string | null) =>
+    apiClient<Lead[]>("/api/admin/leads", {
+      schema: LeadsResponseSchema,
+      params: status ? { status } : {},
+      token,
+    }),
+  patch: (id: string, data: LeadPatch, token?: string | null) =>
+    apiClient<Lead>(`/api/admin/leads/${id}`, {
+      schema: LeadSchema,
+      method: "PATCH",
+      body: data,
+      token,
+    }),
 };
 
 // Billing (Platform Iter 1, Phase D). summary/plans gated VIEW_BILLING;
