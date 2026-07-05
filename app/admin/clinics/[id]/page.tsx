@@ -7,8 +7,11 @@ import {
   useImpersonate,
   useOverrideSubscription,
 } from "@/lib/hooks/use-admin";
+import { useCoupons, useApplyCoupon } from "@/lib/hooks/use-coupons";
+import { couponValue, couponDuration } from "@/lib/schemas/coupons";
 import { fmtCents } from "@/lib/schemas/billing";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { Button } from "@/components/ui/button";
 
 /** Clinic detail (Phase E) — VIEW_CLINIC_DETAIL (audited) + override/impersonate. */
@@ -90,6 +93,83 @@ export default function AdminClinicDetailPage() {
           </Button>
         </div>
       </div>
+
+      <CouponBlock practiceId={id} />
+    </div>
+  );
+}
+
+/**
+ * Apply a Stripe coupon to this clinic (MANAGE_SUBSCRIPTIONS server-side).
+ * Confirm modal warns it takes effect next invoice and replaces any current
+ * discount. 503 (Stripe off) / 409 (no subscription) are surfaced as toasts by
+ * the hook.
+ */
+function CouponBlock({ practiceId }: { practiceId: string }) {
+  const { data: coupons, isLoading } = useCoupons();
+  const apply = useApplyCoupon(practiceId);
+  const [couponId, setCouponId] = useState("");
+  const [confirming, setConfirming] = useState(false);
+
+  const selected = coupons?.find((c) => c.id === couponId) ?? null;
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5">
+      <h2 className="text-sm font-semibold">Coupon</h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Apply a Stripe discount code to this clinic&apos;s subscription.
+      </p>
+      <div className="mt-3 flex flex-wrap items-end gap-3">
+        <label className="text-sm">
+          <span className="block text-xs text-muted-foreground">Coupon</span>
+          <select
+            aria-label="Coupon"
+            value={couponId}
+            onChange={(e) => setCouponId(e.target.value)}
+            disabled={isLoading}
+            className="mt-1 h-9 rounded-md border border-input bg-background px-2 text-sm"
+          >
+            <option value="">—</option>
+            {(coupons ?? [])
+              .filter((c) => c.valid)
+              .map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} · {couponValue(c)} · {couponDuration(c)}
+                </option>
+              ))}
+          </select>
+        </label>
+        <Button disabled={!couponId || apply.isPending} onClick={() => setConfirming(true)}>
+          Apply
+        </Button>
+      </div>
+
+      <ConfirmDialog
+        open={confirming}
+        onOpenChange={(open) => !open && setConfirming(false)}
+        title="Apply coupon?"
+        description={
+          <>
+            {selected ? (
+              <>
+                <span className="font-medium">{selected.name}</span> ({couponValue(selected)})
+                {" "}
+              </>
+            ) : null}
+            applies from the next invoice and replaces any current discount.
+          </>
+        }
+        confirmLabel="Apply coupon"
+        pending={apply.isPending}
+        onConfirm={() =>
+          apply.mutate(couponId, {
+            onSuccess: () => {
+              setConfirming(false);
+              setCouponId("");
+            },
+          })
+        }
+      />
     </div>
   );
 }

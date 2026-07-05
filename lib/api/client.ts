@@ -13,6 +13,37 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Pull a human-readable message out of an error, preferring FastAPI's `detail`
+ * field (string, or a 422 validation array of `{msg}` entries). Returns null
+ * for non-ApiError values so callers can fall back to a generic message.
+ */
+export function apiErrorDetail(err: unknown): string | null {
+  if (!(err instanceof ApiError)) return null;
+  try {
+    const parsed: unknown = JSON.parse(err.body);
+    const detail =
+      parsed && typeof parsed === "object"
+        ? (parsed as Record<string, unknown>).detail
+        : undefined;
+    if (typeof detail === "string") return detail;
+    if (Array.isArray(detail)) {
+      const msgs = detail
+        .map((e) =>
+          e && typeof e === "object" && "msg" in e
+            ? String((e as Record<string, unknown>).msg)
+            : String(e)
+        )
+        .filter(Boolean);
+      if (msgs.length) return msgs.join("; ");
+    }
+    if (detail) return JSON.stringify(detail);
+  } catch {
+    /* body wasn't JSON — fall through */
+  }
+  return err.body || null;
+}
+
 interface ApiClientOptions<T> extends Omit<RequestInit, "body"> {
   schema: z.ZodType<T>;
   /** Clerk JWT for Authorization header. */
