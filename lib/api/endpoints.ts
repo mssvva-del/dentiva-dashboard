@@ -113,6 +113,13 @@ import {
   type PricingPlan,
   type PricingConfig,
 } from "@/lib/schemas/pricing";
+import {
+  LeadSchema,
+  LeadsResponseSchema,
+  type Lead,
+  type LeadStatus,
+  type LeadPatch,
+} from "@/lib/schemas/leads";
 
 export interface ListCallsParams {
   limit?: number;
@@ -550,6 +557,24 @@ export const pricingApi = {
     apiClient<unknown>("/api/admin/pricing-config", {
       schema: z.unknown(),
       method: "PUT",
+      body: data,
+      token,
+    }),
+};
+
+// Leads inbox (feat/admin-v2) — MANAGE_LEADS (super_admin, sales). Server caps
+// the list at 500 newest; an optional status filter narrows it.
+export const leadsApi = {
+  list: (status?: LeadStatus, token?: string | null) =>
+    apiClient<Lead[]>("/api/admin/leads", {
+      schema: LeadsResponseSchema,
+      params: status ? { status } : {},
+      token,
+    }),
+  patch: (id: string, data: LeadPatch, token?: string | null) =>
+    apiClient<Lead>(`/api/admin/leads/${id}`, {
+      schema: LeadSchema,
+      method: "PATCH",
       body: data,
       token,
     }),
