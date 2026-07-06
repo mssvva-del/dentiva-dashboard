@@ -120,6 +120,12 @@ import {
   type LeadStatus,
   type LeadPatch,
 } from "@/lib/schemas/leads";
+import {
+  CouponSchema,
+  CouponsResponseSchema,
+  type Coupon,
+  type CreateCouponInput,
+} from "@/lib/schemas/coupons";
 
 export interface ListCallsParams {
   limit?: number;
@@ -576,6 +582,37 @@ export const leadsApi = {
       schema: LeadSchema,
       method: "PATCH",
       body: data,
+      token,
+    }),
+};
+
+// Coupons (feat/admin-v2) — MANAGE_SUBSCRIPTIONS (super_admin, finance). Backed
+// by Stripe: a 503 means Stripe isn't configured; applying to a clinic without
+// a Stripe subscription returns 409 with a detail message.
+export const couponsApi = {
+  list: (token?: string | null) =>
+    apiClient<Coupon[]>("/api/admin/coupons", {
+      schema: CouponsResponseSchema,
+      token,
+    }),
+  create: (data: CreateCouponInput, token?: string | null) =>
+    apiClient<Coupon>("/api/admin/coupons", {
+      schema: CouponSchema,
+      method: "POST",
+      body: data,
+      token,
+    }),
+  remove: (id: string, token?: string | null) =>
+    apiClient<unknown>(`/api/admin/coupons/${id}`, {
+      schema: z.unknown(),
+      method: "DELETE",
+      token,
+    }),
+  apply: (practiceId: string, couponId: string, token?: string | null) =>
+    apiClient<unknown>(`/api/admin/clinics/${practiceId}/apply-coupon`, {
+      schema: z.unknown(),
+      method: "POST",
+      body: { coupon_id: couponId },
       token,
     }),
 };

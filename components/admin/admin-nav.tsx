@@ -14,6 +14,7 @@ const LINKS: [string, string][] = [
   ["/admin/clinics", "Clinics"],
   ["/admin/revenue", "Revenue"],
   ["/admin/pricing", "Pricing"],
+  ["/admin/coupons", "Coupons"],
   ["/admin/leads", "Leads"],
   ["/admin/staff", "Staff"],
   ["/admin/feature-flags", "Feature flags"],
