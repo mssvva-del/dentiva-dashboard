@@ -66,6 +66,16 @@ import {
   type KnowledgeBaseResponse,
 } from "@/lib/schemas/knowledge-base";
 import {
+  AdminInvoicesResponseSchema,
+  type AdminInvoice,
+  AdminInvoiceSchema,
+  CancelStateSchema,
+  type CancelState,
+  ClinicNotesResponseSchema,
+  type ClinicNote,
+  ClinicNoteSchema,
+} from "@/lib/schemas/clinic-billing";
+import {
   DashboardTodaySchema,
   type DashboardToday,
   DailyBriefingResponseSchema,
@@ -614,6 +624,64 @@ export const couponsApi = {
       method: "POST",
       body: { coupon_id: couponId },
       token,
+    }),
+};
+
+// Clinic billing ops on the account card (ADM3/ADM8/ADM10). Invoices+refund =
+// VIEW/MANAGE_BILLING_ALL; cancel/resume = MANAGE_SUBSCRIPTIONS; notes =
+// VIEW_CLINIC_DETAIL. All re-enforced + audited server-side.
+export const clinicBillingApi = {
+  invoices: (id: string, token?: string | null) =>
+    apiClient<AdminInvoice[]>(`/api/admin/clinics/${id}/invoices`, {
+      schema: AdminInvoicesResponseSchema, token,
+    }),
+  refund: (invoiceId: string, amountCents: number | null, token?: string | null) =>
+    apiClient<AdminInvoice>(`/api/admin/invoices/${invoiceId}/refund`, {
+      schema: AdminInvoiceSchema, method: "POST",
+      body: amountCents == null ? {} : { amount_cents: amountCents }, token,
+    }),
+  cancel: (
+    id: string,
+    mode: "at_period_end" | "immediately",
+    token?: string | null,
+  ) =>
+    apiClient<CancelState>(`/api/admin/clinics/${id}/subscription/cancel`, {
+      schema: CancelStateSchema, method: "POST", body: { mode }, token,
+    }),
+  resume: (id: string, token?: string | null) =>
+    apiClient<CancelState>(`/api/admin/clinics/${id}/subscription/resume`, {
+      schema: CancelStateSchema, method: "POST", token,
+    }),
+  notes: (id: string, token?: string | null) =>
+    apiClient<ClinicNote[]>(`/api/admin/clinics/${id}/notes`, {
+      schema: ClinicNotesResponseSchema, token,
+    }),
+  addNote: (id: string, body: string, token?: string | null) =>
+    apiClient<ClinicNote>(`/api/admin/clinics/${id}/notes`, {
+      schema: ClinicNoteSchema, method: "POST", body: { body }, token,
+    }),
+  deleteNote: (id: string, noteId: string, token?: string | null) =>
+    apiClient<unknown>(`/api/admin/clinics/${id}/notes/${noteId}`, {
+      schema: z.unknown(), method: "DELETE", token,
+    }),
+};
+
+// Staff management (ADM9) — MANAGE_DENTIVA_STAFF (super_admin). invite emails a
+// Clerk invitation; deactivate removes the dentiva_staff role.
+export const staffApi = {
+  updateRole: (userId: string, role: string, token?: string | null) =>
+    apiClient<unknown>(`/api/admin/staff/${userId}`, {
+      schema: z.unknown(), method: "PATCH", body: { role }, token,
+    }),
+  invite: (email: string, role: string, token?: string | null) =>
+    apiClient<{ ok: boolean; invitation_id: string }>("/api/admin/staff/invite", {
+      schema: z.object({ ok: z.boolean(), invitation_id: z.string() }),
+      method: "POST", body: { email, role }, token,
+    }),
+  deactivate: (userId: string, token?: string | null) =>
+    apiClient<{ ok: boolean; removed_role: string }>(`/api/admin/staff/${userId}`, {
+      schema: z.object({ ok: z.boolean(), removed_role: z.string() }),
+      method: "DELETE", token,
     }),
 };
 
