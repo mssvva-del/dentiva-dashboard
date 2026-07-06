@@ -18,7 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/lib/toast";
 import { onboardingApi } from "@/lib/api/endpoints";
-import { useOnboardingState } from "@/lib/hooks/use-onboarding";
+import { ApiError } from "@/lib/api/client";
+import { useOnboardingState, useBaa } from "@/lib/hooks/use-onboarding";
 import { LoadingState } from "@/components/features/page-states";
 import type { OnboardingState } from "@/lib/schemas/onboarding";
 
@@ -33,8 +34,9 @@ const TIMEZONES = [
 ];
 
 const STEP_TITLES = [
-  "Clinic", "Hours", "Phone", "PMS", "Agent", "Go live",
+  "Clinic", "Hours", "Phone", "PMS", "Agent", "Terms", "Go live",
 ];
+const LAST_STEP = STEP_TITLES.length; // 7
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -53,7 +55,7 @@ export default function OnboardingPage() {
         router.replace("/");
         return;
       }
-      setStep(Math.min(Math.max(state.onboarding_step || 1, 1), 6));
+      setStep(Math.min(Math.max(state.onboarding_step || 1, 1), LAST_STEP));
       setSeeded(true);
     }
   }, [state, seeded, router]);
@@ -66,8 +68,8 @@ export default function OnboardingPage() {
       const token = await getToken();
       const next = await fn(token);
       await refetch();
-      // Advance using the server's reported progress (cap at 6).
-      setStep(Math.min(Math.max(next.onboarding_step || step + 1, step + 1), 6));
+      // Advance using the server's reported progress (cap at the last step).
+      setStep(Math.min(Math.max(next.onboarding_step || step + 1, step + 1), LAST_STEP));
       return next;
     } catch (e) {
       showToast.error(
@@ -90,8 +92,15 @@ export default function OnboardingPage() {
         showToast.success("You're live! Welcome to Dentiva.");
         router.replace("/");
       }
-    } catch {
-      showToast.error("Some required steps are incomplete — please review them.");
+    } catch (e) {
+      // Backend blocks go-live with 403 until the BAA is signed — send the owner
+      // back to the Terms step with a clear message instead of a generic error.
+      if (e instanceof ApiError && e.status === 403) {
+        showToast.error("Please accept the Terms & BAA first.");
+        setStep(6);
+      } else {
+        showToast.error("Some required steps are incomplete — please review them.");
+      }
     } finally {
       setSaving(false);
     }
@@ -107,10 +116,13 @@ export default function OnboardingPage() {
         {step === 4 && <PmsStep state={state} saving={saving} onSave={save} />}
         {step === 5 && <AgentStep state={state} saving={saving} onSave={save} />}
         {step === 6 && (
+          <BaaStep saving={saving} onSave={save} onContinue={() => setStep(7)} />
+        )}
+        {step === 7 && (
           <ReviewStep state={state} saving={saving} onGoLive={goLive} />
         )}
       </div>
-      {step > 1 && step <= 6 && (
+      {step > 1 && step <= LAST_STEP && (
         <button
           type="button"
           className="mt-4 text-sm text-muted-foreground hover:text-foreground"
@@ -388,7 +400,95 @@ function AgentStep({ state, saving, onSave }: StepProps) {
   );
 }
 
-// ── Step 6: Review + go live ─────────────────────────────────────────────────
+// ── Step 6: Terms & BAA ──────────────────────────────────────────────────────
+function BaaStep(
+  { saving, onSave, onContinue }: { saving: boolean; onSave: SaveFn; onContinue: () => void },
+) {
+  const { data: baa, isPending, isError, refetch } = useBaa();
+  const [name, setName] = useState("");
+  const [title, setTitle] = useState("");
+  const [agreed, setAgreed] = useState(false);
+
+  if (isPending) return <LoadingState label="Loading agreement…" />;
+  if (isError || !baa) {
+    return (
+      <div>
+        <StepHeader title="Terms & Business Associate Agreement" subtitle="We couldn't load the agreement." />
+        <Button variant="outline" onClick={() => refetch()}>Retry</Button>
+      </div>
+    );
+  }
+
+  // Already signed — show a confirmation and let the owner proceed to go-live
+  // without re-signing.
+  if (baa.accepted) {
+    return (
+      <div>
+        <StepHeader
+          title="Terms & Business Associate Agreement"
+          subtitle="This agreement is already signed for your clinic."
+        />
+        <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+          ✓ Signed (version {String(baa.version)})
+        </div>
+        <Button className="mt-6" onClick={onContinue}>Continue</Button>
+      </div>
+    );
+  }
+
+  const canAccept = !saving && !!name.trim() && !!title.trim() && agreed;
+
+  return (
+    <div>
+      <StepHeader
+        title="Terms & Business Associate Agreement"
+        subtitle="Required before your clinic can go live. Please review and sign on behalf of the clinic."
+      />
+
+      <pre className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-lg border border-gray-200 bg-gray-50 p-4 font-mono text-xs leading-relaxed text-foreground">
+        {baa.text}
+      </pre>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div>
+          <Label htmlFor="signer-name">Full name</Label>
+          <Input id="signer-name" value={name} onChange={(e) => setName(e.target.value)}
+            placeholder="Jane Doe" />
+        </div>
+        <div>
+          <Label htmlFor="signer-title">Title / role</Label>
+          <Input id="signer-title" value={title} onChange={(e) => setTitle(e.target.value)}
+            placeholder="Practice Owner" />
+        </div>
+      </div>
+
+      <label className="mt-4 flex items-start gap-2 text-sm">
+        <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)}
+          className="mt-0.5" />
+        <span>I have read and agree to the Terms &amp; BAA on behalf of the clinic.</span>
+      </label>
+
+      <p className="mt-3 text-xs text-muted-foreground">
+        Your name, title, time, and IP address are recorded as an electronic
+        signature (ESIGN Act).
+      </p>
+
+      <Button
+        className="mt-6"
+        disabled={!canAccept}
+        onClick={() =>
+          onSave((t) =>
+            onboardingApi.acceptBaa({ signer_name: name.trim(), signer_title: title.trim() }, t),
+          )
+        }
+      >
+        Accept &amp; continue
+      </Button>
+    </div>
+  );
+}
+
+// ── Step 7: Review + go live ─────────────────────────────────────────────────
 function ReviewStep(
   { state, saving, onGoLive }: { state: OnboardingState; saving: boolean; onGoLive: () => void },
 ) {

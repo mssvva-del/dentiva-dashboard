@@ -3,7 +3,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { onboardingApi } from "@/lib/api/endpoints";
-import type { OnboardingState } from "@/lib/schemas/onboarding";
+import type { OnboardingState, Baa } from "@/lib/schemas/onboarding";
 
 /**
  * Onboarding wizard state (Platform Iter 1, Phase B2).
@@ -25,6 +25,22 @@ export function useOnboardingState(enabled = true) {
     staleTime: 30_000,
     refetchOnWindowFocus: false,
     retry: 1,
+  });
+}
+
+/**
+ * Terms & BAA agreement text + this practice's acceptance status. Fetched when
+ * the wizard reaches the Terms step; the accept POST goes through the wizard's
+ * `save()` (like the other steps) so progress advances off the returned state.
+ */
+export function useBaa(enabled = true) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  return useQuery<Baa>({
+    queryKey: ["onboarding", "baa"],
+    queryFn: async () => onboardingApi.baa(await getToken()),
+    enabled: enabled && isLoaded && isSignedIn,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   });
 }
 
