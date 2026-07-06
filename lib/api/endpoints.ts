@@ -53,12 +53,15 @@ import {
 } from "@/lib/schemas/admin";
 import {
   OnboardingStateSchema,
+  BaaSchema,
   type OnboardingState,
+  type Baa,
   type ClinicStepInput,
   type HoursStepInput,
   type PhoneStepInput,
   type PmsStepInput,
   type AgentStepInput,
+  type AcceptBaaInput,
 } from "@/lib/schemas/onboarding";
 import {
   KnowledgeBaseResponseSchema,
@@ -457,6 +460,18 @@ export const onboardingApi = {
     onboardingPut("/api/onboarding/pms", data, token),
   agent: (data: AgentStepInput, token?: string | null) =>
     onboardingPut("/api/onboarding/agent", data, token),
+  baa: (token?: string | null) =>
+    apiClient<Baa>("/api/onboarding/baa", {
+      schema: BaaSchema,
+      token,
+    }),
+  acceptBaa: (data: AcceptBaaInput, token?: string | null) =>
+    apiClient<OnboardingState>("/api/onboarding/baa/accept", {
+      schema: OnboardingStateSchema,
+      method: "POST",
+      body: data,
+      token,
+    }),
   complete: (token?: string | null) =>
     apiClient<OnboardingState>("/api/onboarding/complete", {
       schema: OnboardingStateSchema,
