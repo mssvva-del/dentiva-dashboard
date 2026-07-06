@@ -61,6 +61,7 @@ export const PERM = {
   VIEW_SYSTEM_HEALTH: "view_system_health",
   MANAGE_FEATURE_FLAGS: "manage_feature_flags",
   VIEW_AUDIT_LOGS: "view_audit_logs",
+  MANAGE_PRICING: "manage_pricing",
 } as const;
 
 export type Permission = (typeof PERM)[keyof typeof PERM];

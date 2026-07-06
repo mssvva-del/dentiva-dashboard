@@ -25,6 +25,8 @@ export const ClinicDetailSchema = z.object({
   subscription_status: z.string().nullable(),
   included_minutes: z.number().nullable(),
   mrr_cents: z.number(),
+  cancel_at_period_end: z.boolean(),
+  current_period_end: z.string().nullable(),
   user_count: z.number(),
   call_count: z.number(),
   booking_count: z.number(),
@@ -58,6 +60,7 @@ export const StaffRowSchema = z.object({
   email: z.string(),
   role: z.string(),
 });
+export type StaffRow = z.infer<typeof StaffRowSchema>;
 export const StaffResponseSchema = z.array(StaffRowSchema);
 
 export const SystemHealthSchema = z.object({
