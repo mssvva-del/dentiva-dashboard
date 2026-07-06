@@ -57,3 +57,19 @@ export interface AgentStepInput {
   greeting?: string | null;
   languages: string[];
 }
+
+// Terms & BAA step. GET returns the current agreement text + whether this
+// practice has already accepted it; POST records an e-signature and returns the
+// advanced OnboardingState. `version` may be a string or number depending on
+// the backend, so accept both and display as-is.
+export const BaaSchema = z.object({
+  version: z.union([z.string(), z.number()]),
+  text: z.string(),
+  accepted: z.boolean(),
+});
+export type Baa = z.infer<typeof BaaSchema>;
+
+export interface AcceptBaaInput {
+  signer_name: string;
+  signer_title: string;
+}
