@@ -280,11 +280,51 @@ export const dashboardApi = {
     }),
 };
 
+const CampaignRowSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  status: z.string(),
+  category: z.string(),
+  channels: z.string(),
+  custom_context: z.string().nullable(),
+  enrolled: z.number(),
+  contacted: z.number(),
+  booked: z.number(),
+  opted_out: z.number(),
+  created_at: z.string(),
+});
+export type CampaignRow = z.infer<typeof CampaignRowSchema>;
+const IntakeSchema = z.object({
+  added: z.number(),
+  updated: z.number(),
+  invalid_count: z.number(),
+  invalid_samples: z.array(z.string()),
+  duplicates_in_file: z.number(),
+});
+export type IntakeReport = z.infer<typeof IntakeSchema>;
+
 export const reactivationApi = {
   roi: (token?: string | null) =>
     apiClient<ReactivationRoi>("/api/reactivation/roi", {
       schema: ReactivationRoiSchema,
       token,
+    }),
+  campaigns: (token?: string | null) =>
+    apiClient<CampaignRow[]>("/api/reactivation/campaigns", {
+      schema: z.array(CampaignRowSchema), token,
+    }),
+  createCampaign: (data: Record<string, unknown>, token?: string | null) =>
+    apiClient("/api/reactivation/campaigns", {
+      schema: z.object({ campaign: CampaignRowSchema, intake: IntakeSchema }),
+      method: "POST", body: data, token,
+    }),
+  launchCampaign: (id: string, token?: string | null) =>
+    apiClient<CampaignRow>(`/api/reactivation/campaigns/${id}/launch`, {
+      schema: CampaignRowSchema, method: "POST", token,
+    }),
+  pauseCampaign: (id: string, token?: string | null) =>
+    apiClient<CampaignRow>(`/api/reactivation/campaigns/${id}/pause`, {
+      schema: CampaignRowSchema, method: "POST", token,
     }),
 };
 
