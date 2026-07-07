@@ -700,6 +700,23 @@ export const staffApi = {
     }),
 };
 
+
+// Voice model switch (live Retell agent) — MANAGE_FEATURE_FLAGS (super_admin,
+// engineer). PUT republishes the agent so the change is live immediately.
+const VoiceModelSchema = z.object({
+  model: z.string().nullable(),
+  allowed: z.array(z.string()),
+  agent_id: z.string(),
+});
+export const voiceModelApi = {
+  get: (token?: string | null) =>
+    apiClient("/api/admin/voice/model", { schema: VoiceModelSchema, token }),
+  set: (model: string, token?: string | null) =>
+    apiClient("/api/admin/voice/model", {
+      schema: VoiceModelSchema, method: "PUT", body: { model }, token,
+    }),
+};
+
 // Billing (Platform Iter 1, Phase D). summary/plans gated VIEW_BILLING;
 // checkout gated MANAGE_BILLING (owner) — all re-enforced server-side.
 export const billingApi = {
