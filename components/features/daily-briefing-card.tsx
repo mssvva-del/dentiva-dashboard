@@ -11,9 +11,18 @@ export function DailyBriefingCard() {
 
   // Split on the FIRST sentence boundary that isn't an abbreviation — a plain
   // `.split(". ")` decapitates sentences containing "Dr." or "St.".
+  // No regex lookbehind: it's a SyntaxError on Safari <16.4 and would crash the
+  // whole page at script-parse time, so scan candidate boundaries instead.
   const text = data.text;
-  const boundary = text.match(/(?<!\b(?:Dr|St|Mr|Mrs|Ms))\.\s+/);
-  const cut = boundary ? (boundary.index ?? 0) + 1 : text.length;
+  let cut = text.length;
+  const dotRe = /\.\s+/g;
+  for (let m = dotRe.exec(text); m; m = dotRe.exec(text)) {
+    const before = text.slice(0, m.index);
+    if (!/\b(?:Dr|St|Mr|Mrs|Ms)$/.test(before)) {
+      cut = m.index + 1;
+      break;
+    }
+  }
   const firstSentence = text.slice(0, cut).replace(/\.$/, "");
   const rest = text.slice(cut).trim();
 

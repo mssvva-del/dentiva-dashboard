@@ -586,11 +586,15 @@ export default function KnowledgeBasePage() {
           )}
           <Button
             disabled={save.isPending || !isDirty}
-            onClick={() =>
+            onClick={() => {
+              // Snapshot what we're actually sending — if the user keeps editing
+              // while the request is in flight, the baseline must reflect the
+              // SAVED state, not the newer edits (which stay marked dirty).
+              const snapshot = JSON.stringify(draft);
               save.mutate(toPayload(draft), {
-                onSuccess: () => setBaseline(JSON.stringify(draft)),
-              })
-            }
+                onSuccess: () => setBaseline(snapshot),
+              });
+            }}
           >
             {save.isPending ? "Saving…" : isDirty ? "Save knowledge base" : "Saved ✓"}
           </Button>
