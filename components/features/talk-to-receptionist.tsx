@@ -130,7 +130,7 @@ export function TalkToReceptionist() {
         <p className="mt-0.5 text-[12.5px] text-white/70">
           {live
             ? "Speak naturally — try booking or rescheduling an appointment."
-            : "Live voice demo. Click, allow your microphone, and talk to Grace."}
+            : "Live voice demo. Click, allow your microphone, and talk to your AI receptionist."}
         </p>
       </div>
 

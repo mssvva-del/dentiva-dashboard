@@ -14,6 +14,7 @@ import {
   EmptyState,
 } from "@/components/features/page-states";
 import { useBookingsList, useUpdateBookingStatus } from "@/lib/hooks/use-bookings";
+import { showToast } from "@/lib/toast";
 import { formatDateTime } from "@/lib/utils/format";
 import { COPY } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -208,7 +209,10 @@ export function BookingsTable() {
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/bookings/export?${params}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (!response.ok) return;
+      if (!response.ok) {
+        showToast.error("Couldn't export bookings. Please try again.");
+        return;
+      }
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

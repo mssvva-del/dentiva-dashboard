@@ -56,6 +56,14 @@ function NewCampaignForm({ onDone }: { onDone: () => void }) {
   const [category, setCategory] = useState<"treatment" | "marketing">("treatment");
   const [channels, setChannels] = useState<"sms" | "voice" | "both">("sms");
   const [attested, setAttested] = useState(false);
+  // Launching texts/calls REAL patients — never on one click. The confirm step
+  // shows who and what before anything sends.
+  const [confirming, setConfirming] = useState(false);
+
+  // Client-side estimate for the confirm dialog (the server does the real parse).
+  const estimatedContacts = contacts
+    .split(/[\n;]+|,(?=\s*\+?\d)/)
+    .filter((chunk) => (chunk.match(/\d/g) ?? []).length >= 7).length;
 
   const create = useMutation({
     mutationFn: async () =>
@@ -79,10 +87,14 @@ function NewCampaignForm({ onDone }: { onDone: () => void }) {
         (i.invalid_count ? `, ${i.invalid_count} invalid skipped` : "") + ").",
       );
       setName(""); setContacts(""); setMessage(""); setAttested(false);
+      setConfirming(false);
       if (fileRef.current) fileRef.current.value = "";
       onDone();
     },
-    onError: (err) => showToast.error(apiErrorDetail(err) ?? "Couldn't create campaign."),
+    onError: (err) => {
+      setConfirming(false);
+      showToast.error(apiErrorDetail(err) ?? "Couldn't create campaign.");
+    },
   });
 
   const onFile = async (f: File | undefined) => {
@@ -176,12 +188,45 @@ function NewCampaignForm({ onDone }: { onDone: () => void }) {
             </p>
           )}
           <div className="flex justify-end">
-            <Button disabled={!valid || create.isPending} onClick={() => create.mutate()}>
-              Create & launch
+            <Button disabled={!valid || create.isPending} onClick={() => setConfirming(true)}>
+              Review & launch
             </Button>
           </div>
         </div>
       </div>
+
+      {confirming && (
+        <div className="mt-4 rounded-lg border border-teal-200 bg-teal-50/60 p-4">
+          <p className="text-sm font-semibold text-navy">
+            Ready to launch &ldquo;{name.trim()}&rdquo;?
+          </p>
+          <ul className="mt-2 space-y-1 text-sm text-gray-700">
+            <li>
+              • Reaches about <b>{estimatedContacts || "?"}</b>{" "}
+              {estimatedContacts === 1 ? "patient" : "patients"} by{" "}
+              <b>
+                {channels === "sms" ? "text" : channels === "voice" ? "phone call" : "text + phone call"}
+              </b>
+              , starting now (within allowed hours).
+            </li>
+            <li>
+              • Message: {message.trim()
+                ? <span className="italic">&ldquo;{message.trim()}&rdquo;</span>
+                : <span className="text-gray-500">standard recall wording</span>}
+            </li>
+            <li>• Patients can reply STOP at any time — we handle opt-outs automatically.</li>
+          </ul>
+          <div className="mt-3 flex justify-end gap-2">
+            <Button variant="ghost" size="sm" disabled={create.isPending}
+              onClick={() => setConfirming(false)}>
+              Go back
+            </Button>
+            <Button size="sm" disabled={create.isPending} onClick={() => create.mutate()}>
+              {create.isPending ? "Launching…" : "Yes, launch now"}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

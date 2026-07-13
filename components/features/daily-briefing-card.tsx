@@ -9,9 +9,22 @@ export function DailyBriefingCard() {
   // Don't show while loading or if no data yet
   if (isLoading || !data) return null;
 
-  const sentences = data.text.split(". ");
-  const firstSentence = sentences[0];
-  const rest = sentences.slice(1).join(". ").trim();
+  // Split on the FIRST sentence boundary that isn't an abbreviation — a plain
+  // `.split(". ")` decapitates sentences containing "Dr." or "St.".
+  // No regex lookbehind: it's a SyntaxError on Safari <16.4 and would crash the
+  // whole page at script-parse time, so scan candidate boundaries instead.
+  const text = data.text;
+  let cut = text.length;
+  const dotRe = /\.\s+/g;
+  for (let m = dotRe.exec(text); m; m = dotRe.exec(text)) {
+    const before = text.slice(0, m.index);
+    if (!/\b(?:Dr|St|Mr|Mrs|Ms)$/.test(before)) {
+      cut = m.index + 1;
+      break;
+    }
+  }
+  const firstSentence = text.slice(0, cut).replace(/\.$/, "");
+  const rest = text.slice(cut).trim();
 
   return (
     <div

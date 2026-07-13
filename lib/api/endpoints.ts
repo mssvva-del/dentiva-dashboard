@@ -203,6 +203,8 @@ export interface PatchPracticeMeData {
   timezone?: string;
   business_hours?: import("@/lib/schemas/practice").BusinessHours;
   reminders_enabled?: boolean;
+  agent_name?: string;
+  agent_greeting?: string;
 }
 
 export const practiceApi = {

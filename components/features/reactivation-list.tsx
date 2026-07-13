@@ -73,22 +73,6 @@ function Row({ patient }: { patient: RecallPatient }) {
           {sendRecall.isPending ? "Sending…" : "Send text"}
         </button>
       </Can>
-      <button
-        type="button"
-        disabled
-        title="AI auto-dial campaigns arrive in Phase 2"
-        className="hidden cursor-not-allowed items-center gap-1.5 rounded-[8px] px-2.5 py-1.5 text-[12px] font-semibold text-gray-500 opacity-90 lg:inline-flex"
-        style={{ background: "#EEF1F5" }}
-      >
-        <PhoneOutgoing className="h-3.5 w-3.5" aria-hidden />
-        Queue call
-        <span
-          className="rounded-full px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider"
-          style={{ background: "rgba(10,25,41,0.08)" }}
-        >
-          Soon
-        </span>
-      </button>
     </div>
   );
 }
@@ -123,8 +107,9 @@ export function ReactivationList() {
         <div>
           <p className="text-[13.5px] font-semibold text-navy">Win back lapsed patients</p>
           <p className="mt-0.5 text-[12.5px] text-gray-600">
-            These patients haven&apos;t been in for 6+ months and have no upcoming visit. Send a
-            recall text to invite them back — AI auto-dial campaigns arrive in Phase 2.
+            These patients haven&apos;t been in for 6+ months and have no upcoming
+            visit. Send a recall text right from this list — or reach many at once
+            with an outreach campaign below (text and calls).
           </p>
         </div>
       </div>
