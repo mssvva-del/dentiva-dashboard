@@ -9,9 +9,13 @@ export function DailyBriefingCard() {
   // Don't show while loading or if no data yet
   if (isLoading || !data) return null;
 
-  const sentences = data.text.split(". ");
-  const firstSentence = sentences[0];
-  const rest = sentences.slice(1).join(". ").trim();
+  // Split on the FIRST sentence boundary that isn't an abbreviation — a plain
+  // `.split(". ")` decapitates sentences containing "Dr." or "St.".
+  const text = data.text;
+  const boundary = text.match(/(?<!\b(?:Dr|St|Mr|Mrs|Ms))\.\s+/);
+  const cut = boundary ? (boundary.index ?? 0) + 1 : text.length;
+  const firstSentence = text.slice(0, cut).replace(/\.$/, "");
+  const rest = text.slice(cut).trim();
 
   return (
     <div

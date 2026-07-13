@@ -30,6 +30,14 @@ export const PracticeSchema = z.object({
   languages_enabled: z.array(z.string()),
   business_hours: BusinessHoursSchema,
   reminders_enabled: z.boolean(),
+  // Call routing + the number the clinic forwards to (read-only).
+  answer_mode: z.string().optional(),
+  rings_before_ai: z.number().optional(),
+  forwarding_instruction: z.string().optional(),
+  ai_phone_number: z.string().nullable().optional(),
+  // Agent persona — the SAME values the live agent uses on every call.
+  agent_name: z.string().nullable().optional(),
+  agent_greeting: z.string().nullable().optional(),
 });
 export type Practice = z.infer<typeof PracticeSchema>;
 export const GetPracticeMeResponseSchema = PracticeSchema;

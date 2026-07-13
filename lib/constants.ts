@@ -78,7 +78,7 @@ export const COPY = {
   loading: "Loading…",
   errorTitle: "Couldn't load data",
   errorBody:
-    "The backend may not be running yet. Data will appear once the API is reachable.",
+    "Something went wrong on our end. Your data is safe — try again in a moment.",
   retry: "Retry",
 } as const;
 

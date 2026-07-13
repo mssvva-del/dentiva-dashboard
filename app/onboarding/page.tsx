@@ -283,10 +283,36 @@ function PhoneStep({ state, saving, onSave }: StepProps) {
           <input type="radio" checked={mode === "forward"} onChange={() => setMode("forward")} className="mt-1" />
           <div className="flex-1">
             <p className="text-sm font-medium">Forward my existing number</p>
-            <p className="text-xs text-muted-foreground">We give you a destination to forward to.</p>
+            <p className="text-xs text-muted-foreground">
+              Enter your practice&apos;s current number — then forward it to your
+              Dentovox number below.
+            </p>
             {mode === "forward" && (
-              <Input className="mt-2" placeholder="+13105551234" value={number}
-                onChange={(e) => setNumber(e.target.value)} />
+              <>
+                <Input className="mt-2" placeholder="Your practice number, e.g. +13105551234"
+                  value={number} onChange={(e) => setNumber(e.target.value)} />
+                {state.ai_phone_number ? (
+                  <div className="mt-3 rounded-md bg-teal-50 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+                      Your Dentovox number — forward to:
+                    </p>
+                    <p className="mt-1 font-mono text-base font-semibold">
+                      {state.ai_phone_number}
+                    </p>
+                    <p className="mt-1.5 text-xs text-muted-foreground">
+                      Most carriers: dial <span className="font-mono">*72</span> +
+                      this number to enable forwarding (<span className="font-mono">*73</span> to
+                      disable). Exact steps are on your carrier&apos;s support page —
+                      and repeated in Settings anytime.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Your dedicated Dentovox number is being provisioned — we&apos;ll
+                    email the forwarding steps as soon as it&apos;s ready.
+                  </p>
+                )}
+              </>
             )}
           </div>
         </label>
@@ -325,9 +351,12 @@ function PmsStep({ state, saving, onSave }: StepProps) {
     (["open_dental", "nexhealth", "none"].includes(state.pms_system)
       ? state.pms_system : "none") as "open_dental" | "nexhealth" | "none",
   );
+  // Honest copy: choosing here records the preference; the actual connection is
+  // completed with our team (credentials/API keys) — a radio button that says
+  // "Connect" but connects nothing reads as broken.
   const OPTIONS: [typeof pms, string, string][] = [
-    ["open_dental", "Open Dental", "Connect your Open Dental system."],
-    ["nexhealth", "NexHealth", "Connect via NexHealth."],
+    ["open_dental", "Open Dental", "We'll set up the connection with you after sign-up."],
+    ["nexhealth", "NexHealth", "We'll set up the connection with you after sign-up."],
     ["none", "Skip for now", "Use the built-in scheduling; connect a PMS later."],
   ];
   return (
@@ -354,7 +383,9 @@ function PmsStep({ state, saving, onSave }: StepProps) {
 
 // ── Step 5: Agent ────────────────────────────────────────────────────────────
 function AgentStep({ state, saving, onSave }: StepProps) {
-  const [agentName, setAgentName] = useState(state.agent_settings?.agent_name ?? "Anna");
+  // Default matches the live agent's default persona ("Alex") — one name
+  // everywhere: onboarding, Settings, and the actual call.
+  const [agentName, setAgentName] = useState(state.agent_settings?.agent_name ?? "Alex");
   const [greeting, setGreeting] = useState(state.agent_settings?.greeting ?? "");
   const [langs, setLangs] = useState<string[]>(
     state.languages_enabled?.length ? state.languages_enabled : ["en", "es"],
@@ -366,7 +397,7 @@ function AgentStep({ state, saving, onSave }: StepProps) {
 
   return (
     <div>
-      <StepHeader title="Your AI receptionist" subtitle="Name, greeting, and languages. Voice is Cartesia (English & Spanish)." />
+      <StepHeader title="Your AI receptionist" subtitle="Pick a name, an optional extra welcome line, and languages (English & Spanish)." />
       <div className="space-y-4">
         <div>
           <Label htmlFor="an">Agent name</Label>
@@ -498,11 +529,22 @@ function ReviewStep(
       <dl className="space-y-2 text-sm">
         <Row label="Clinic" value={state.name} />
         <Row label="Timezone" value={state.timezone} />
-        <Row label="Phone" value={state.phone_number ?? "Web calls (skipped)"} />
+        <Row label="Your phone" value={state.phone_number ?? "Web calls (skipped)"} />
+        {state.ai_phone_number ? (
+          <Row label="Forward calls to" value={state.ai_phone_number} />
+        ) : null}
         <Row label="PMS" value={state.pms_system === "none" ? "Skipped" : state.pms_system} />
-        <Row label="Agent" value={state.agent_settings?.agent_name ?? "Anna"} />
+        <Row label="Assistant name" value={state.agent_settings?.agent_name ?? "Alex"} />
         <Row label="Languages" value={(state.languages_enabled ?? []).join(", ").toUpperCase()} />
       </dl>
+      {state.phone_number && state.ai_phone_number ? (
+        <p className="mt-3 rounded-md bg-teal-50 p-3 text-xs text-muted-foreground">
+          Last step after going live: forward {state.phone_number} to{" "}
+          <span className="font-mono font-semibold">{state.ai_phone_number}</span>{" "}
+          (most carriers: dial <span className="font-mono">*72</span> + the number).
+          The instruction is always available in Settings → Call Forwarding.
+        </p>
+      ) : null}
       <div className="mt-5 rounded-lg bg-teal/5 p-3 text-xs text-muted-foreground">
         Billing is set up separately with your Dentovox contact (pilot pricing). You
         can go live now and we&apos;ll handle the plan.

@@ -44,15 +44,20 @@ type Draft = {
   emergency: { triggers: string; action: EmergencyAction | ""; on_call_number: string };
 };
 
-const PROVIDER_TYPES: ProviderType[] = [
-  "general",
-  "hygienist",
-  "orthodontist",
-  "surgeon",
-  "other",
+// Human labels — a dentist should never read raw enum values like "general".
+const PROVIDER_TYPES: { value: ProviderType; label: string }[] = [
+  { value: "general", label: "General dentist" },
+  { value: "hygienist", label: "Hygienist" },
+  { value: "orthodontist", label: "Orthodontist" },
+  { value: "surgeon", label: "Oral surgeon" },
+  { value: "other", label: "Other" },
 ];
 const DAYS: Day[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-const EMERGENCY_ACTIONS: EmergencyAction[] = ["transfer", "callback", "message"];
+const EMERGENCY_ACTIONS: { value: EmergencyAction; label: string }[] = [
+  { value: "transfer", label: "Transfer the call to the on-call phone" },
+  { value: "callback", label: "Take their number — on-call team calls right back" },
+  { value: "message", label: "Take a detailed message for the team" },
+];
 
 const EMPTY_DRAFT: Draft = {
   providers: [],
@@ -201,8 +206,8 @@ function TypeSelect({
     >
       <option value="">Any type</option>
       {PROVIDER_TYPES.map((t) => (
-        <option key={t} value={t}>
-          {t}
+        <option key={t.value} value={t.value}>
+          {t.label}
         </option>
       ))}
     </select>
@@ -214,11 +219,33 @@ export default function KnowledgeBasePage() {
   const { data, isLoading, isError, refetch } = useKnowledgeBase();
   const save = useSaveKnowledgeBase();
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
+  // Snapshot of the last-saved state — the dirty flag compares against it so
+  // the page can warn before edits are silently lost.
+  const [baseline, setBaseline] = useState<string>(JSON.stringify(EMPTY_DRAFT));
 
-  // Seed the form once the saved knowledge base arrives.
+  // Seed the form once the saved knowledge base arrives. A brand-new clinic
+  // gets sensible emergency triggers pre-filled instead of an empty box.
   useEffect(() => {
-    if (data) setDraft(toDraft(data.knowledge_base));
+    if (!data) return;
+    const seeded = toDraft(data.knowledge_base);
+    if (!data.knowledge_base && !seeded.emergency.triggers) {
+      seeded.emergency.triggers = "bleeding, trauma, severe pain, swelling";
+    }
+    setDraft(seeded);
+    setBaseline(JSON.stringify(seeded));
   }, [data]);
+
+  const isDirty = JSON.stringify(draft) !== baseline;
+
+  // Warn on tab close / refresh while edits are unsaved.
+  useEffect(() => {
+    if (!isDirty) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [isDirty]);
 
   if (isLoading) {
     return (
@@ -526,8 +553,8 @@ export default function KnowledgeBasePage() {
               >
                 <option value="">No preference</option>
                 {EMERGENCY_ACTIONS.map((a) => (
-                  <option key={a} value={a}>
-                    {a}
+                  <option key={a.value} value={a.value}>
+                    {a.label}
                   </option>
                 ))}
               </select>
@@ -549,12 +576,23 @@ export default function KnowledgeBasePage() {
           </div>
         </SectionCard>
 
-        <div className="flex justify-end pb-10">
+        {/* Sticky save bar: the save action is always visible, and unsaved
+            edits are called out instead of silently discarded on navigation. */}
+        <div className="sticky bottom-0 -mx-2 flex items-center justify-end gap-3 border-t border-gray-100 bg-white/95 px-2 py-3 pb-6 backdrop-blur">
+          {isDirty && !save.isPending && (
+            <span className="text-sm font-medium text-amber-600">
+              Unsaved changes
+            </span>
+          )}
           <Button
-            disabled={save.isPending}
-            onClick={() => save.mutate(toPayload(draft))}
+            disabled={save.isPending || !isDirty}
+            onClick={() =>
+              save.mutate(toPayload(draft), {
+                onSuccess: () => setBaseline(JSON.stringify(draft)),
+              })
+            }
           >
-            {save.isPending ? "Saving…" : "Save knowledge base"}
+            {save.isPending ? "Saving…" : isDirty ? "Save knowledge base" : "Saved ✓"}
           </Button>
         </div>
       </div>

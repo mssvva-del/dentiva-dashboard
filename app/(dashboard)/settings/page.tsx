@@ -16,6 +16,18 @@ import type { BusinessHours } from "@/lib/schemas/practice";
 
 type DayHours = { open: string; close: string } | null;
 
+// Same options as onboarding — free-text here let users type "EST" and corrupt
+// scheduling; a select keeps the value a valid IANA zone.
+const TIMEZONES: { value: string; label: string }[] = [
+  { value: "America/New_York", label: "Eastern Time (New York)" },
+  { value: "America/Chicago", label: "Central Time (Chicago)" },
+  { value: "America/Denver", label: "Mountain Time (Denver)" },
+  { value: "America/Phoenix", label: "Arizona (Phoenix)" },
+  { value: "America/Los_Angeles", label: "Pacific Time (Los Angeles)" },
+  { value: "America/Anchorage", label: "Alaska (Anchorage)" },
+  { value: "Pacific/Honolulu", label: "Hawaii (Honolulu)" },
+];
+
 const DAYS: { key: keyof BusinessHours; label: string }[] = [
   { key: "mon", label: "Monday" },
   { key: "tue", label: "Tuesday" },
@@ -238,13 +250,22 @@ export default function SettingsPage() {
                     >
                       Timezone
                     </label>
-                    <Input
+                    <select
                       id="edit-timezone"
                       value={formTimezone}
                       onChange={(e) => setFormTimezone(e.target.value)}
                       disabled={isSaving}
-                      placeholder="America/New_York"
-                    />
+                      className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                    >
+                      {/* Keep an unknown saved zone selectable so the form never
+                          silently rewrites it just by opening edit mode. */}
+                      {!TIMEZONES.some((t) => t.value === formTimezone) && formTimezone && (
+                        <option value={formTimezone}>{formTimezone}</option>
+                      )}
+                      {TIMEZONES.map((t) => (
+                        <option key={t.value} value={t.value}>{t.label}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="flex gap-2 pt-2">
                     <Button
@@ -482,44 +503,198 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* ── Card 3: Voice Agent Configuration (read-only) ─────── */}
+          {/* ── Card 3: AI Agent (real data — same values used on live calls) */}
+          <AgentCard
+            agentName={data.agent_name ?? "Alex"}
+            agentGreeting={data.agent_greeting ?? ""}
+            languages={data.languages_enabled}
+            isSaving={isSaving}
+            onSave={(fields) => patchMutation.mutate(fields)}
+          />
+
+          {/* ── Card 4: Call Forwarding — the number that makes it all work ── */}
           <Card className="overflow-hidden shadow-sm">
             <CardHeader className="px-6 py-5 border-b border-gray-100">
               <CardTitle
                 className="font-display font-semibold tracking-tight text-navy"
                 style={{ fontSize: 17 }}
               >
-                Voice Agent Configuration
+                Call Forwarding
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-2 gap-x-6 gap-y-5">
-                <Metric label="Agent Name" value="Grace (11Labs)" />
-                <Metric label="LLM Engine" value="Groq Llama-3.3-70b" />
-                <Metric label="Language" value="English (EN)" />
-                <Metric
-                  label="Status"
-                  value={
-                    <span
-                      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-                      style={{ background: "#C6F6D5", color: "#2F855A" }}
+            <CardContent className="p-6 space-y-4">
+              {data.ai_phone_number ? (
+                <>
+                  <div>
+                    <p
+                      className="font-semibold uppercase tracking-widest text-gray-500"
+                      style={{ fontSize: 10 }}
                     >
-                      <span
-                        className="h-1.5 w-1.5 rounded-full animate-pulse"
-                        style={{ background: "#2F855A" }}
-                        aria-hidden
-                      />
-                      Live
-                    </span>
-                  }
-                />
-              </div>
+                      Your Dentovox number
+                    </p>
+                    <p className="mt-1 font-mono text-lg font-semibold text-navy">
+                      {formatPhone(data.ai_phone_number)}
+                    </p>
+                  </div>
+                  {data.forwarding_instruction ? (
+                    <p className="rounded-md bg-gray-50 p-3 text-sm text-gray-700">
+                      {data.forwarding_instruction}
+                    </p>
+                  ) : null}
+                  <p className="text-[12.5px] text-gray-500">
+                    Most carriers: dial <span className="font-mono">*72</span> then
+                    this number to turn forwarding on, and{" "}
+                    <span className="font-mono">*73</span> to turn it off. Your
+                    carrier&apos;s support page has the exact steps.
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-gray-600">
+                  Your dedicated Dentovox number is being provisioned — we&apos;ll
+                  email you the forwarding steps as soon as it&apos;s ready.
+                </p>
+              )}
             </CardContent>
           </Card>
 
         </div>
       ) : null}
     </div>
+  );
+}
+
+/** Editable AI Agent card — shows and edits the EXACT persona the live agent
+ * uses on every call (name + optional extra greeting line). No vendor jargon,
+ * no fake status. */
+function AgentCard({
+  agentName,
+  agentGreeting,
+  languages,
+  isSaving,
+  onSave,
+}: {
+  agentName: string;
+  agentGreeting: string;
+  languages: string[];
+  isSaving: boolean;
+  onSave: (fields: { agent_name?: string; agent_greeting?: string }) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(agentName);
+  const [greeting, setGreeting] = useState(agentGreeting);
+
+  function start() {
+    setName(agentName);
+    setGreeting(agentGreeting);
+    setEditing(true);
+  }
+  function save() {
+    const fields: { agent_name?: string; agent_greeting?: string } = {};
+    if (name.trim() && name.trim() !== agentName) fields.agent_name = name.trim();
+    if (greeting.trim() !== agentGreeting) fields.agent_greeting = greeting.trim();
+    if (Object.keys(fields).length) onSave(fields);
+    setEditing(false);
+  }
+
+  return (
+    <Card className="overflow-hidden shadow-sm">
+      <CardHeader className="px-6 py-5 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <CardTitle
+            className="font-display font-semibold tracking-tight text-navy"
+            style={{ fontSize: 17 }}
+          >
+            AI Agent
+          </CardTitle>
+          {!editing && (
+            <Can permission={PERM.MANAGE_SETTINGS}>
+              <Button variant="outline" size="sm" onClick={start}>
+                Edit
+              </Button>
+            </Can>
+          )}
+        </div>
+        <p className="mt-1 text-[12.5px] text-gray-500">
+          How your receptionist introduces itself on every call. Changes apply to
+          the next call automatically.
+        </p>
+      </CardHeader>
+      <CardContent className="p-6">
+        {editing ? (
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label
+                className="font-semibold uppercase tracking-widest text-gray-500"
+                style={{ fontSize: 10 }}
+                htmlFor="agent-name"
+              >
+                Assistant name
+              </label>
+              <Input
+                id="agent-name"
+                value={name}
+                maxLength={60}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isSaving}
+                placeholder="Alex"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label
+                className="font-semibold uppercase tracking-widest text-gray-500"
+                style={{ fontSize: 10 }}
+                htmlFor="agent-greeting"
+              >
+                Extra welcome line (optional)
+              </label>
+              <textarea
+                id="agent-greeting"
+                value={greeting}
+                maxLength={300}
+                onChange={(e) => setGreeting(e.target.value)}
+                disabled={isSaving}
+                rows={2}
+                placeholder="We're excited to see your smile!"
+                className="w-full rounded-md border border-input bg-background p-2 text-sm"
+              />
+              <p className="text-[12px] text-gray-500">
+                Spoken right after the greeting. The greeting itself always
+                identifies the assistant as virtual and mentions call recording —
+                that part is required and can&apos;t be removed.
+              </p>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button
+                size="sm"
+                disabled={isSaving || !name.trim()}
+                onClick={save}
+                style={{ background: "#00897B" }}
+                className="text-white hover:opacity-90"
+              >
+                {isSaving ? "Saving…" : "Save"}
+              </Button>
+              <Button variant="ghost" size="sm" disabled={isSaving} onClick={() => setEditing(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+            <Metric label="Assistant name" value={agentName} />
+            <Metric
+              label="Languages"
+              value={languages.join(", ").toUpperCase() || "EN"}
+            />
+            <div className="col-span-2">
+              <Metric
+                label="Extra welcome line"
+                value={agentGreeting || <span className="text-gray-400">— none</span>}
+              />
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

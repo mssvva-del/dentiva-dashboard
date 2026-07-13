@@ -30,6 +30,9 @@ export const OnboardingStateSchema = z.object({
       greeting: z.string().nullable().optional(),
     })
     .nullable(),
+  // The Dentovox number the clinic forwards to + the carrier instruction.
+  ai_phone_number: z.string().nullable().optional(),
+  forwarding_instruction: z.string().optional(),
   billing_deferred: z.boolean(),
 });
 export type OnboardingState = z.infer<typeof OnboardingStateSchema>;

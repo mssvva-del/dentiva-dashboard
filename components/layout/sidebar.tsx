@@ -59,16 +59,18 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     <nav aria-label="Primary" className="mt-2 flex flex-col gap-0.5 px-3">
       <GroupLabel>Today</GroupLabel>
       <NavLink href="/" label="Overview" icon={LayoutDashboard} onNavigate={onNavigate} />
+      {/* Labels match the page titles — nav "Front Desk" landing on a page
+          titled "Calls" reads like a mis-click. */}
       <NavLink
         href="/calls"
-        label="Front Desk"
+        label="Calls"
         icon={Phone}
         count={frontDeskCount}
         onNavigate={onNavigate}
       />
       <NavLink
         href="/bookings"
-        label="Schedule"
+        label="Bookings"
         icon={CalendarCheck}
         onNavigate={onNavigate}
       />
@@ -101,30 +103,8 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         icon={RotateCcw}
         onNavigate={onNavigate}
       />
-      <NavLink href="#" label="Treatment Plans" icon={ClipboardList} comingSoon />
-
-      <GroupLabel>Clinical</GroupLabel>
-      <NavLink
-        href="/coming-soon/xray-ai"
-        label="X-Ray AI"
-        icon={ScanLine}
-        comingSoon
-        onNavigate={onNavigate}
-      />
-      <NavLink
-        href="/coming-soon/implant-planner"
-        label="Implant Planner"
-        icon={Boxes}
-        comingSoon
-        onNavigate={onNavigate}
-      />
-      <NavLink
-        href="/coming-soon/marketplace"
-        label="Marketplace"
-        icon={Store}
-        comingSoon
-        onNavigate={onNavigate}
-      />
+      {/* Coming-soon pads removed from the nav (dead href + 4 "Soon" rows read
+          as unfinished software to a first-time doctor). They return when real. */}
 
       <GroupLabel>Practice</GroupLabel>
       <NavLink
