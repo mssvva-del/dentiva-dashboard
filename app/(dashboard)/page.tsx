@@ -33,7 +33,10 @@ export default function DashboardHomePage() {
     day: "numeric",
   });
   const firstName = user?.firstName?.trim();
-  const greetingName = firstName ? `Dr. ${firstName}` : "Doctor";
+  // Clerk sets firstName to the email when a doctor signs up with email only —
+  // never greet "Dr. name@gmail.com". Fall back to a clean "Doctor".
+  const looksLikeEmail = !firstName || firstName.includes("@");
+  const greetingName = looksLikeEmail ? "Doctor" : `Dr. ${firstName}`;
   const greeting = `${timeGreeting(now)}, ${greetingName}.`;
 
   return (
