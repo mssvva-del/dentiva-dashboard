@@ -72,11 +72,10 @@ export default function OnboardingPage() {
       setStep(Math.min(Math.max(next.onboarding_step || step + 1, step + 1), LAST_STEP));
       return next;
     } catch (e) {
-      showToast.error(
-        e instanceof Error && "status" in e
-          ? "Please check the fields and try again."
-          : "Something went wrong saving this step.",
-      );
+      // Surface the backend's specific message (e.g. "Enter a 10-digit US phone
+      // number…") instead of a vague "check the fields". Strip pydantic's noise.
+      const msg = apiErrorDetail(e)?.replace(/^Value error,\s*/i, "");
+      showToast.error(msg || "Something went wrong saving this step.");
       throw e;
     } finally {
       setSaving(false);
