@@ -17,8 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/lib/toast";
-import { onboardingApi } from "@/lib/api/endpoints";
-import { ApiError } from "@/lib/api/client";
+import { onboardingApi, type AnalyzeWebsiteResponse } from "@/lib/api/endpoints";
+import { ApiError, apiErrorDetail } from "@/lib/api/client";
 import { useOnboardingState, useBaa } from "@/lib/hooks/use-onboarding";
 import { LoadingState } from "@/components/features/page-states";
 import type { OnboardingState } from "@/lib/schemas/onboarding";
@@ -109,8 +109,13 @@ export default function OnboardingPage() {
   return (
     <div>
       <Stepper current={step} />
+      {step === 1 && <SmartSetupCard onApplied={() => refetch()} />}
       <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        {step === 1 && <ClinicStep state={state} saving={saving} onSave={save} />}
+        {/* key: remount after Smart-setup applies, so prefilled values appear */}
+        {step === 1 && (
+          <ClinicStep key={`${state.name}|${state.timezone}`} state={state}
+            saving={saving} onSave={save} />
+        )}
         {step === 2 && <HoursStep state={state} saving={saving} onSave={save} />}
         {step === 3 && <PhoneStep state={state} saving={saving} onSave={save} />}
         {step === 4 && <PmsStep state={state} saving={saving} onSave={save} />}
@@ -131,6 +136,100 @@ export default function OnboardingPage() {
         >
           ← Back
         </button>
+      )}
+    </div>
+  );
+}
+
+/** Smart setup — paste the clinic website, the system learns it and prefills
+ * every step; the doctor just confirms. Shows what was learned + the few
+ * questions the site didn't answer + how the agent will sound. */
+function SmartSetupCard({ onApplied }: { onApplied: () => void }) {
+  const { getToken } = useAuth();
+  const [url, setUrl] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<AnalyzeWebsiteResponse["profile"] | null>(null);
+
+  async function analyze() {
+    setBusy(true);
+    try {
+      const token = await getToken();
+      const res = await onboardingApi.analyzeWebsite(url.trim(), token);
+      setResult(res.profile);
+      onApplied(); // wizard state refetch → all steps arrive prefilled
+      showToast.success("We learned your clinic — every step below is prefilled.");
+    } catch (e) {
+      showToast.error(apiErrorDetail(e) ?? "Couldn't analyze that site — you can fill steps manually.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const kb = result?.knowledge_base;
+  return (
+    <div className="mt-6 rounded-xl border border-teal-200 bg-teal-50/50 p-5">
+      <p className="text-sm font-semibold text-navy">⚡ Fast setup — we&apos;ll learn your clinic for you</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">
+        Paste your website. We&apos;ll pull your doctors, hours, insurances and
+        policies, and prefill everything below — you just confirm.
+      </p>
+      <div className="mt-3 flex gap-2">
+        <Input value={url} onChange={(e) => setUrl(e.target.value)}
+          placeholder="yourclinic.com" disabled={busy} className="bg-white" />
+        <Button onClick={analyze} disabled={busy || url.trim().length < 4}>
+          {busy ? "Learning…" : "Analyze my site"}
+        </Button>
+      </div>
+
+      {result && (
+        <div className="mt-4 space-y-3">
+          <div className="rounded-lg bg-white p-3 text-sm">
+            <p className="font-semibold text-navy">✓ What we learned</p>
+            <ul className="mt-1 space-y-0.5 text-[13px] text-gray-700">
+              {result.clinic.name && <li>• Clinic: <b>{result.clinic.name}</b></li>}
+              {kb && kb.providers.length > 0 && (
+                <li>• Doctors: {kb.providers.map((p) => p.name).join(", ")}</li>
+              )}
+              {kb && kb.insurances.length > 0 && (
+                <li>• Insurance: {kb.insurances.join(", ")}</li>
+              )}
+              {kb && kb.appointment_types.length > 0 && (
+                <li>• Services: {kb.appointment_types.map((t) => t.name).join(", ")}</li>
+              )}
+              {result.clinic.address && <li>• Address: {result.clinic.address}</li>}
+            </ul>
+          </div>
+
+          {result.agent_preview.greeting && (
+            <div className="rounded-lg bg-white p-3 text-sm">
+              <p className="font-semibold text-navy">🎧 How your receptionist will sound</p>
+              <p className="mt-1 italic text-[13px] text-gray-700">
+                &ldquo;{result.agent_preview.greeting}&rdquo;
+              </p>
+              {result.agent_preview.sample_answers.map((s, i) => (
+                <p key={i} className="mt-1 text-[12.5px] text-gray-600">
+                  <span className="font-medium">Patient:</span> {s.q}
+                  <br />
+                  <span className="font-medium">Agent:</span> {s.a}
+                </p>
+              ))}
+            </div>
+          )}
+
+          {result.gaps.length > 0 && (
+            <div className="rounded-lg bg-amber-50 p-3 text-sm">
+              <p className="font-semibold text-amber-900">
+                A few things your site didn&apos;t tell us
+              </p>
+              <ul className="mt-1 space-y-0.5 text-[13px] text-amber-900">
+                {result.gaps.map((g, i) => <li key={i}>• {g.question}</li>)}
+              </ul>
+              <p className="mt-1.5 text-[12px] text-amber-800">
+                You&apos;ll cover these in the steps below or anytime in Knowledge Base.
+              </p>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

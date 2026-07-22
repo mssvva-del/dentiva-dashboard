@@ -486,10 +486,43 @@ function onboardingPut<B>(path: string, body: B, token?: string | null) {
   });
 }
 
+// Smart setup: what the analyzer learned from the clinic's website.
+export const AnalyzeWebsiteResponseSchema = z.object({
+  profile: z.object({
+    clinic: z.object({
+      name: z.string().nullable(),
+      address: z.string().nullable(),
+      phone: z.string().nullable(),
+      timezone: z.string().nullable(),
+      languages: z.array(z.string()),
+    }),
+    business_hours: z.record(z.string(), z.unknown()),
+    knowledge_base: z.object({
+      providers: z.array(z.object({ name: z.string() }).passthrough()),
+      insurances: z.array(z.string()),
+      appointment_types: z.array(z.object({ name: z.string() }).passthrough()),
+    }).passthrough(),
+    gaps: z.array(z.object({ field: z.string(), question: z.string() })),
+    agent_preview: z.object({
+      greeting: z.string(),
+      sample_answers: z.array(z.object({ q: z.string(), a: z.string() })),
+    }),
+  }),
+  state: OnboardingStateSchema,
+});
+export type AnalyzeWebsiteResponse = z.infer<typeof AnalyzeWebsiteResponseSchema>;
+
 export const onboardingApi = {
   state: (token?: string | null) =>
     apiClient<OnboardingState>("/api/onboarding/state", {
       schema: OnboardingStateSchema,
+      token,
+    }),
+  analyzeWebsite: (url: string, token?: string | null) =>
+    apiClient<AnalyzeWebsiteResponse>("/api/onboarding/analyze-website", {
+      schema: AnalyzeWebsiteResponseSchema,
+      method: "POST",
+      body: { url },
       token,
     }),
   clinic: (data: ClinicStepInput, token?: string | null) =>
