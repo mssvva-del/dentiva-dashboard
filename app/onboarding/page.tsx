@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/lib/toast";
 import { onboardingApi, type AnalyzeWebsiteResponse } from "@/lib/api/endpoints";
-import { ApiError, apiErrorDetail } from "@/lib/api/client";
+import { apiErrorDetail } from "@/lib/api/client";
 import { useOnboardingState, useBaa } from "@/lib/hooks/use-onboarding";
 import { LoadingState } from "@/components/features/page-states";
 import type { OnboardingState } from "@/lib/schemas/onboarding";
@@ -92,14 +92,12 @@ export default function OnboardingPage() {
         router.replace("/");
       }
     } catch (e) {
-      // Backend blocks go-live with 403 until the BAA is signed — send the owner
-      // back to the Terms step with a clear message instead of a generic error.
-      if (e instanceof ApiError && e.status === 403) {
-        showToast.error("Please accept the Terms & BAA first.");
-        setStep(6);
-      } else {
-        showToast.error("Some required steps are incomplete — please review them.");
-      }
+      // Show the backend's EXACT reason (e.g. "Cannot go live — missing: agent
+      // setup.") so the doctor isn't trapped in a loop guessing. Only jump back to
+      // the Terms step when the message is actually about the BAA/Terms.
+      const detail = apiErrorDetail(e) ?? "";
+      showToast.error(detail || "Couldn't go live — please review the steps above.");
+      if (/terms|baa|agreement/i.test(detail)) setStep(6);
     } finally {
       setSaving(false);
     }
