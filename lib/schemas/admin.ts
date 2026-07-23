@@ -58,6 +58,34 @@ export const BaaHistoryRowSchema = z.object({
 });
 export type BaaHistoryRow = z.infer<typeof BaaHistoryRowSchema>;
 
+// QA-LOOP-1: self-learning review of failed calls. Matches admin.py QaReview.
+export const QaFindingSchema = z.object({
+  call_id: z.string(),
+  outcome: z.string().nullable(),
+  lost_caller: z.boolean(),
+  break_point: z.string(),
+  why: z.string(),
+  prompt_fix: z.string(),
+  category: z.string(),
+});
+export type QaFinding = z.infer<typeof QaFindingSchema>;
+
+export const QaPatternSchema = z.object({
+  category: z.string(),
+  count: z.number(),
+  actionable: z.boolean(),
+  fixes: z.array(z.string()),
+});
+export type QaPattern = z.infer<typeof QaPatternSchema>;
+
+export const QaReviewSchema = z.object({
+  reviewed: z.number(),
+  lost_callers: z.number(),
+  patterns: z.array(QaPatternSchema),
+  findings: z.array(QaFindingSchema),
+});
+export type QaReview = z.infer<typeof QaReviewSchema>;
+
 export const SubscriptionRowSchema = z.object({
   practice_id: z.string(),
   practice_name: z.string(),
