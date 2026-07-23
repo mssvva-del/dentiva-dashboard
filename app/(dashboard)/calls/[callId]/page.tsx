@@ -23,15 +23,35 @@ import type { CallDetail } from "@/lib/schemas/calls";
 function OutcomeBadge({ outcome }: { outcome: string | null | undefined }) {
   if (!outcome) return null;
 
+  // Taxonomy mirrors app/services/call_outcome.py. green=win, grey=neutral/no-op,
+  // amber=lost booking / dropped, red=hard failure.
+  const GREEN = { background: "#C6F6D5", color: "#2F855A" };
+  const GREY = { background: "#E2E8F0", color: "#4A5568" };
+  const AMBER = { background: "#FEF3C7", color: "#B7791F" };
+  const RED = { background: "#FED7D7", color: "#C53030" };
   const styleMap: Record<string, React.CSSProperties> = {
-    booked: { background: "#C6F6D5", color: "#2F855A" },
-    missed: { background: "#FED7D7", color: "#C53030" },
-    info_only: { background: "#E2E8F0", color: "#4A5568" },
+    booked: GREEN,
+    info_only: GREY,
+    transferred: GREY,
+    emergency: RED,
+    no_booking: AMBER,
+    abandoned: AMBER,
+    voicemail: GREY,
+    no_answer: GREY,
+    missed: RED,
+    failed: RED,
   };
   const label: Record<string, string> = {
     booked: "Booked",
-    missed: "Missed",
     info_only: "Info only",
+    transferred: "Transferred",
+    emergency: "Emergency",
+    no_booking: "No booking",
+    abandoned: "Abandoned",
+    voicemail: "Voicemail",
+    no_answer: "No answer",
+    missed: "Missed",
+    failed: "Failed",
   };
 
   const text = label[outcome] ?? outcome;

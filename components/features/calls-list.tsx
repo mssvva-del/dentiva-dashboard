@@ -127,7 +127,7 @@ function CallRow({ call }: { call: CallSummary }) {
       </div>
       {call.outcome ? (
         <span className="hidden text-xs capitalize text-gray-500 sm:inline">
-          {call.outcome}
+          {call.outcome.replace(/_/g, " ")}
         </span>
       ) : null}
       {call.call_intent && <IntentChip intent={call.call_intent} />}
