@@ -40,6 +40,7 @@ type Draft = {
   appointment_types: ApptDraft[];
   insurances: string[];
   self_pay: boolean;
+  current_offer: string;
   policies: { cancellation: string; late: string; new_patient: string; parking: string };
   emergency: { triggers: string; action: EmergencyAction | ""; on_call_number: string };
 };
@@ -64,6 +65,7 @@ const EMPTY_DRAFT: Draft = {
   appointment_types: [],
   insurances: [],
   self_pay: false,
+  current_offer: "",
   policies: { cancellation: "", late: "", new_patient: "", parking: "" },
   emergency: { triggers: "", action: "", on_call_number: "" },
 };
@@ -86,6 +88,7 @@ function toDraft(kb: KnowledgeBase | null): Draft {
     })),
     insurances: kb.insurances ?? [],
     self_pay: kb.self_pay ?? false,
+    current_offer: kb.current_offer ?? "",
     policies: {
       cancellation: kb.policies?.cancellation ?? "",
       late: kb.policies?.late ?? "",
@@ -150,6 +153,7 @@ function toPayload(d: Draft): KnowledgeBase {
     appointment_types: appointment_types.length ? appointment_types : undefined,
     insurances: insurances.length ? insurances : undefined,
     self_pay: d.self_pay,
+    current_offer: d.current_offer.trim() || undefined,
     policies: policiesEmpty ? undefined : policies,
     emergency: emergencyEmpty ? undefined : emergency,
   };
@@ -465,6 +469,23 @@ export default function KnowledgeBasePage() {
               />
               Accept self-pay / uninsured patients
             </label>
+          </div>
+        </SectionCard>
+
+        {/* Current offer / special */}
+        <SectionCard
+          title="Current offer"
+          description="A promotion or special your clinic is running now — the AI mentions it to callers who ask about price, are new, or are deciding. Leave blank if none."
+        >
+          <div>
+            <Label htmlFor="current-offer">Offer the agent should mention</Label>
+            <Input
+              id="current-offer"
+              placeholder="New patient exam + X-rays $99 · Free whitening with first cleaning"
+              maxLength={300}
+              value={draft.current_offer}
+              onChange={(e) => setDraft((d) => ({ ...d, current_offer: e.target.value }))}
+            />
           </div>
         </SectionCard>
 

@@ -57,6 +57,8 @@ export const KnowledgeBaseSchema = z.object({
   appointment_types: z.array(AppointmentTypeSchema).nullish(),
   insurances: z.array(z.string()).nullish(),
   self_pay: z.boolean().nullish(),
+  // The clinic's own current promotion/special the agent mentions to callers.
+  current_offer: z.string().nullish(),
   policies: PoliciesSchema.nullish(),
   emergency: EmergencySchema.nullish(),
 });
