@@ -39,6 +39,7 @@ import {
 import {
   ClinicsResponseSchema,
   ClinicDetailSchema,
+  BaaHistoryRowSchema,
   RevenueSchema,
   StaffResponseSchema,
   SystemHealthSchema,
@@ -607,6 +608,15 @@ export const adminApi = {
     apiClient<ClinicRow[]>("/api/admin/clinics", { schema: ClinicsResponseSchema, token }),
   clinic: (id: string, token?: string | null) =>
     apiClient<ClinicDetail>(`/api/admin/clinics/${id}`, { schema: ClinicDetailSchema, token }),
+  clinicBaaHistory: (id: string, token?: string | null) =>
+    apiClient<import("@/lib/schemas/admin").BaaHistoryRow[]>(
+      `/api/admin/clinics/${id}/baa-history`,
+      { schema: z.array(BaaHistoryRowSchema), token },
+    ),
+  editClinic: (id: string, data: Record<string, unknown>, token?: string | null) =>
+    apiClient<ClinicDetail>(`/api/admin/clinics/${id}`, {
+      schema: ClinicDetailSchema, method: "PATCH", body: data, token,
+    }),
   impersonate: (id: string, token?: string | null) =>
     apiClient(`/api/admin/clinics/${id}/impersonate`, {
       schema: ImpersonateResponseSchema, method: "POST", token,
