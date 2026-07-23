@@ -22,6 +22,7 @@ export type BusinessHours = z.infer<typeof BusinessHoursSchema>;
 export const PracticeSchema = z.object({
   id: z.string(),
   name: z.string(),
+  address: z.string().nullable().optional(),
   timezone: z.string(),
   phone_number: z.string().nullable().optional(),
   transfer_phone_number: z.string().nullable().optional(),

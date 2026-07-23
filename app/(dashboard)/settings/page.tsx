@@ -56,6 +56,7 @@ export default function SettingsPage() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [formName, setFormName] = useState("");
+  const [formAddress, setFormAddress] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formTransfer, setFormTransfer] = useState("");
   const [formTimezone, setFormTimezone] = useState("");
@@ -68,6 +69,7 @@ export default function SettingsPage() {
   function enterEditMode() {
     if (!data) return;
     setFormName(data.name);
+    setFormAddress(data.address ?? "");
     setFormPhone(data.phone_number ?? "");
     setFormTransfer(data.transfer_phone_number ?? "");
     setFormTimezone(data.timezone);
@@ -114,11 +116,13 @@ export default function SettingsPage() {
     if (!data) return;
     const changed: {
       name?: string;
+      address?: string;
       phone_number?: string;
       transfer_phone_number?: string;
       timezone?: string;
     } = {};
     if (formName !== data.name) changed.name = formName;
+    if (formAddress !== (data.address ?? "")) changed.address = formAddress;
     if (formPhone !== (data.phone_number ?? "")) changed.phone_number = formPhone;
     if (formTransfer !== (data.transfer_phone_number ?? ""))
       changed.transfer_phone_number = formTransfer;
@@ -214,6 +218,22 @@ export default function SettingsPage() {
                     <label
                       className="font-semibold uppercase tracking-widest text-gray-500"
                       style={{ fontSize: 10 }}
+                      htmlFor="edit-address"
+                    >
+                      Address
+                    </label>
+                    <Input
+                      id="edit-address"
+                      value={formAddress}
+                      onChange={(e) => setFormAddress(e.target.value)}
+                      disabled={isSaving}
+                      placeholder="123 Main St, City, ST 00000"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label
+                      className="font-semibold uppercase tracking-widest text-gray-500"
+                      style={{ fontSize: 10 }}
                       htmlFor="edit-phone"
                     >
                       Phone
@@ -290,6 +310,9 @@ export default function SettingsPage() {
               ) : (
                 /* ── Read-only mode ── */
                 <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+                  <div className="col-span-2">
+                    <Metric label="Address" value={data.address || "—"} />
+                  </div>
                   <Metric
                     label="Phone"
                     value={data.phone_number ? formatPhone(data.phone_number) : "—"}
