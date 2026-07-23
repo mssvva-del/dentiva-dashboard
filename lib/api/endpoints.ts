@@ -47,6 +47,7 @@ import {
   FlagRowSchema,
   AuditResponseSchema,
   ImpersonateResponseSchema,
+  QaReviewSchema,
   type ClinicRow,
   type ClinicDetail,
   type Revenue,
@@ -647,6 +648,11 @@ export const adminApi = {
     }),
   auditLogs: (token?: string | null) =>
     apiClient("/api/admin/audit-logs", { schema: AuditResponseSchema, token }),
+  qaCallReview: (limit: number, token?: string | null) =>
+    apiClient<import("@/lib/schemas/admin").QaReview>(
+      `/api/admin/qa/call-review?limit=${limit}`,
+      { schema: QaReviewSchema, token },
+    ),
 };
 
 // Pricing editor (feat/admin-v2). Read is the source of truth; the two PUTs do

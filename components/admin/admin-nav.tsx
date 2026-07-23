@@ -19,6 +19,7 @@ const LINKS: [string, string][] = [
   ["/admin/staff", "Staff"],
   ["/admin/feature-flags", "Feature flags"],
   ["/admin/system-health", "System health"],
+  ["/admin/call-qa", "Call QA"],
   ["/admin/audit-logs", "Audit log"],
 ];
 
