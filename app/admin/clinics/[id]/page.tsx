@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import { useQuery } from "@tanstack/react-query";
+import { adminApi } from "@/lib/api/endpoints";
+import { apiErrorDetail } from "@/lib/api/client";
+import { showToast } from "@/lib/toast";
 import {
   useAdminClinic,
   useImpersonate,
@@ -121,11 +126,130 @@ export default function AdminClinicDetailPage() {
         </div>
       </div>
 
+      <ProfileBlock clinic={c} onSaved={() => refetch()} />
       <SubscriptionBlock clinic={c} />
       <InvoicesBlock clinicId={id} />
+      <BaaHistoryBlock clinicId={id} />
       <CouponBlock practiceId={id} />
       <NotesBlock clinicId={id} />
     </div>
+  );
+}
+
+/** ADM-CLIENT-360: the full clinic profile in one place — all data + edit. */
+function ProfileBlock({ clinic, onSaved }: { clinic: ClinicDetail; onSaved: () => void }) {
+  const { getToken } = useAuth();
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [f, setF] = useState({
+    name: clinic.name, timezone: clinic.timezone,
+    phone_number: clinic.phone_number ?? "",
+    transfer_phone_number: clinic.transfer_phone_number ?? "",
+    agent_name: clinic.agent_name ?? "",
+    agent_greeting: clinic.agent_greeting ?? "",
+  });
+
+  async function save() {
+    setSaving(true);
+    try {
+      const token = await getToken();
+      await adminApi.editClinic(clinic.id, f, token);
+      showToast.success("Clinic updated.");
+      setEditing(false);
+      onSaved();
+    } catch (e) {
+      showToast.error(apiErrorDetail(e) ?? "Couldn't save.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="rounded-xl border border-gray-200 bg-white p-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-navy">Clinic profile</h2>
+        {!editing && (
+          <Button variant="outline" size="sm" onClick={() => setEditing(true)}>Edit</Button>
+        )}
+      </div>
+      {editing ? (
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {([
+            ["name", "Clinic name"], ["timezone", "Timezone"],
+            ["phone_number", "Practice phone"], ["transfer_phone_number", "Emergency transfer"],
+            ["agent_name", "Agent name"], ["agent_greeting", "Agent greeting"],
+          ] as const).map(([k, label]) => (
+            <label key={k} className="text-sm">
+              <span className="text-xs text-muted-foreground">{label}</span>
+              <Input value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} />
+            </label>
+          ))}
+          <div className="col-span-full flex gap-2">
+            <Button size="sm" disabled={saving} onClick={save}>
+              {saving ? "Saving…" : "Save"}
+            </Button>
+            <Button size="sm" variant="ghost" disabled={saving} onClick={() => setEditing(false)}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
+          <Field label="Owner" value={clinic.owner_email ?? "—"} />
+          <Field label="Status" value={clinic.status} />
+          <Field label="Timezone" value={clinic.timezone} />
+          <Field label="Practice phone" value={clinic.phone_number ?? "—"} />
+          <Field label="Forward to (Dentovox)" value={clinic.ai_phone_number ?? "—"} />
+          <Field label="Emergency transfer" value={clinic.transfer_phone_number ?? "—"} />
+          <Field label="Agent" value={clinic.agent_name ?? "Alex"} />
+          <Field label="Address" value={clinic.address ?? "—"} />
+          <Field label="PMS" value={clinic.pms_system} />
+          <Field label="Knowledge base"
+            value={`${clinic.kb_providers ?? 0} providers · ${clinic.kb_insurances ?? 0} insurances` +
+              (clinic.kb_has_policies ? " · policies" : "") +
+              (clinic.kb_has_emergency ? " · emergency" : "")} />
+          <Field label="Onboarding"
+            value={(clinic.onboarding_step ?? 0) === 0 ? "Complete" : `Step ${clinic.onboarding_step}`} />
+          <Field label="Activity"
+            value={`${clinic.call_count} calls · ${clinic.booking_count} bookings`} />
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** Signed-BAA compliance history (who signed which version, when, from what IP). */
+function BaaHistoryBlock({ clinicId }: { clinicId: string }) {
+  const { getToken } = useAuth();
+  const { data } = useQuery({
+    queryKey: ["admin", "baa-history", clinicId],
+    queryFn: async () => adminApi.clinicBaaHistory(clinicId, await getToken()),
+    retry: false,
+  });
+  return (
+    <section className="rounded-xl border border-gray-200 bg-white p-5">
+      <h2 className="text-sm font-semibold text-navy">Signed agreements (BAA)</h2>
+      {!data || data.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">No BAA on file yet.</p>
+      ) : (
+        <table className="mt-3 w-full text-sm">
+          <thead className="text-left text-xs uppercase text-gray-500">
+            <tr><th className="py-1.5">Version</th><th>Signer</th><th>Title</th><th>Signed</th><th>IP</th></tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {data.map((r, i) => (
+              <tr key={i}>
+                <td className="py-1.5 font-mono text-xs">{r.document_version}</td>
+                <td>{r.signer_name}</td>
+                <td>{r.signer_title}</td>
+                <td>{r.signed_at ? new Date(r.signed_at).toLocaleDateString() : "—"}</td>
+                <td className="font-mono text-xs text-gray-500">{r.signer_ip ?? "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
   );
 }
 

@@ -30,8 +30,33 @@ export const ClinicDetailSchema = z.object({
   user_count: z.number(),
   call_count: z.number(),
   booking_count: z.number(),
+  // ADM-CLIENT-360: full profile (backend always sends these; typed optional).
+  address: z.string().nullable().optional(),
+  phone_number: z.string().nullable().optional(),
+  transfer_phone_number: z.string().nullable().optional(),
+  ai_phone_number: z.string().nullable().optional(),
+  forwarding_instruction: z.string().optional(),
+  business_hours: z.record(z.string(), z.unknown()).optional(),
+  agent_name: z.string().nullable().optional(),
+  agent_greeting: z.string().nullable().optional(),
+  onboarding_step: z.number().optional(),
+  created_at: z.string().nullable().optional(),
+  owner_email: z.string().nullable().optional(),
+  kb_providers: z.number().optional(),
+  kb_insurances: z.number().optional(),
+  kb_has_policies: z.boolean().optional(),
+  kb_has_emergency: z.boolean().optional(),
 });
 export type ClinicDetail = z.infer<typeof ClinicDetailSchema>;
+
+export const BaaHistoryRowSchema = z.object({
+  document_version: z.string(),
+  signer_name: z.string(),
+  signer_title: z.string(),
+  signed_at: z.string().nullable(),
+  signer_ip: z.string().nullable(),
+});
+export type BaaHistoryRow = z.infer<typeof BaaHistoryRowSchema>;
 
 export const SubscriptionRowSchema = z.object({
   practice_id: z.string(),
