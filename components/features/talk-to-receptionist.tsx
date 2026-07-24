@@ -5,6 +5,7 @@ import { RetellWebClient } from "retell-client-js-sdk";
 import { Phone, PhoneOff, Loader2 } from "lucide-react";
 import { useApiToken } from "@/lib/hooks/use-api-token";
 import { voiceApi } from "@/lib/api/endpoints";
+import { apiErrorDetail } from "@/lib/api/client";
 import { showToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
@@ -56,7 +57,11 @@ export function TalkToReceptionist() {
       accessToken = res.access_token;
     } catch (err) {
       console.error("web-call token error", err);
-      showToast.error("Couldn't reach the voice service. Try again in a moment.");
+      // Surface the backend's real reason (e.g. "provider returned 404" when the
+      // Retell agent id is wrong) instead of a vague "try again".
+      showToast.error(
+        apiErrorDetail(err) ?? "Couldn't reach the voice service. Try again in a moment."
+      );
       setState("idle");
       return;
     }
