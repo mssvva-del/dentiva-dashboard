@@ -92,12 +92,20 @@ export default function OnboardingPage() {
         router.replace("/");
       }
     } catch (e) {
-      // Show the backend's EXACT reason (e.g. "Cannot go live — missing: agent
-      // setup.") so the doctor isn't trapped in a loop guessing. Only jump back to
-      // the Terms step when the message is actually about the BAA/Terms.
+      // Show the backend's EXACT reason AND take the doctor straight to the step
+      // that owns the problem, so go-live never dead-ends with a toast they have
+      // to decode. Map the reason → its step (most specific first).
       const detail = apiErrorDetail(e) ?? "";
       showToast.error(detail || "Couldn't go live — please review the steps above.");
-      if (/terms|baa|agreement/i.test(detail)) setStep(6);
+      const d = detail.toLowerCase();
+      const target =
+        /terms|baa|agreement/.test(d) ? 6 :
+        /clinic name|\bname\b/.test(d) ? 1 :
+        /business hours|\bhours\b/.test(d) ? 2 :
+        /agent/.test(d) ? 5 :
+        /language/.test(d) ? 1 :
+        null;
+      if (target !== null) setStep(target);
     } finally {
       setSaving(false);
     }
