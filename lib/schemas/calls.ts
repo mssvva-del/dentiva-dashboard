@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 export const CallDirectionSchema = z.enum(["inbound", "outbound"]);
-export const CallStatusSchema = z.enum(["completed", "missed", "voicemail"]);
+// The backend also emits "in_progress"/"ongoing" (a live or not-yet-ended call).
+// A strict enum here threw on those and blanked the whole Calls list — accept any
+// string and let the badge map the ones it knows.
+export const CallStatusSchema = z.string();
 export const CallOutcomeSchema = z.string();
 
 /** Matches a row from GET /api/calls */

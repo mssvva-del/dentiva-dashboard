@@ -83,23 +83,27 @@ function IntentChip({ intent }: { intent: string }) {
   );
 }
 
-function StatusBadge({ status }: { status: CallSummary["status"] }) {
-  const styleMap: Record<CallSummary["status"], React.CSSProperties> = {
+function StatusBadge({ status }: { status: string }) {
+  const styleMap: Record<string, React.CSSProperties> = {
     completed: { background: "#E0F2F1", color: "#00897B" },
     missed: { background: "#FED7D7", color: "#C53030" },
     voicemail: { background: "#FEF3C7", color: "#B7791F" },
+    in_progress: { background: "#E0E7FF", color: "#4338CA" },
+    ongoing: { background: "#E0E7FF", color: "#4338CA" },
   };
-  const label: Record<CallSummary["status"], string> = {
+  const label: Record<string, string> = {
     completed: "Completed",
     missed: "Missed",
     voicemail: "Voicemail",
+    in_progress: "In progress",
+    ongoing: "In progress",
   };
   return (
     <span
       className="rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize"
-      style={styleMap[status]}
+      style={styleMap[status] ?? { background: "#F1F5F9", color: "#475569" }}
     >
-      {label[status]}
+      {label[status] ?? status.replace(/_/g, " ")}
     </span>
   );
 }
