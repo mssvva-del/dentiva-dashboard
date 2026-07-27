@@ -1,15 +1,15 @@
 /** Display helpers. No business logic — presentation only. */
 
-export function formatDuration(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds < 0) return "—";
+export function formatDuration(seconds: number | null | undefined): string {
+  if (seconds == null || !Number.isFinite(seconds) || seconds < 0) return "—";
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
 /** Returns "2m 22s" style (for call detail card). */
-export function formatDurationLong(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds < 0) return "—";
+export function formatDurationLong(seconds: number | null | undefined): string {
+  if (seconds == null || !Number.isFinite(seconds) || seconds < 0) return "—";
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   if (m === 0) return `${s}s`;

@@ -14,7 +14,7 @@ export const CallSummarySchema = z.object({
   from_number: z.string(),
   to_number: z.string(),
   started_at: z.string(),
-  duration_seconds: z.number(),
+  duration_seconds: z.number().nullable(),  // null while a call is in progress
   status: CallStatusSchema,
   patient_name_redacted: z.string().nullable().optional(),
   patient_id: z.string().nullable().optional(),
