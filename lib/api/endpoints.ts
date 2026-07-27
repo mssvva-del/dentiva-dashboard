@@ -151,10 +151,13 @@ export interface ListCallsParams {
 }
 
 export const callsApi = {
+  // POST so the phone search travels in the body, never the URL (PHI must not
+  // land in access logs or browser history). Non-PHI filters ride along too.
   list: (params: ListCallsParams, token?: string | null) =>
-    apiClient<ListCallsResponse>("/api/calls", {
+    apiClient<ListCallsResponse>("/api/calls/search", {
       schema: ListCallsResponseSchema,
-      params: params as Record<string, string | number | undefined>,
+      method: "POST",
+      body: params as Record<string, unknown>,
       token,
     }),
   get: (callId: string, token?: string | null) =>

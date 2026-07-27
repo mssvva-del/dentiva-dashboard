@@ -242,17 +242,13 @@ export function CallsList() {
   // Parse URL state ──────────────────────────────────────────────────────────
   const direction = (searchParams.get("direction") ?? "") as DirectionFilter;
   const status = (searchParams.get("status") ?? "") as StatusFilter;
-  const searchFromUrl = searchParams.get("search") ?? "";
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
   const offset = (page - 1) * CALLS_PAGE_SIZE;
 
-  // Local search state (debounced before pushing to URL) ────────────────────
-  const [search, setSearch] = useState(searchFromUrl);
-
-  // Sync local state when URL search param changes externally
-  useEffect(() => {
-    setSearch(searchFromUrl);
-  }, [searchFromUrl]);
+  // Phone search lives in component state ONLY — never in the URL (it's PHI; a
+  // number in the URL lands in browser history and access logs). It travels to
+  // the API in a POST body instead.
+  const [search, setSearch] = useState("");
 
   // URL writer ───────────────────────────────────────────────────────────────
   const pushParams = useCallback(
@@ -282,10 +278,11 @@ export function CallsList() {
     setSearch(v);
   };
 
-  // Debounce search → push to URL after 400ms
+  // Debounce search → reset to page 1 after 400ms (search itself stays in state,
+  // NOT the URL; the query re-runs because `search` is in the params below).
   useEffect(() => {
     const timer = setTimeout(() => {
-      pushParams({ search: search, page: "1" });
+      if (page !== 1) pushParams({ page: "1" });
     }, 400);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -307,7 +304,7 @@ export function CallsList() {
     offset,
     ...(direction !== "" ? { direction } : {}),
     ...(status !== "" ? { status } : {}),
-    ...(searchFromUrl !== "" ? { search: searchFromUrl } : {}),
+    ...(search !== "" ? { search } : {}),
   };
 
   const { data, isLoading, isError, isPlaceholderData, refetch } =
