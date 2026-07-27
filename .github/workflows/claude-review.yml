@@ -1,0 +1,46 @@
+name: Claude Code Review
+
+# Automated Anthropic review on every PR. Advisory — it comments, it does not gate
+# merges. Requires the ANTHROPIC_API_KEY repo secret (Settings → Secrets → Actions).
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Review this PR for the Dentovox dashboard (Next.js App Router,
+            TypeScript, Clerk auth, react-query, zod). Report only issues that
+            affect correctness, security, or user trust — skip style nits.
+
+            Prioritise:
+            - Auth: any authed data fetched or mutated without a token / gate;
+              admin-only views reachable by clinic roles.
+            - PHI/privacy: patient data placed in URLs, logs, or client caches it
+              shouldn't be in.
+            - API contracts: zod schemas drifting from the backend response shape
+              (runtime parse breakage), unhandled error states.
+            - UX correctness: forms that submit stale/blank values, missing
+              loading/empty/error states on a data view.
+            - Accessibility of interactive controls added in this PR.
+
+            For each finding give file:line and the concrete failure scenario.
+          claude_args: |
+            {
+              "model": "claude-sonnet-5"
+            }
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
