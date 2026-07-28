@@ -506,6 +506,7 @@ export const AnalyzeWebsiteResponseSchema = z.object({
       providers: z.array(z.object({ name: z.string() }).passthrough()),
       insurances: z.array(z.string()),
       appointment_types: z.array(z.object({ name: z.string() }).passthrough()),
+      current_offer: z.string().nullable().optional(),
     }).passthrough(),
     gaps: z.array(z.object({ field: z.string(), question: z.string() })),
     agent_preview: z.object({

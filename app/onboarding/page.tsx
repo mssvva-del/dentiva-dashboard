@@ -192,16 +192,30 @@ function SmartSetupCard({ onApplied }: { onApplied: () => void }) {
             <p className="font-semibold text-navy">✓ What we learned</p>
             <ul className="mt-1 space-y-0.5 text-[13px] text-gray-700">
               {result.clinic.name && <li>• Clinic: <b>{result.clinic.name}</b></li>}
+              {result.clinic.phone && <li>• Phone: {result.clinic.phone}</li>}
+              {result.clinic.address && <li>• Address: {result.clinic.address}</li>}
+              {(() => {
+                const open = Object.entries(result.business_hours).filter(
+                  ([, v]) => v && typeof v === "object",
+                );
+                return open.length > 0 ? (
+                  <li>• Hours: {open.length} day{open.length > 1 ? "s" : ""}/week</li>
+                ) : null;
+              })()}
+              {result.clinic.languages.length > 0 && (
+                <li>• Languages: {result.clinic.languages.map((l) => l.toUpperCase()).join(", ")}</li>
+              )}
+              {result.clinic.timezone && <li>• Timezone: {result.clinic.timezone}</li>}
               {kb && kb.providers.length > 0 && (
                 <li>• Doctors: {kb.providers.map((p) => p.name).join(", ")}</li>
-              )}
-              {kb && kb.insurances.length > 0 && (
-                <li>• Insurance: {kb.insurances.join(", ")}</li>
               )}
               {kb && kb.appointment_types.length > 0 && (
                 <li>• Services: {kb.appointment_types.map((t) => t.name).join(", ")}</li>
               )}
-              {result.clinic.address && <li>• Address: {result.clinic.address}</li>}
+              {kb && kb.insurances.length > 0 && (
+                <li>• Insurance: {kb.insurances.join(", ")}</li>
+              )}
+              {kb?.current_offer && <li>• Offer: {kb.current_offer}</li>}
             </ul>
           </div>
 
