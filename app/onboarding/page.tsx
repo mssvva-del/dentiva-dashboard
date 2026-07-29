@@ -21,6 +21,10 @@ import { onboardingApi, type AnalyzeWebsiteResponse } from "@/lib/api/endpoints"
 import { apiErrorDetail } from "@/lib/api/client";
 import { useOnboardingState, useBaa } from "@/lib/hooks/use-onboarding";
 import { LoadingState } from "@/components/features/page-states";
+import { FaqBlock } from "@/components/features/faq-block";
+import {
+  FAQ_AGENT, FAQ_HOURS, FAQ_PHONE, FAQ_PMS, FAQ_TERMS,
+} from "@/lib/faq-content";
 import type { OnboardingState } from "@/lib/schemas/onboarding";
 
 const DAYS = [
@@ -383,6 +387,7 @@ function HoursStep({ state, saving, onSave }: StepProps) {
         onClick={() => onSave((t) => onboardingApi.hours({ business_hours: hours }, t))}>
         Continue
       </Button>
+      <FaqBlock items={FAQ_HOURS} />
     </div>
   );
 }
@@ -459,6 +464,7 @@ function PhoneStep({ state, saving, onSave }: StepProps) {
           }, t))}>
         Continue
       </Button>
+      <FaqBlock items={FAQ_PHONE} />
     </div>
   );
 }
@@ -495,6 +501,7 @@ function PmsStep({ state, saving, onSave }: StepProps) {
         onClick={() => onSave((t) => onboardingApi.pms({ pms_system: pms }, t))}>
         Continue
       </Button>
+      <FaqBlock items={FAQ_PMS} />
     </div>
   );
 }
@@ -545,6 +552,7 @@ function AgentStep({ state, saving, onSave }: StepProps) {
         }, t))}>
         Continue
       </Button>
+      <FaqBlock items={FAQ_AGENT} />
     </div>
   );
 }
@@ -633,6 +641,7 @@ function BaaStep(
       >
         Accept &amp; continue
       </Button>
+      <FaqBlock items={FAQ_TERMS} />
     </div>
   );
 }

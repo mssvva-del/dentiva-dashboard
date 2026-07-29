@@ -12,6 +12,8 @@ import { usePracticeMe, usePatchPracticeMe } from "@/lib/hooks/use-dashboard";
 import { COPY } from "@/lib/constants";
 import { formatPhone } from "@/lib/utils/format";
 import { cn } from "@/lib/utils";
+import { FaqBlock } from "@/components/features/faq-block";
+import { FAQ_AGENT, FAQ_PHONE } from "@/lib/faq-content";
 import type { BusinessHours } from "@/lib/schemas/practice";
 
 type DayHours = { open: string; close: string } | null;
@@ -582,6 +584,7 @@ export default function SettingsPage() {
 
         </div>
       ) : null}
+      <FaqBlock items={[...FAQ_PHONE, ...FAQ_AGENT]} title="Phone & AI receptionist — common questions" />
     </div>
   );
 }

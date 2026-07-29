@@ -2,6 +2,8 @@ import { PageHeader } from "@/components/layout/page-header";
 import { ReactivationList } from "@/components/features/reactivation-list";
 import { ReactivationRoi } from "@/components/features/reactivation-roi";
 import { CampaignsPanel } from "@/components/features/campaigns-panel";
+import { FaqBlock } from "@/components/features/faq-block";
+import { FAQ_REACTIVATION } from "@/lib/faq-content";
 
 export default function ReactivationPage() {
   return (
@@ -14,6 +16,7 @@ export default function ReactivationPage() {
       <ReactivationRoi />
       <CampaignsPanel />
       <ReactivationList />
+      <FaqBlock items={FAQ_REACTIVATION} title="How reactivation works" />
     </div>
   );
 }
