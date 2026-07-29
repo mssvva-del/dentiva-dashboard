@@ -836,3 +836,21 @@ export const billingApi = {
       token,
     }),
 };
+
+// In-app help assistant. Answers product questions from a curated document on
+// the backend — it has no access to practice data, so nothing sensitive travels.
+export const AssistantReplySchema = z.object({ reply: z.string() });
+
+export const assistantApi = {
+  ask: (
+    message: string,
+    history: { role: "user" | "assistant"; content: string }[],
+    token?: string | null,
+  ) =>
+    apiClient<{ reply: string }>("/api/assistant/ask", {
+      schema: AssistantReplySchema,
+      method: "POST",
+      body: { message, history },
+      token,
+    }),
+};
