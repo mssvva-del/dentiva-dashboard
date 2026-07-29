@@ -18,6 +18,7 @@ import {
   UserPlus,
   CreditCard,
   BookOpen,
+  Wand2,
 } from "lucide-react";
 import { NavLink } from "./nav-link";
 import { NAV } from "@/lib/constants";
@@ -26,6 +27,7 @@ import { usePracticeMe, useDashboardToday } from "@/lib/hooks/use-dashboard";
 import { useCallbacksList } from "@/lib/hooks/use-callbacks";
 import { useWaitlistList } from "@/lib/hooks/use-waitlist";
 import { useIsInternal, useCan } from "@/lib/hooks/use-me";
+import { useOnboardingState } from "@/lib/hooks/use-onboarding";
 import { PERM } from "@/lib/schemas/me";
 
 function GroupLabel({ children }: { children: React.ReactNode }) {
@@ -54,6 +56,12 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { allowed: canManageTeam } = useCan(PERM.MANAGE_TEAM);
   // Billing is visible to manager+ (VIEW_BILLING); changing the plan is owner-only.
   const { allowed: canViewBilling } = useCan(PERM.VIEW_BILLING);
+  // "Finish setup" only matters while the wizard is unfinished, and only for the
+  // roles that can actually save it (the wizard's API requires MANAGE_SETTINGS).
+  const { allowed: canManageSettings } = useCan(PERM.MANAGE_SETTINGS);
+  const { data: setupState } = useOnboardingState();
+  const setupUnfinished =
+    !!setupState && !setupState.complete && setupState.status === "onboarding";
 
   return (
     <nav aria-label="Primary" className="mt-2 flex flex-col gap-0.5 px-3">
@@ -119,6 +127,17 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         icon={Settings}
         onNavigate={onNavigate}
       />
+      {/* Way back into the wizard after "Save & exit". Only while setup is
+          unfinished (a live practice is redirected out of /onboarding, so the
+          link would dead-end) and only for roles the backend lets save it. */}
+      {setupUnfinished && canManageSettings && (
+        <NavLink
+          href="/onboarding"
+          label="Finish setup"
+          icon={Wand2}
+          onNavigate={onNavigate}
+        />
+      )}
       {canManageTeam && (
         <NavLink
           href="/settings/team"

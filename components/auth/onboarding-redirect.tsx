@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useOnboardingState } from "@/lib/hooks/use-onboarding";
+import { isSetupSnoozed } from "@/lib/setup-snooze";
 
 /**
  * Redirects a still-onboarding practice into the wizard (Platform Iter 1, B2).
@@ -11,13 +12,18 @@ import { useOnboardingState } from "@/lib/hooks/use-onboarding";
  * (not yet live), the user is bounced to /onboarding instead of landing on a
  * half-empty dashboard. Live practices (status 'active', the demo included) are
  * untouched. Fails open: if the state can't load, we don't block the dashboard.
+ *
+ * EXCEPT when the doctor hit "Save & exit" in the wizard: that snoozes the
+ * redirect for this browser session so they can actually look around (a
+ * setup banner keeps the way back one click away). Without the escape hatch
+ * the wizard was a trap.
  */
 export function OnboardingRedirect() {
   const router = useRouter();
   const { data } = useOnboardingState();
 
   useEffect(() => {
-    if (data && !data.complete && data.status === "onboarding") {
+    if (data && !data.complete && data.status === "onboarding" && !isSetupSnoozed()) {
       router.replace("/onboarding");
     }
   }, [data, router]);
