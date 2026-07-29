@@ -96,7 +96,7 @@ export const FAQ_REACTIVATION: FaqItem[] = [
   },
   {
     q: "My records are on paper. Can I still use this?",
-    a: "Yes. Type them into the spreadsheet template we provide (name, phone, last visit if you know it) and upload it. Anything you don't know can stay blank.",
+    a: "Yes. Download the template at the top of the Reactivation page, type them in (name, phone, and last visit if you know it) and upload it. Anything you don't know can stay blank.",
   },
   {
     q: "Is it legal to call or text old patients?",
