@@ -14,6 +14,7 @@ import { formatPhone } from "@/lib/utils/format";
 import { cn } from "@/lib/utils";
 import { FaqBlock } from "@/components/features/faq-block";
 import { FAQ_AGENT, FAQ_PHONE } from "@/lib/faq-content";
+import { CarrierForwardingGuide } from "@/components/features/carrier-forwarding-guide";
 import type { BusinessHours } from "@/lib/schemas/practice";
 
 type DayHours = { open: string; close: string } | null;
@@ -333,6 +334,9 @@ export default function SettingsPage() {
                     value={data.languages_enabled.join(", ").toUpperCase()}
                   />
                   <Metric label="PMS System" value={data.pms_system ?? "—"} />
+                  {/* Three honest states. "Not connected" alone reads as broken —
+                      scheduling works regardless, and a chosen-but-not-yet-linked
+                      PMS is a request in progress, not a failure. */}
                   <Metric
                     label="PMS Connected"
                     value={
@@ -340,8 +344,14 @@ export default function SettingsPage() {
                         <span style={{ color: "#2F855A" }} className="font-medium">
                           ✓ Connected
                         </span>
+                      ) : data.pms_system && data.pms_system !== "none" ? (
+                        <span style={{ color: "#B7791F" }} className="font-medium">
+                          Connecting — typically 1–2 business days
+                        </span>
                       ) : (
-                        <span className="text-gray-400">— Not connected</span>
+                        <span className="text-gray-500">
+                          Using built-in scheduling
+                        </span>
                       )
                     }
                   />
@@ -566,12 +576,7 @@ export default function SettingsPage() {
                       {data.forwarding_instruction}
                     </p>
                   ) : null}
-                  <p className="text-[12.5px] text-gray-500">
-                    Most carriers: dial <span className="font-mono">*72</span> then
-                    this number to turn forwarding on, and{" "}
-                    <span className="font-mono">*73</span> to turn it off. Your
-                    carrier&apos;s support page has the exact steps.
-                  </p>
+                  <CarrierForwardingGuide aiNumber={data.ai_phone_number} />
                 </>
               ) : (
                 <p className="text-sm text-gray-600">

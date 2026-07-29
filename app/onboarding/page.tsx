@@ -22,6 +22,7 @@ import { apiErrorDetail } from "@/lib/api/client";
 import { useOnboardingState, useBaa } from "@/lib/hooks/use-onboarding";
 import { LoadingState } from "@/components/features/page-states";
 import { FaqBlock } from "@/components/features/faq-block";
+import { CarrierForwardingGuide } from "@/components/features/carrier-forwarding-guide";
 import {
   FAQ_AGENT, FAQ_HOURS, FAQ_PHONE, FAQ_PMS, FAQ_TERMS,
 } from "@/lib/faq-content";
@@ -423,10 +424,8 @@ function PhoneStep({ state, saving, onSave }: StepProps) {
                       {state.ai_phone_number}
                     </p>
                     <p className="mt-1.5 text-xs text-muted-foreground">
-                      Most carriers: dial <span className="font-mono">*72</span> +
-                      this number to enable forwarding (<span className="font-mono">*73</span> to
-                      disable). Exact steps are on your carrier&apos;s support page —
-                      and repeated in Settings anytime.
+                      Pick your phone company below for the exact steps — they&apos;re
+                      also in Settings any time.
                     </p>
                   </div>
                 ) : (
@@ -435,6 +434,7 @@ function PhoneStep({ state, saving, onSave }: StepProps) {
                     email the forwarding steps as soon as it&apos;s ready.
                   </p>
                 )}
+                <CarrierForwardingGuide aiNumber={state.ai_phone_number} />
               </>
             )}
           </div>
@@ -479,13 +479,25 @@ function PmsStep({ state, saving, onSave }: StepProps) {
   // completed with our team (credentials/API keys) — a radio button that says
   // "Connect" but connects nothing reads as broken.
   const OPTIONS: [typeof pms, string, string][] = [
-    ["open_dental", "Open Dental", "We'll set up the connection with you after sign-up."],
-    ["nexhealth", "NexHealth", "We'll set up the connection with you after sign-up."],
-    ["none", "Skip for now", "Use the built-in scheduling; connect a PMS later."],
+    ["open_dental", "Open Dental",
+      "Runs on a computer in your office, so it has to be opened up from your side. We'll email a short checklist and finish it with you — usually 1–2 business days."],
+    ["nexhealth", "NexHealth",
+      "NexHealth installs a sync for your specific practice. We'll start that request and keep you posted — usually 1–2 business days."],
+    ["none", "Skip for now",
+      "Use the built-in scheduling; connect a practice system later from Settings."],
   ];
   return (
     <div>
-      <StepHeader title="Practice management system" subtitle="Connect your PMS so the agent can read and write appointments." />
+      <StepHeader
+        title="Practice management system"
+        subtitle="Optional. Your AI receptionist books appointments from day one without it."
+      />
+      <div className="mb-3 rounded-lg bg-teal-50 p-3 text-[13px] text-teal-900">
+        <span className="font-semibold">Built-in scheduling is already on.</span>{" "}
+        The agent offers real openings from your business hours and never invents a
+        time. Connecting your practice software later adds two things: it reads your
+        existing calendar, and bookings land straight in it.
+      </div>
       <div className="space-y-3">
         {OPTIONS.map(([val, label, desc]) => (
           <label key={val} className="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
