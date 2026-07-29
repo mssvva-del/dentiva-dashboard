@@ -2,6 +2,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { OnboardingRedirect } from "@/components/auth/onboarding-redirect";
 import { SetupBanner } from "@/components/features/setup-banner";
+import { AssistantWidget } from "@/components/features/assistant-widget";
 
 export default function DashboardLayout({
   children,
@@ -20,6 +21,8 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+      {/* Floating help — available on every dashboard page. */}
+      <AssistantWidget />
     </div>
   );
 }
