@@ -535,6 +535,45 @@ export default function SettingsPage() {
                   />
                 </button>
               </div>
+
+              {/* Until a PMS sync exists, an AI booking is only visible here — and
+                  a front desk does not watch a dashboard. */}
+              <div className="mt-5 flex items-center justify-between gap-4 border-t border-gray-100 pt-5">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-navy">Text us on every new booking</p>
+                  <p className="mt-0.5 text-[12.5px] text-gray-500">
+                    We text your office line with the patient&apos;s first name and the
+                    time whenever the AI books someone, so your schedule stays
+                    accurate without watching this screen. The reason for the visit
+                    stays here, not in the text.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={data.booking_alerts_enabled}
+                  aria-label="Toggle new booking alerts"
+                  disabled={isSaving}
+                  onClick={() =>
+                    patchMutation.mutate({
+                      booking_alerts_enabled: !data.booking_alerts_enabled,
+                    })
+                  }
+                  className={cn(
+                    "relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50",
+                  )}
+                  style={{ background: data.booking_alerts_enabled ? "#00897B" : "#CBD5E1" }}
+                >
+                  <span
+                    className="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform"
+                    style={{
+                      transform: data.booking_alerts_enabled
+                        ? "translateX(22px)"
+                        : "translateX(2px)",
+                    }}
+                  />
+                </button>
+              </div>
             </CardContent>
           </Card>
 

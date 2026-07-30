@@ -96,6 +96,7 @@ describe("API contract schemas", () => {
         sun: null,
       },
       reminders_enabled: true,
+      booking_alerts_enabled: true,
     };
     expect(GetPracticeMeResponseSchema.parse(sample).name).toBe(
       "Smile Dental NJ"

@@ -31,6 +31,7 @@ export const PracticeSchema = z.object({
   languages_enabled: z.array(z.string()),
   business_hours: BusinessHoursSchema,
   reminders_enabled: z.boolean(),
+  booking_alerts_enabled: z.boolean(),
   // Call routing + the number the clinic forwards to (read-only).
   answer_mode: z.string().optional(),
   rings_before_ai: z.number().optional(),
