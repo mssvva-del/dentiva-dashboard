@@ -28,6 +28,73 @@ export default function AdminSystemHealthPage() {
         <Card label="Internal staff" value={String(h.internal_staff)} />
       </div>
       <VoiceModelCard />
+      <LiveAgentCard />
+    </div>
+  );
+}
+
+/** What the LIVE agent is configured to do — read from Retell, not from our repo.
+ * The repo and the live agent have drifted twice: a prompt fix published to one
+ * agent while production answered on another, and voice tuning that never matched.
+ * Anything listed under "drift" changes what a caller hears. */
+function LiveAgentCard() {
+  const { getToken } = useAuth();
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin", "voice-live-config"],
+    queryFn: async () => voiceModelApi.liveConfig(await getToken()),
+    staleTime: 30_000,
+    retry: false,
+  });
+  if (isLoading || !data) return null; // hidden for roles without access
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-display text-lg font-semibold text-foreground">Live agent</h2>
+        <span className="font-mono text-[11px] text-muted-foreground">{data.agent_id}</span>
+      </div>
+
+      {data.drift.length === 0 ? (
+        <p className="mt-2 text-sm text-emerald-700">
+          Matches what we shipped — no differences that change what a caller hears.
+        </p>
+      ) : (
+        <ul className="mt-2 space-y-1.5">
+          {data.drift.map((d) => (
+            <li key={d} className="flex gap-2 text-sm text-amber-800">
+              <span aria-hidden>⚠</span>
+              <span>{d}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-[12.5px] text-muted-foreground sm:grid-cols-3">
+        <Detail label="Voice" value={data.voice_id ?? "—"} />
+        <Detail label="TTS tier" value={data.voice_model ?? "—"} />
+        <Detail label="Model" value={data.model ?? "—"} />
+        <Detail
+          label="Interruption"
+          value={data.interruption_sensitivity?.toString() ?? "—"}
+        />
+        <Detail
+          label="Silence cut-off"
+          value={data.end_call_after_silence_ms ? `${data.end_call_after_silence_ms / 1000}s` : "—"}
+        />
+        <Detail
+          label="Live transfer"
+          value={data.native_transfer_tools.length ? data.native_transfer_tools.join(", ") : "callback only"}
+        />
+      </dl>
+    </div>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-[11px] uppercase tracking-wide">{label}</dt>
+      <dd className="text-foreground">{value}</dd>
     </div>
   );
 }

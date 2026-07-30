@@ -812,7 +812,26 @@ const VoiceModelSchema = z.object({
   allowed: z.array(z.string()),
   agent_id: z.string(),
 });
+const VoiceLiveConfigSchema = z.object({
+  agent_id: z.string(),
+  voice_id: z.string().nullable(),
+  voice_model: z.string().nullable(),
+  interruption_sensitivity: z.number().nullable(),
+  end_call_after_silence_ms: z.number().nullable(),
+  model: z.string().nullable(),
+  tools: z.array(z.string()),
+  native_transfer_tools: z.array(z.string()),
+  has_emergency_room_branch: z.boolean(),
+  promises_a_bridge_it_cannot_make: z.boolean(),
+  drift: z.array(z.string()),
+});
+export type VoiceLiveConfig = z.infer<typeof VoiceLiveConfigSchema>;
+
 export const voiceModelApi = {
+  // What the agent CALLERS reach is actually configured to do, read live from
+  // Retell — repo files have drifted from the live agent more than once.
+  liveConfig: (token?: string | null) =>
+    apiClient("/api/admin/voice/live-config", { schema: VoiceLiveConfigSchema, token }),
   get: (token?: string | null) =>
     apiClient("/api/admin/voice/model", { schema: VoiceModelSchema, token }),
   set: (model: string, token?: string | null) =>
