@@ -395,9 +395,31 @@ function HoursStep({ state, saving, onSave }: StepProps) {
 
 // ── Step 3: Phone ────────────────────────────────────────────────────────────
 function PhoneStep({ state, saving, onSave }: StepProps) {
+  const { getToken } = useAuth();
   const [mode, setMode] = useState<"forward" | "skip">(state.phone_number ? "forward" : "skip");
   const [number, setNumber] = useState(state.phone_number ?? "");
   const [transfer, setTransfer] = useState(state.transfer_phone_number ?? "");
+  // The clinic needs a real number in front of them to set forwarding up, so get
+  // one as soon as they choose to forward — not after they leave this step.
+  // Idempotent server-side, so a re-render can't buy a second number.
+  const [aiNumber, setAiNumber] = useState(state.ai_phone_number ?? null);
+  const [gettingNumber, setGettingNumber] = useState(false);
+
+  useEffect(() => {
+    if (mode !== "forward" || aiNumber || gettingNumber) return;
+    setGettingNumber(true);
+    (async () => {
+      try {
+        const next = await onboardingApi.provisionNumber(await getToken());
+        setAiNumber(next.ai_phone_number ?? null);
+      } catch {
+        // Non-blocking: the copy below already says we'll email the number.
+      } finally {
+        setGettingNumber(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   return (
     <div>
@@ -415,26 +437,28 @@ function PhoneStep({ state, saving, onSave }: StepProps) {
               <>
                 <Input className="mt-2" placeholder="Your practice number, e.g. +13105551234"
                   value={number} onChange={(e) => setNumber(e.target.value)} />
-                {state.ai_phone_number ? (
+                {aiNumber ? (
                   <div className="mt-3 rounded-md bg-teal-50 p-3">
                     <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
                       Your Dentovox number — forward to:
                     </p>
-                    <p className="mt-1 font-mono text-base font-semibold">
-                      {state.ai_phone_number}
-                    </p>
+                    <p className="mt-1 font-mono text-base font-semibold">{aiNumber}</p>
                     <p className="mt-1.5 text-xs text-muted-foreground">
-                      Pick your phone company below for the exact steps — they&apos;re
-                      also in Settings any time.
+                      This number is yours alone. Pick your phone company below for
+                      the exact steps — they&apos;re also in Settings any time.
                     </p>
                   </div>
+                ) : gettingNumber ? (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Getting you a local Dentovox number…
+                  </p>
                 ) : (
                   <p className="mt-2 text-xs text-muted-foreground">
                     Your dedicated Dentovox number is being provisioned — we&apos;ll
                     email the forwarding steps as soon as it&apos;s ready.
                   </p>
                 )}
-                <CarrierForwardingGuide aiNumber={state.ai_phone_number} />
+                <CarrierForwardingGuide aiNumber={aiNumber} />
               </>
             )}
           </div>

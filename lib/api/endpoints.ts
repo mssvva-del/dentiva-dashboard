@@ -537,6 +537,14 @@ export const onboardingApi = {
     onboardingPut("/api/onboarding/hours", data, token),
   phone: (data: PhoneStepInput, token?: string | null) =>
     onboardingPut("/api/onboarding/phone", data, token),
+  // Gets this clinic its own Dentovox number so the forwarding steps can show a
+  // real number. Idempotent — calling it twice never buys two numbers.
+  provisionNumber: (token?: string | null) =>
+    apiClient<OnboardingState>("/api/onboarding/phone/provision", {
+      schema: OnboardingStateSchema,
+      method: "POST",
+      token,
+    }),
   pms: (data: PmsStepInput, token?: string | null) =>
     onboardingPut("/api/onboarding/pms", data, token),
   agent: (data: AgentStepInput, token?: string | null) =>
