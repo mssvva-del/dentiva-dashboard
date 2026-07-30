@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/lib/toast";
 import { onboardingApi, type AnalyzeWebsiteResponse } from "@/lib/api/endpoints";
-import { apiErrorDetail } from "@/lib/api/client";
+import { ApiError, apiErrorDetail } from "@/lib/api/client";
 import { useOnboardingState, useBaa } from "@/lib/hooks/use-onboarding";
 import { LoadingState } from "@/components/features/page-states";
 import { FaqBlock } from "@/components/features/faq-block";
@@ -404,6 +404,10 @@ function PhoneStep({ state, saving, onSave }: StepProps) {
   // Idempotent server-side, so a re-render can't buy a second number.
   const [aiNumber, setAiNumber] = useState(state.ai_phone_number ?? null);
   const [gettingNumber, setGettingNumber] = useState(false);
+  // Set when the clinic isn't on a plan yet: a number bills every month, so it
+  // activates with the plan. Nothing is blocked meanwhile — web calls already let
+  // them hear their own receptionist.
+  const [numberNeedsPlan, setNumberNeedsPlan] = useState(false);
 
   useEffect(() => {
     if (mode !== "forward" || aiNumber || gettingNumber) return;
@@ -412,8 +416,9 @@ function PhoneStep({ state, saving, onSave }: StepProps) {
       try {
         const next = await onboardingApi.provisionNumber(await getToken());
         setAiNumber(next.ai_phone_number ?? null);
-      } catch {
-        // Non-blocking: the copy below already says we'll email the number.
+      } catch (e) {
+        // 402 = "starts with your plan", not an error to apologise for.
+        if (e instanceof ApiError && e.status === 402) setNumberNeedsPlan(true);
       } finally {
         setGettingNumber(false);
       }
@@ -452,6 +457,21 @@ function PhoneStep({ state, saving, onSave }: StepProps) {
                   <p className="mt-2 text-xs text-muted-foreground">
                     Getting you a local Dentovox number…
                   </p>
+                ) : numberNeedsPlan ? (
+                  <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3">
+                    <p className="text-[13px] font-semibold text-amber-900">
+                      Your own phone number activates with your plan
+                    </p>
+                    <p className="mt-1 text-[12.5px] text-amber-900/90">
+                      It&apos;s a local number in your area code, yours alone — that&apos;s
+                      what you forward your practice line to. Finish setup and start
+                      your plan to claim it.
+                    </p>
+                    <p className="mt-1.5 text-[12.5px] text-amber-900/80">
+                      Meanwhile you can talk to your receptionist right now from the
+                      dashboard — it already knows your clinic.
+                    </p>
+                  </div>
                 ) : (
                   <p className="mt-2 text-xs text-muted-foreground">
                     Your dedicated Dentovox number is being provisioned — we&apos;ll
