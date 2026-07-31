@@ -332,7 +332,11 @@ export function CallsList() {
       ) : isError ? (
         <ErrorState onRetry={() => refetch()} />
       ) : !data || data.calls.length === 0 ? (
-        <EmptyState message={COPY.callsEmpty} />
+        <EmptyState
+          message={COPY.callsEmpty}
+          filtered={direction !== "" || status !== "" || search !== ""}
+          onClearFilters={handleClearFilters}
+        />
       ) : (
         <>
           <Card

@@ -35,6 +35,12 @@ export const COPY = {
   bookingsTitle: "Bookings",
   bookingsSubtitle: "Upcoming and recent appointments.",
   bookingsEmpty: "No bookings yet.",
+  emptyFiltered: "Nothing matches the filters you've set.",
+  clearFilters: "Clear filters",
+  // Shown only on a live account with nothing to show — the case where "empty"
+  // may mean "broken" rather than "new".
+  emptyOnLiveAccount:
+    "Your account is live, so if you were expecting to see something here, tell us — that's not normal.",
 
   // Settings
   settingsTitle: "Settings",

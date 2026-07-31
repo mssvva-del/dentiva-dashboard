@@ -264,7 +264,16 @@ export function BookingsTable() {
       ) : isError ? (
         <ErrorState onRetry={() => refetch()} />
       ) : !data || data.bookings.length === 0 ? (
-        <EmptyState message={COPY.bookingsEmpty} />
+        <EmptyState
+          message={COPY.bookingsEmpty}
+          filtered={statusFilter !== "" || fromDate !== "" || toDate !== ""}
+          onClearFilters={() => {
+            setStatusFilter("");
+            setFromDate("");
+            setToDate("");
+            setOffset(0);
+          }}
+        />
       ) : (
         <>
           <Card
