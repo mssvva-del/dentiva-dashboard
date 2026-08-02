@@ -426,21 +426,27 @@ export const waitlistApi = {
 export type { DailyBriefingResponse, WeeklyStatsResponse, CallsByHourResponse, ConversionResponse, ROIResponse, ActivityResponse, EngagementResponse };
 export type { WaitlistListResponse, WaitlistSummary, WaitlistStatus };
 
-export interface ActiveCallSummary {
-  id: string;
-  retell_call_id: string;
-  direction: "inbound" | "outbound";
-  from_number: string;
-  started_at: string;
-  duration_seconds_so_far: number;
-}
 
-export interface ActiveCallsResponse {
-  active_calls: ActiveCallSummary[];
-  count: number;
-}
+// The live-calls widget was the one endpoint that opted out of validation, on the
+// screen where drift is most visible. It also disagreed with the backend:
+// retell_call_id is nullable there (a call row can exist before Retell's id
+// arrives) and was typed as a plain string here.
+const ActiveCallSummarySchema = z.object({
+  id: z.string(),
+  retell_call_id: z.string().nullable(),
+  direction: z.string(),
+  from_number: z.string(),
+  started_at: z.string(),
+  duration_seconds_so_far: z.number(),
+});
 
-const ActiveCallsResponseSchema = z.any();
+const ActiveCallsResponseSchema = z.object({
+  active_calls: z.array(ActiveCallSummarySchema),
+  count: z.number(),
+});
+
+export type ActiveCallSummary = z.infer<typeof ActiveCallSummarySchema>;
+export type ActiveCallsResponse = z.infer<typeof ActiveCallsResponseSchema>;
 
 export const activeCallsApi = {
   get: (token?: string | null) =>

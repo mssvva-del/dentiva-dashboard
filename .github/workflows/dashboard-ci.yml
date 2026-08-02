@@ -1,0 +1,42 @@
+name: Dashboard CI
+
+# Blocking. This repo auto-deploys to Vercel on merge to main, so a type error, a
+# schema that disagrees with the backend, or a build failure reaches the clinics
+# using the product without anything in between. Until now the only workflow here
+# was the advisory review job.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test
+
+      # Catches what typecheck can't: a client component missing "use client",
+      # a server/client boundary violation, a bad import — all of which have
+      # broken this app before and only show up at build time.
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ci_placeholder
+          CLERK_SECRET_KEY: sk_test_ci_placeholder
+          NEXT_PUBLIC_API_URL: https://api.example.com
