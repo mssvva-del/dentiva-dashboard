@@ -833,6 +833,20 @@ const VoiceLiveConfigSchema = z.object({
 });
 export type VoiceLiveConfig = z.infer<typeof VoiceLiveConfigSchema>;
 
+// Who the internal caller is and what they may do. The server stays the boundary
+// — every admin route re-checks its own permission — but the UI should not
+// advertise doors that will not open.
+const AdminMeSchema = z.object({
+  role: z.string(),
+  permissions: z.array(z.string()),
+});
+export type AdminMe = z.infer<typeof AdminMeSchema>;
+
+export const adminMeApi = {
+  get: (token?: string | null) =>
+    apiClient("/api/admin/me", { schema: AdminMeSchema, token }),
+};
+
 export const voiceModelApi = {
   // What the agent CALLERS reach is actually configured to do, read live from
   // Retell — repo files have drifted from the live agent more than once.

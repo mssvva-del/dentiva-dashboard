@@ -2,7 +2,7 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { adminApi } from "@/lib/api/endpoints";
+import { adminApi, adminMeApi, type AdminMe } from "@/lib/api/endpoints";
 import { showToast } from "@/lib/toast";
 
 /**
@@ -78,5 +78,21 @@ export function useUpsertFlag() {
       qc.invalidateQueries({ queryKey: ["admin", "flags"] });
     },
     onError: () => showToast.error("Couldn't save flag."),
+  });
+}
+
+
+/**
+ * The internal caller's own role and permissions, used to hide admin links that
+ * would only return 403. Cached: it changes when someone's role changes, which
+ * is rare and always accompanied by a reload.
+ */
+export function useAdminMe() {
+  const { getToken } = useAuth();
+  return useQuery<AdminMe>({
+    queryKey: ["admin", "me"],
+    queryFn: async () => adminMeApi.get(await getToken()),
+    staleTime: 5 * 60_000,
+    retry: false,
   });
 }
