@@ -15,27 +15,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # This repo is on pnpm (pnpm-lock.yaml, lockfileVersion 9) — npm ci fails
+      # here with "Dependencies lock file is not found", which is exactly what
+      # the first run of this workflow did.
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - name: Typecheck
-        run: npm run typecheck
+        run: pnpm run typecheck
 
       - name: Lint
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Tests
-        run: npm test
+        run: pnpm test
 
       # Catches what typecheck can't: a client component missing "use client",
       # a server/client boundary violation, a bad import — all of which have
       # broken this app before and only show up at build time.
       - name: Build
-        run: npm run build
+        run: pnpm run build
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ci_placeholder
           CLERK_SECRET_KEY: sk_test_ci_placeholder
