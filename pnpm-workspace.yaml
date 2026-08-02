@@ -1,3 +1,9 @@
+# This app is the only package here. pnpm 9 refuses to install when a
+# pnpm-workspace.yaml exists without a packages field — which is what CI
+# hit on its first run, while pnpm 11 locally tolerated the omission.
+packages:
+  - '.'
+
 allowBuilds:
   '@clerk/shared': set this to true or false
   '@parcel/watcher': set this to true or false

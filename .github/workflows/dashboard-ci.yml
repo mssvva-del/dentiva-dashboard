@@ -18,9 +18,11 @@ jobs:
       # This repo is on pnpm (pnpm-lock.yaml, lockfileVersion 9) — npm ci fails
       # here with "Dependencies lock file is not found", which is exactly what
       # the first run of this workflow did.
+      # Match the version used locally so CI and a developer machine resolve the
+      # lockfile identically.
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 11
 
       - uses: actions/setup-node@v4
         with:
