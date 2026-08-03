@@ -1,17 +1,30 @@
-# This app is the only package here. pnpm 9 refuses to install when a
-# pnpm-workspace.yaml exists without a packages field — which is what CI
-# hit on its first run, while pnpm 11 locally tolerated the omission.
+# This app is the only package here. pnpm refuses to install when a
+# pnpm-workspace.yaml exists without a packages field — CI's first run hit
+# exactly that, while the newer pnpm on a developer machine tolerated it.
 packages:
   - '.'
 
+# Dependencies approved to run install scripts. All five are native or compiled
+# tooling that genuinely needs its build step — without it esbuild and @swc/core
+# ship no binary and the build fails.
+#
+# These values used to be the literal placeholder "set this to true or false".
+# pnpm read that as "not approved", refused to run the builds, and exited 1 with
+# ERR_PNPM_IGNORED_BUILDS — so `pnpm install --frozen-lockfile` was already
+# failing on a clean checkout before CI existed to say so. Written by
+# `pnpm approve-builds --all`.
 allowBuilds:
-  '@clerk/shared': set this to true or false
-  '@parcel/watcher': set this to true or false
-  '@swc/core': set this to true or false
-  esbuild: set this to true or false
-  unrs-resolver: set this to true or false
+  '@clerk/shared': true
+  '@parcel/watcher': true
+  '@swc/core': true
+  esbuild: true
+  unrs-resolver: true
+
 onlyBuiltDependencies:
+  - "@clerk/shared"
+  - "@parcel/watcher"
+  - "@swc/core"
   - esbuild
   - unrs-resolver
-  - "@clerk/shared"
+
 verifyDepsBeforeRun: false
