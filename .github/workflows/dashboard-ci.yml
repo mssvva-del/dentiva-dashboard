@@ -48,6 +48,10 @@ jobs:
       - name: Build
         run: pnpm run build
         env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ci_placeholder
+          # Clerk validates the KEY FORMAT at build time (it decodes the domain
+          # out of it), so an arbitrary placeholder fails prerendering with
+          # "The publishableKey passed to Clerk is invalid". This is a real
+          # test-shaped key for clerk.example.com and reaches nothing.
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuZXhhbXBsZS5jb20k
           CLERK_SECRET_KEY: sk_test_ci_placeholder
           NEXT_PUBLIC_API_URL: https://api.example.com
