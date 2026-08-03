@@ -3,6 +3,8 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { RequirePermission } from "@/components/auth/can";
+import { PERM } from "@/lib/schemas/me";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -219,7 +221,7 @@ function TypeSelect({
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function KnowledgeBasePage() {
+function KnowledgeBasePageContent() {
   const { data, isLoading, isError, refetch } = useKnowledgeBase();
   const save = useSaveKnowledgeBase();
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
@@ -622,5 +624,19 @@ export default function KnowledgeBasePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+
+/**
+ * The page's own permission gate. The backend re-checks on every request — this
+ * only replaces a generic failure with a clear "no access", and stops a user
+ * without the permission from reaching a screen built for someone else.
+ */
+export default function KnowledgeBasePage() {
+  return (
+    <RequirePermission permission={PERM.MANAGE_TEMPLATES}>
+      <KnowledgeBasePageContent />
+    </RequirePermission>
   );
 }

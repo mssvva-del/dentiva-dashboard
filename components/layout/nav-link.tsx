@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCan } from "@/lib/hooks/use-me";
+import { PERM, type Permission } from "@/lib/schemas/me";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +38,7 @@ export function NavLink({
   icon: Icon,
   count,
   comingSoon,
+  permission,
   onNavigate,
 }: {
   href: string;
@@ -43,9 +46,17 @@ export function NavLink({
   icon: LucideIcon;
   count?: number;
   comingSoon?: boolean;
+  /** Hide this link when the signed-in user lacks the permission. UX only — the
+   *  page guards itself and the API re-checks; this stops the nav offering a
+   *  door that opens onto an access notice. */
+  permission?: Permission;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const { allowed, pending } = useCan(permission ?? PERM.VIEW_DASHBOARD);
+  // While permissions load, show the link: a nav that reshuffles itself a moment
+  // after it appears is more disorienting than one extra access notice.
+  if (permission && !pending && !allowed) return null;
 
   // Coming-soon items render as a non-interactive, dimmed row with a gold chip.
   if (comingSoon) {

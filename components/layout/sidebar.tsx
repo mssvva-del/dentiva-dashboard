@@ -71,6 +71,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           titled "Calls" reads like a mis-click. */}
       <NavLink
         href="/calls"
+        permission={PERM.VIEW_CALLS}
         label="Calls"
         icon={Phone}
         count={frontDeskCount}
@@ -78,13 +79,16 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       />
       <NavLink
         href="/bookings"
+        permission={PERM.VIEW_APPOINTMENTS}
         label="Bookings"
         icon={CalendarCheck}
         onNavigate={onNavigate}
       />
-      <NavLink href="/patients" label="Patients" icon={Users} onNavigate={onNavigate} />
+      <NavLink href="/patients"
+        permission={PERM.VIEW_PATIENTS} label="Patients" icon={Users} onNavigate={onNavigate} />
       <NavLink
         href="/callbacks"
+        permission={PERM.VIEW_CALLS}
         label="Callbacks"
         icon={PhoneCall}
         count={urgentCallbacks}
@@ -92,6 +96,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       />
       <NavLink
         href="/analytics"
+        permission={PERM.VIEW_ANALYTICS}
         label="Analytics"
         icon={BarChart3}
         onNavigate={onNavigate}
@@ -100,6 +105,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       <GroupLabel>Engagement</GroupLabel>
       <NavLink
         href="/waitlist"
+        permission={PERM.VIEW_APPOINTMENTS}
         label="Waitlist"
         icon={Clock}
         count={waitingCount}
@@ -107,6 +113,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       />
       <NavLink
         href="/reactivation"
+        permission={PERM.VIEW_PATIENTS}
         label="Reactivation"
         icon={RotateCcw}
         onNavigate={onNavigate}
@@ -117,6 +124,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       <GroupLabel>Practice</GroupLabel>
       <NavLink
         href="/knowledge-base"
+        permission={PERM.MANAGE_TEMPLATES}
         label={NAV.knowledgeBase}
         icon={BookOpen}
         onNavigate={onNavigate}

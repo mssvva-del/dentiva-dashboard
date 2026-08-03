@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { RequirePermission } from "@/components/auth/can";
+import { PERM } from "@/lib/schemas/me";
 import { PageHeader } from "@/components/layout/page-header";
 import { WeeklyChart } from "@/components/features/weekly-chart";
 import { PeakHoursChart } from "@/components/features/peak-hours-chart";
@@ -12,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 const PERIODS = [7, 30, 90] as const;
 
-export default function AnalyticsPage() {
+function AnalyticsPageContent() {
   const [days, setDays] = React.useState<(typeof PERIODS)[number]>(30);
 
   return (
@@ -64,5 +66,19 @@ export default function AnalyticsPage() {
         <ConversionFunnelChart />
       </div>
     </div>
+  );
+}
+
+
+/**
+ * The page's own permission gate. The backend re-checks on every request — this
+ * only replaces a generic failure with a clear "no access", and stops a user
+ * without the permission from reaching a screen built for someone else.
+ */
+export default function AnalyticsPage() {
+  return (
+    <RequirePermission permission={PERM.VIEW_ANALYTICS}>
+      <AnalyticsPageContent />
+    </RequirePermission>
   );
 }
