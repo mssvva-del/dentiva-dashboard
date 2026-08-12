@@ -35,6 +35,26 @@ export const useAdminFlags = () =>
 export const useAdminAuditLogs = () =>
   useAdminQuery(["admin", "audit"], (t) => adminApi.auditLogs(t));
 
+export function useCreateClinic() {
+  const { getToken } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: { name: string; timezone?: string; owner_email?: string }) =>
+      adminApi.createClinic(body, await getToken()),
+    onSuccess: (row) => {
+      qc.invalidateQueries({ queryKey: ["admin", "clinics"] });
+      showToast.success(`${row.name} created — it starts in onboarding.`);
+    },
+    onError: (err: unknown) => {
+      // The backend refuses rather than half-creating when Clerk is unreachable,
+      // and says so. Swallowing that into "something went wrong" would have the
+      // operator retry until they build the unreachable clinic by hand.
+      const message = err instanceof Error ? err.message : "";
+      showToast.error(message || "Couldn't create the clinic.");
+    },
+  });
+}
+
 export function useImpersonate() {
   const { getToken } = useAuth();
   return useMutation({

@@ -37,6 +37,7 @@ import {
   type Plan,
 } from "@/lib/schemas/billing";
 import {
+  ClinicRowSchema,
   ClinicsResponseSchema,
   ClinicDetailSchema,
   BaaHistoryRowSchema,
@@ -626,6 +627,16 @@ import { SubscriptionRowSchema } from "@/lib/schemas/admin";
 export const adminApi = {
   clinics: (token?: string | null) =>
     apiClient<ClinicRow[]>("/api/admin/clinics", { schema: ClinicsResponseSchema, token }),
+  createClinic: (
+    body: { name: string; timezone?: string; owner_email?: string },
+    token?: string | null,
+  ) =>
+    apiClient<ClinicRow>("/api/admin/clinics", {
+      method: "POST",
+      body,
+      schema: ClinicRowSchema,
+      token,
+    }),
   clinic: (id: string, token?: string | null) =>
     apiClient<ClinicDetail>(`/api/admin/clinics/${id}`, { schema: ClinicDetailSchema, token }),
   clinicBaaHistory: (id: string, token?: string | null) =>

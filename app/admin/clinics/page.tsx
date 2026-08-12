@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import * as React from "react";
-import { useAdminClinics } from "@/lib/hooks/use-admin";
+import { useAdminClinics, useCreateClinic } from "@/lib/hooks/use-admin";
 import type { ClinicRow } from "@/lib/schemas/admin";
 import { fmtCents } from "@/lib/schemas/billing";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
@@ -29,6 +29,67 @@ function usageTone(used: number, included: number | null) {
 }
 
 type SortKey = "name" | "usage" | "mrr";
+
+function NewClinicForm() {
+  const create = useCreateClinic();
+  const [open, setOpen] = React.useState(false);
+  const [name, setName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="rounded-lg bg-teal px-3 py-1.5 text-sm font-medium text-white"
+      >
+        New clinic
+      </button>
+    );
+  }
+  return (
+    <form
+      className="flex flex-wrap items-center gap-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        create.mutate(
+          { name, owner_email: email.trim() || undefined },
+          { onSuccess: () => { setOpen(false); setName(""); setEmail(""); } },
+        );
+      }}
+    >
+      <input
+        autoFocus
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Clinic name"
+        aria-label="Clinic name"
+        className="w-48 rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+      />
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Owner email (optional)"
+        aria-label="Owner email"
+        className="w-56 rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+      />
+      <button
+        type="submit"
+        disabled={!name.trim() || create.isPending}
+        className="rounded-lg bg-teal px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+      >
+        {create.isPending ? "Creating…" : "Create"}
+      </button>
+      <button
+        type="button"
+        onClick={() => setOpen(false)}
+        className="px-2 py-1.5 text-sm text-muted-foreground"
+      >
+        Cancel
+      </button>
+    </form>
+  );
+}
 
 export default function AdminClinicsPage() {
   const { data, isLoading, isError, refetch } = useAdminClinics();
@@ -62,7 +123,8 @@ export default function AdminClinicsPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl font-semibold text-foreground">Clinics</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <NewClinicForm />
           <input
             type="search"
             value={query}
