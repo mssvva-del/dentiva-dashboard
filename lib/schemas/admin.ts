@@ -10,6 +10,11 @@ export const ClinicRowSchema = z.object({
   mrr_cents: z.number(),
   onboarding_step: z.number(),
   created_at: z.string(),
+  is_canary: z.boolean(),
+  // Minutes this period against what the clinic pays for. The pair is what
+  // turns a list of names into a list of clinics worth looking at.
+  period_minutes_used: z.number(),
+  period_minutes_included: z.number().nullable(),
 });
 export type ClinicRow = z.infer<typeof ClinicRowSchema>;
 export const ClinicsResponseSchema = z.array(ClinicRowSchema);
