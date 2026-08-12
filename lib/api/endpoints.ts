@@ -41,6 +41,7 @@ import {
   ClinicsResponseSchema,
   ClinicDetailSchema,
   BaaHistoryRowSchema,
+  PmsCredentialsStatusSchema,
   RevenueSchema,
   StaffResponseSchema,
   SystemHealthSchema,
@@ -647,6 +648,13 @@ export const adminApi = {
   editClinic: (id: string, data: Record<string, unknown>, token?: string | null) =>
     apiClient<ClinicDetail>(`/api/admin/clinics/${id}`, {
       schema: ClinicDetailSchema, method: "PATCH", body: data, token,
+    }),
+  // Write-only by design: the response says which bridge answers, never with
+  // what. An API key into a practice's own system is a larger thing to leak than
+  // any single patient record.
+  setPmsCredentials: (id: string, data: Record<string, string>, token?: string | null) =>
+    apiClient(`/api/admin/clinics/${id}/pms-credentials`, {
+      schema: PmsCredentialsStatusSchema, method: "PUT", body: data, token,
     }),
   impersonate: (id: string, token?: string | null) =>
     apiClient(`/api/admin/clinics/${id}/impersonate`, {

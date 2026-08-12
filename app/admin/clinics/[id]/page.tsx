@@ -11,6 +11,7 @@ import {
   useAdminClinic,
   useImpersonate,
   useOverrideSubscription,
+  useSetPmsCredentials,
 } from "@/lib/hooks/use-admin";
 import { useCoupons, useApplyCoupon } from "@/lib/hooks/use-coupons";
 import {
@@ -127,6 +128,7 @@ export default function AdminClinicDetailPage() {
       </div>
 
       <ProfileBlock clinic={c} onSaved={() => refetch()} />
+      <PmsBridgeBlock clinic={c} />
       <SubscriptionBlock clinic={c} />
       <InvoicesBlock clinicId={id} />
       <BaaHistoryBlock clinicId={id} />
@@ -214,6 +216,85 @@ function ProfileBlock({ clinic, onSaved }: { clinic: ClinicDetail; onSaved: () =
             value={`${clinic.call_count} calls · ${clinic.booking_count} bookings`} />
         </div>
       )}
+    </section>
+  );
+}
+
+/** This clinic's own PMS bridge.
+ *
+ *  The deployment's NexHealth/Kolla keys describe ONE location, so the second
+ *  clinic to connect a PMS either shared the first clinic's calendar or had none
+ *  at all — and giving it one meant a redeploy while the practice waited.
+ *
+ *  Which is also why "PMS: eaglesoft" above is not the answer to "is it
+ *  connected": that field is what the practice runs, not what we can reach. */
+function PmsBridgeBlock({ clinic }: { clinic: ClinicDetail }) {
+  const save = useSetPmsCredentials(clinic.id);
+  const [bridge, setBridge] = useState("nexhealth");
+  const [fields, setFields] = useState<Record<string, string>>({});
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setFields((f) => ({ ...f, [k]: e.target.value }));
+
+  const needed: Array<[string, string]> =
+    bridge === "kolla"
+      ? [["api_key", "API key"], ["consumer_id", "Consumer ID"], ["connector_id", "Connector ID (if no consumer)"]]
+      : [["api_key", "API key"], ["subdomain", "Subdomain"], ["location_id", "Location ID"]];
+
+  return (
+    <section className="rounded-xl border border-gray-200 bg-white p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold">PMS connection</h2>
+        <span className="text-xs text-muted-foreground">
+          {clinic.pms_bridge
+            ? `Reachable via ${clinic.pms_bridge}` +
+              (clinic.pms_credentials_own ? " (own keys)" : " (deployment keys)")
+            : "Not reachable — the agent uses our own book"}
+        </span>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Entered here, encrypted, and never shown again — replacing it means typing
+        the whole set. Saving is refused if a field is missing, because a
+        half-connected bridge fails during a patient call rather than now.
+      </p>
+      <div className="mt-3 flex flex-wrap items-end gap-3">
+        <label className="text-sm">
+          <span className="block text-xs text-muted-foreground">Bridge</span>
+          <select
+            value={bridge}
+            onChange={(e) => { setBridge(e.target.value); setFields({}); }}
+            className="mt-1 h-9 rounded-md border border-input bg-background px-2 text-sm"
+          >
+            <option value="nexhealth">NexHealth</option>
+            <option value="kolla">Kolla</option>
+          </select>
+        </label>
+        {needed.map(([key, label]) => (
+          <label key={key} className="text-sm">
+            <span className="block text-xs text-muted-foreground">{label}</span>
+            <input
+              type={key === "api_key" ? "password" : "text"}
+              value={fields[key] ?? ""}
+              onChange={set(key)}
+              autoComplete="off"
+              className="mt-1 h-9 w-44 rounded-md border border-input bg-background px-2 text-sm"
+            />
+          </label>
+        ))}
+        <Button
+          disabled={save.isPending || !fields.api_key}
+          onClick={() =>
+            save.mutate(
+              { bridge, ...fields },
+              // Clear on success: leaving a live key in a form field means it is
+              // still on screen when somebody walks past, and still in the DOM
+              // for anything that reads it.
+              { onSuccess: () => setFields({}) },
+            )
+          }
+        >
+          {save.isPending ? "Saving…" : "Connect"}
+        </Button>
+      </div>
     </section>
   );
 }
