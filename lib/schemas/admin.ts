@@ -15,6 +15,9 @@ export const ClinicRowSchema = z.object({
   // turns a list of names into a list of clinics worth looking at.
   period_minutes_used: z.number(),
   period_minutes_included: z.number().nullable(),
+  // Silence is the failure nobody notices: if the number breaks or the practice
+  // turns forwarding off, calls simply stop and everything stays green.
+  last_call_at: z.string().nullable(),
 });
 export type ClinicRow = z.infer<typeof ClinicRowSchema>;
 export const ClinicsResponseSchema = z.array(ClinicRowSchema);

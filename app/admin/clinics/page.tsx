@@ -28,7 +28,26 @@ function usageTone(used: number, included: number | null) {
   return { pct, className: "text-foreground" };
 }
 
-type SortKey = "name" | "usage" | "mrr";
+type SortKey = "name" | "usage" | "mrr" | "quiet";
+
+/** How long since this clinic last had a call, and whether that is worrying.
+ *
+ *  A clinic that has gone quiet looks identical to a healthy one on every other
+ *  column — the money is still billed, the plan is still there, the dashboard is
+ *  still green. The practice finds out before we do, and reports it as "your
+ *  product does not work" rather than "our forwarding is off", because from
+ *  their side those are the same thing. */
+function quietness(lastCallAt: string | null) {
+  if (!lastCallAt) return { label: "never", days: Infinity, className: "text-red-600" };
+  const days = (Date.now() - new Date(lastCallAt).getTime()) / 86_400_000;
+  const label =
+    days < 1 ? "today" : days < 2 ? "yesterday" : `${Math.floor(days)}d ago`;
+  // Three days of silence on a dental line is not a quiet week, it is a fault:
+  // a practice that takes forty calls a day does not take none for three.
+  if (days >= 3) return { label, days, className: "font-semibold text-red-600" };
+  if (days >= 1.5) return { label, days, className: "text-amber-600" };
+  return { label, days, className: "text-muted-foreground" };
+}
 
 function NewClinicForm() {
   const create = useCreateClinic();
@@ -112,6 +131,7 @@ export default function AdminClinicsPage() {
     return [...filtered].sort((a, b) => {
       if (sort === "name") return a.name.localeCompare(b.name);
       if (sort === "mrr") return b.mrr_cents - a.mrr_cents;
+      if (sort === "quiet") return quietness(b.last_call_at).days - quietness(a.last_call_at).days;
       return share(b) - share(a);
     });
   }, [data, query, sort]);
@@ -140,6 +160,7 @@ export default function AdminClinicsPage() {
             className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
           >
             <option value="usage">Closest to their limit</option>
+            <option value="quiet">Quiet the longest</option>
             <option value="mrr">Highest MRR</option>
             <option value="name">Name</option>
           </select>
@@ -153,6 +174,7 @@ export default function AdminClinicsPage() {
               <th className="px-4 py-2.5">Clinic</th>
               <th className="px-4 py-2.5">Status</th>
               <th className="px-4 py-2.5">Plan</th>
+              <th className="px-4 py-2.5">Last call</th>
               <th className="px-4 py-2.5 text-right">Minutes this period</th>
               <th className="px-4 py-2.5 text-right">MRR</th>
             </tr>
@@ -183,6 +205,9 @@ export default function AdminClinicsPage() {
                     {c.onboarding_step > 0 ? ` (step ${c.onboarding_step})` : ""}
                   </td>
                   <td className="px-4 py-2.5 capitalize">{c.plan ?? "—"}</td>
+                  <td className={`px-4 py-2.5 ${quietness(c.last_call_at).className}`}>
+                    {quietness(c.last_call_at).label}
+                  </td>
                   <td className={`px-4 py-2.5 text-right tabular-nums ${className}`}>
                     {Math.round(c.period_minutes_used).toLocaleString()}
                     {c.period_minutes_included ? (
@@ -203,7 +228,7 @@ export default function AdminClinicsPage() {
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                   {query ? "No clinic matches that." : "No clinics yet."}
                 </td>
               </tr>
