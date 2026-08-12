@@ -87,6 +87,26 @@ export function useOverrideSubscription(clinicId: string) {
   });
 }
 
+export function useSetPmsCredentials(clinicId: string) {
+  const { getToken } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Record<string, string>) =>
+      adminApi.setPmsCredentials(clinicId, data, await getToken()),
+    onSuccess: (status) => {
+      showToast.success(`Connected via ${status.bridge}.`);
+      qc.invalidateQueries({ queryKey: ["admin", "clinic", clinicId] });
+    },
+    onError: (err: unknown) => {
+      // The backend refuses a half-filled set rather than storing one that would
+      // fail mid-call, and says which field is missing. Flattening that into
+      // "something went wrong" leaves the operator to find out on a live call.
+      const message = err instanceof Error ? err.message : "";
+      showToast.error(message || "Couldn't save the PMS connection.");
+    },
+  });
+}
+
 export function useUpsertFlag() {
   const { getToken } = useAuth();
   const qc = useQueryClient();

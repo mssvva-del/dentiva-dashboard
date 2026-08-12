@@ -54,8 +54,19 @@ export const ClinicDetailSchema = z.object({
   kb_insurances: z.number().optional(),
   kb_has_policies: z.boolean().optional(),
   kb_has_emergency: z.boolean().optional(),
+  // Which bridge actually answers for this clinic, and whose keys it uses.
+  // pms_system says what the practice runs; it says nothing about whether we can
+  // reach it, and from this screen the two were indistinguishable.
+  pms_bridge: z.string().nullable().optional(),
+  pms_credentials_own: z.boolean().optional(),
 });
 export type ClinicDetail = z.infer<typeof ClinicDetailSchema>;
+
+export const PmsCredentialsStatusSchema = z.object({
+  practice_id: z.string(),
+  bridge: z.string().nullable(),
+  configured: z.boolean(),
+});
 
 export const BaaHistoryRowSchema = z.object({
   document_version: z.string(),
