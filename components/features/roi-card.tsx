@@ -26,9 +26,15 @@ export function ROICard() {
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <ROIMetric
               icon={<Clock className="h-4 w-4" />}
-              label="Time Saved"
+              label="Time on Calls"
+              // Measured: the summed length of the calls the AI completed. It
+              // used to read "Time Saved / Front desk hours" — a claim about
+              // what the front desk WOULD have spent, in minutes, under a label
+              // saying hours. The talk time is a fact; that somebody would
+              // otherwise have sat through all of it is a guess, and the two
+              // should not be printed in the same voice.
               value={`${data.minutes_saved}m`}
-              sub="Front desk hours"
+              sub="Answered by AI, not staff"
               color="#00897B"
             />
             <ROIMetric
@@ -40,9 +46,13 @@ export function ROICard() {
             />
             <ROIMetric
               icon={<PhoneCall className="h-4 w-4" />}
-              label="Calls Handled"
+              label="Calls Answered"
+              // "Handled" counted the calls the AI MISSED as well, so a practice
+              // with twenty dropped calls saw them listed among its successes.
+              // Fixed in the API; the word follows, because "handled" is what
+              // made the wrong number sound right.
               value={String(data.calls_handled_by_ai)}
-              sub="by AI receptionist"
+              sub={`of ${data.calls_handled_by_ai + data.calls_missed} received`}
               color="#00897B"
             />
             <ROIMetric
