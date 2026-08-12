@@ -16,14 +16,21 @@
  * is what this boundary is worth keeping.
  */
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { globSync } from "node:fs";
 
 const ROOT = join(__dirname, "..");
 
-function sourceFiles(): string[] {
-  return globSync("app/**/*.{ts,tsx}", { cwd: ROOT }).map((f) => join(ROOT, f));
+/** Every source file under app/, walked rather than globbed — node:fs's glob is
+ *  untyped here, and a test that does not typecheck is a test nobody trusts. */
+function sourceFiles(dir = join(ROOT, "app")): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...sourceFiles(path));
+    else if (/\.tsx?$/.test(entry.name)) out.push(path);
+  }
+  return out;
 }
 
 describe("PHI never reaches the hosting layer", () => {
