@@ -14,7 +14,12 @@ export const BookingSchema = z.object({
   patient_id: z.string().nullable().optional(),
   appointment_at: z.string(),
   duration_minutes: z.number(),
-  procedure_type: z.string(),
+  // The column is nullable and the API declares it optional. Requiring it here
+  // meant one booking without a procedure — a row created by staff, or an older
+  // one — threw the parse and blanked the ENTIRE bookings list and calendar for
+  // that clinic. The same field is already nullable in the patients schema; the
+  // two disagreed.
+  procedure_type: z.string().nullable().optional(),
   provider_name: z.string().nullable().optional(),
   status: BookingStatusSchema,
   source: z.string().nullable().optional(),
