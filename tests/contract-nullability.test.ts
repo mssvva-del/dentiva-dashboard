@@ -35,7 +35,7 @@ describe("fields the backend may legitimately send as null", () => {
     const parsed = CallDetailSchema.parse({
       ...call, transcript: [{ role: "agent", text: "Hello", ts: null }],
     });
-    expect(parsed.transcript?.[0].ts).toBeNull();
+    expect(parsed.transcript?.[0]?.ts).toBeNull();
   });
 
   it("a flat transcript stored as one 'raw' turn does not throw", () => {
