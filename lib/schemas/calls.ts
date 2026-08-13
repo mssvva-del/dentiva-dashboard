@@ -35,9 +35,17 @@ export const ListCallsResponseSchema = z.object({
 export type ListCallsResponse = z.infer<typeof ListCallsResponseSchema>;
 
 export const TranscriptTurnSchema = z.object({
-  role: z.enum(["agent", "patient"]),
+  // Not an enum. The stored transcript can carry "raw" — the shape used when a
+  // vendor sends a flat string instead of roled turns — and an enum turns that
+  // into a thrown page rather than a transcript with one unlabelled speaker.
+  role: z.string(),
   text: z.string(),
-  ts: z.number(),
+  // Nullable, because it is null on every stored transcript we have. The sync
+  // keeps role and content and drops word-level timing to stay lean, so the
+  // backend has nothing to compute a timestamp from and sends null. Requiring a
+  // number here threw on the call detail page for EVERY call that had a
+  // transcript — which is every call worth opening.
+  ts: z.number().nullable().optional(),
 });
 export type TranscriptTurn = z.infer<typeof TranscriptTurnSchema>;
 

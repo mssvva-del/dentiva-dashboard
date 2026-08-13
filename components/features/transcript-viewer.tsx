@@ -39,6 +39,14 @@ export function TranscriptViewer({
     >
       {turns.map((turn, i) => {
         const isAgent = turn.role === "agent";
+        // "raw" is a whole conversation stored as one block, not a line by the
+        // patient — it arrives when the vendor sends a flat string instead of
+        // roled turns. Labelling it "Patient" would attribute the agent's own
+        // words to them, in a record a clinic may rely on.
+        const speaker =
+          turn.role === "agent" ? agentName
+          : turn.role === "patient" ? "Patient"
+          : "Transcript";
         return (
           <div
             key={i}
@@ -54,15 +62,21 @@ export function TranscriptViewer({
               {/* Speaker label + timestamp */}
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[10px] font-semibold uppercase tracking-wider opacity-75">
-                  {isAgent ? agentName : "Patient"}
+                  {speaker}
                 </span>
-                <time
-                  className="text-[10px] tabular-nums opacity-60"
-                  dateTime={`PT${Math.round(turn.ts)}S`}
-                  aria-label={`at ${formatTranscriptTs(turn.ts)}`}
-                >
-                  {formatTranscriptTs(turn.ts)}
-                </time>
+                {/* Only when we have one. The sync drops word-level timing to
+                    stay lean, so every stored transcript has null here — and
+                    rendering it anyway printed "0:00" against every line, which
+                    reads as a real timestamp rather than a missing one. */}
+                {typeof turn.ts === "number" && (
+                  <time
+                    className="text-[10px] tabular-nums opacity-60"
+                    dateTime={`PT${Math.round(turn.ts)}S`}
+                    aria-label={`at ${formatTranscriptTs(turn.ts)}`}
+                  >
+                    {formatTranscriptTs(turn.ts)}
+                  </time>
+                )}
               </div>
               {/* Message text */}
               <p className="leading-relaxed">{turn.text}</p>

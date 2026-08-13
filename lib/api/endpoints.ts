@@ -352,10 +352,16 @@ export const patientsApi = {
       params: { threshold_months, limit },
       token,
     }),
+  // POST, so the name or number typed into the search box travels in the BODY.
+  // As a query parameter it is written into the web server's access log, the
+  // browser's history, and the log of every proxy in between — the same reason
+  // callsApi.list is a POST, decided once and then not carried across to this
+  // endpoint when it was written.
   list: (params: ListPatientsParams = {}, token?: string | null) =>
-    apiClient<PatientsListResponse>("/api/patients", {
+    apiClient<PatientsListResponse>("/api/patients/search", {
       schema: PatientsListResponseSchema,
-      params: { ...params },
+      method: "POST",
+      body: params as Record<string, unknown>,
       token,
     }),
   sendRecallSms: (patientId: string, token?: string | null) =>
