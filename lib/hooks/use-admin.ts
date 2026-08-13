@@ -87,6 +87,13 @@ export function useOverrideSubscription(clinicId: string) {
   });
 }
 
+/** The practices connected to our NexHealth account, for the link dropdown.
+ *
+ *  Empty is the normal answer until NexHealth connect a practice on their side,
+ *  so the caller must not read "no locations" as "something is broken". */
+export const useAdminPmsLocations = () =>
+  useAdminQuery(["admin", "pms-locations"], (t) => adminApi.pmsLocations(t));
+
 export function useSetPmsCredentials(clinicId: string) {
   const { getToken } = useAuth();
   const qc = useQueryClient();

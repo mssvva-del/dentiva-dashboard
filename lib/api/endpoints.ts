@@ -42,6 +42,7 @@ import {
   ClinicDetailSchema,
   BaaHistoryRowSchema,
   PmsCredentialsStatusSchema,
+  PmsLocationSchema,
   RevenueSchema,
   StaffResponseSchema,
   SystemHealthSchema,
@@ -655,6 +656,13 @@ export const adminApi = {
   setPmsCredentials: (id: string, data: Record<string, string>, token?: string | null) =>
     apiClient(`/api/admin/clinics/${id}/pms-credentials`, {
       schema: PmsCredentialsStatusSchema, method: "PUT", body: data, token,
+    }),
+  // The practices connected to OUR NexHealth account. Admin-only on the server:
+  // this list is the customer roster, and a clinic's own onboarding screen must
+  // never show which other practices work with us.
+  pmsLocations: (token?: string | null) =>
+    apiClient(`/api/admin/pms/locations`, {
+      schema: z.array(PmsLocationSchema), token,
     }),
   impersonate: (id: string, token?: string | null) =>
     apiClient(`/api/admin/clinics/${id}/impersonate`, {

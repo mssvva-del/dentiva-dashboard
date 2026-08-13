@@ -62,6 +62,11 @@ export const ClinicDetailSchema = z.object({
 });
 export type ClinicDetail = z.infer<typeof ClinicDetailSchema>;
 
+export const PmsLocationSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+
 export const PmsCredentialsStatusSchema = z.object({
   practice_id: z.string(),
   bridge: z.string().nullable(),
