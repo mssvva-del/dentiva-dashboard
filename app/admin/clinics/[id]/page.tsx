@@ -242,11 +242,18 @@ function PmsBridgeBlock({ clinic }: { clinic: ClinicDetail }) {
   // in as many places as we have customers — and the row somebody missed would
   // lose its calendar silently, months later, with nothing raised anywhere.
   const isNex = bridge !== "kolla";
+  // The installer key comes first in time: the practice cannot appear as a
+  // location until somebody has run the installer, and cannot run it without
+  // this. Saved on its own, it reaches the clinic's own onboarding screen —
+  // which is what takes the forwarded email, and us, out of the middle.
   const needed: Array<[string, string]> = isNex
-    ? [["location_id", "Location ID"]]
+    ? [["product_key", "Installer key (from the NexHealth portal)"],
+       ["location_id", "Location ID"]]
     : [["api_key", "API key"], ["consumer_id", "Consumer ID"],
        ["connector_id", "Connector ID (if no consumer)"]];
-  const ready = isNex ? Boolean(fields.location_id) : Boolean(fields.api_key);
+  const ready = isNex
+    ? Boolean(fields.location_id || fields.product_key)
+    : Boolean(fields.api_key);
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-5">
