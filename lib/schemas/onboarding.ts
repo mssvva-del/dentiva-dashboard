@@ -22,6 +22,11 @@ export const OnboardingStateSchema = z.object({
   phone_number: z.string().nullable(),
   transfer_phone_number: z.string().nullable().optional(),
   pms_system: z.string(),
+  // The installer key for this practice, and whether their calendar is reachable
+  // yet. Optional: the dashboard deploys separately from the API, and a card
+  // that throws on an older payload takes the whole wizard down with it.
+  pms_install_key: z.string().nullable().optional(),
+  pms_connected: z.boolean().optional(),
   languages_enabled: z.array(z.string()),
   agent_settings: z
     .object({
