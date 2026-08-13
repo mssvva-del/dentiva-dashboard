@@ -11,6 +11,7 @@ import {
   useAdminClinic,
   useImpersonate,
   useOverrideSubscription,
+  useAdminPmsLocations,
   useSetPmsCredentials,
 } from "@/lib/hooks/use-admin";
 import { useCoupons, useApplyCoupon } from "@/lib/hooks/use-coupons";
@@ -230,15 +231,22 @@ function ProfileBlock({ clinic, onSaved }: { clinic: ClinicDetail; onSaved: () =
  *  connected": that field is what the practice runs, not what we can reach. */
 function PmsBridgeBlock({ clinic }: { clinic: ClinicDetail }) {
   const save = useSetPmsCredentials(clinic.id);
+  const { data: locations } = useAdminPmsLocations();
   const [bridge, setBridge] = useState("nexhealth");
   const [fields, setFields] = useState<Record<string, string>>({});
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setFields((f) => ({ ...f, [k]: e.target.value }));
 
-  const needed: Array<[string, string]> =
-    bridge === "kolla"
-      ? [["api_key", "API key"], ["consumer_id", "Consumer ID"], ["connector_id", "Connector ID (if no consumer)"]]
-      : [["api_key", "API key"], ["subdomain", "Subdomain"], ["location_id", "Location ID"]];
+  // NexHealth needs only the LOCATION. One account key covers every practice
+  // connected to us, so copying it into each clinic's row would mean rotating it
+  // in as many places as we have customers — and the row somebody missed would
+  // lose its calendar silently, months later, with nothing raised anywhere.
+  const isNex = bridge !== "kolla";
+  const needed: Array<[string, string]> = isNex
+    ? [["location_id", "Location ID"]]
+    : [["api_key", "API key"], ["consumer_id", "Consumer ID"],
+       ["connector_id", "Connector ID (if no consumer)"]];
+  const ready = isNex ? Boolean(fields.location_id) : Boolean(fields.api_key);
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-5">
@@ -252,9 +260,9 @@ function PmsBridgeBlock({ clinic }: { clinic: ClinicDetail }) {
         </span>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        Entered here, encrypted, and never shown again — replacing it means typing
-        the whole set. Saving is refused if a field is missing, because a
-        half-connected bridge fails during a patient call rather than now.
+        {isNex
+          ? "Pick the practice inside our NexHealth account — the API key is the account's and stays in one place. Saving is refused if the link is incomplete, because a half-connected bridge fails during a patient call rather than now."
+          : "Kolla credentials are per-connector. Entered here, encrypted, and never shown again."}
       </p>
       <div className="mt-3 flex flex-wrap items-end gap-3">
         <label className="text-sm">
@@ -268,9 +276,30 @@ function PmsBridgeBlock({ clinic }: { clinic: ClinicDetail }) {
             <option value="kolla">Kolla</option>
           </select>
         </label>
+        {isNex && locations && locations.length > 0 && (
+          <label className="text-sm">
+            <span className="block text-xs text-muted-foreground">Practice</span>
+            <select
+              value={fields.location_id ?? ""}
+              onChange={(e) => setFields({ location_id: e.target.value })}
+              className="mt-1 h-9 w-56 rounded-md border border-input bg-background px-2 text-sm"
+            >
+              <option value="">Choose…</option>
+              {locations.map((l) => (
+                <option key={l.id} value={l.id}>{l.name || l.id}</option>
+              ))}
+            </select>
+          </label>
+        )}
         {needed.map(([key, label]) => (
           <label key={key} className="text-sm">
-            <span className="block text-xs text-muted-foreground">{label}</span>
+            <span className="block text-xs text-muted-foreground">
+              {label}
+              {/* The list is empty until NexHealth connect a practice on their
+                  side, so typing an id has to stay possible — otherwise the
+                  first clinic cannot be linked at all. */}
+              {isNex && locations && locations.length > 0 ? " (or type it)" : ""}
+            </span>
             <input
               type={key === "api_key" ? "password" : "text"}
               value={fields[key] ?? ""}
@@ -281,7 +310,7 @@ function PmsBridgeBlock({ clinic }: { clinic: ClinicDetail }) {
           </label>
         ))}
         <Button
-          disabled={save.isPending || !fields.api_key}
+          disabled={save.isPending || !ready}
           onClick={() =>
             save.mutate(
               { bridge, ...fields },
@@ -295,6 +324,13 @@ function PmsBridgeBlock({ clinic }: { clinic: ClinicDetail }) {
           {save.isPending ? "Saving…" : "Connect"}
         </Button>
       </div>
+      {isNex && locations && locations.length === 0 && (
+        <p className="mt-2 text-xs text-amber-600">
+          No practices are connected to our NexHealth account yet — NexHealth
+          connect each one on their side first. Until then a location id can be
+          typed in by hand.
+        </p>
+      )}
     </section>
   );
 }
