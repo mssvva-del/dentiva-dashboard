@@ -12,6 +12,7 @@ import { PeakHoursChart } from "@/components/features/peak-hours-chart";
 import { ConversionFunnelChart } from "@/components/features/conversion-funnel-chart";
 import { useDashboardToday } from "@/lib/hooks/use-dashboard";
 import { ROICard } from "@/components/features/roi-card";
+import { NeedsAttention } from "@/components/features/needs-attention";
 import { RecallWidget } from "@/components/features/recall-widget";
 import { RecentCallsPanel } from "@/components/features/recent-calls-panel";
 import { TalkToReceptionist } from "@/components/features/talk-to-receptionist";
@@ -44,6 +45,8 @@ export default function DashboardHomePage() {
       <ActiveCallBanner />
       <DailyBriefingCard />
       <PageHeader breadcrumb="Dashboard / Today" title={greeting} subtitle={today} />
+      {/* Above everything that reports; this is the part that asks. */}
+      <NeedsAttention />
 
       {/* Live voice demo — click to talk to the AI receptionist */}
       <div className="mb-4">
