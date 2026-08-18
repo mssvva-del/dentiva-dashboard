@@ -43,6 +43,7 @@ import {
   BaaHistoryRowSchema,
   PmsCredentialsStatusSchema,
   PmsLocationSchema,
+  ReportedProblemSchema,
   RevenueSchema,
   StaffResponseSchema,
   SystemHealthSchema,
@@ -669,6 +670,24 @@ export const adminApi = {
   pmsLocations: (token?: string | null) =>
     apiClient(`/api/admin/pms/locations`, {
       schema: z.array(PmsLocationSchema), token,
+    }),
+  // The operator's path to a phone number. Empty body buys one from Retell;
+  // with a number, attaches one bought by hand — the repair path after a failed
+  // provisioning attempt.
+  provisionNumber: (id: string, number?: string, token?: string | null) =>
+    apiClient(`/api/admin/clinics/${id}/provision-number`, {
+      schema: z.object({ practice_id: z.string(), ai_phone_number: z.string() }),
+      method: "POST", body: number ? { number } : {}, token,
+    }),
+  reports: (includeResolved: boolean, token?: string | null) =>
+    apiClient(`/api/admin/reports`, {
+      schema: z.array(ReportedProblemSchema),
+      params: includeResolved ? { include_resolved: "true" } : undefined,
+      token,
+    }),
+  resolveReport: (reportId: string, token?: string | null) =>
+    apiClient(`/api/admin/reports/${reportId}/resolve`, {
+      schema: ReportedProblemSchema, method: "POST", token,
     }),
   impersonate: (id: string, token?: string | null) =>
     apiClient(`/api/admin/clinics/${id}/impersonate`, {
