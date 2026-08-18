@@ -935,3 +935,16 @@ export const assistantApi = {
       token,
     }),
 };
+
+export const supportApi = {
+  // Identifiers only — never free text, never a response body. A support
+  // payload is the easiest place for a patient's name to ride into a log.
+  report: (
+    data: { request_id?: string; screen: string; status_code?: number },
+    token?: string | null,
+  ) =>
+    apiClient(`/api/support/report`, {
+      schema: z.object({ received: z.boolean(), reference: z.string() }),
+      method: "POST", body: data, token,
+    }),
+};
