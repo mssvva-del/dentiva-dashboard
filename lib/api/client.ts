@@ -6,12 +6,33 @@ const API_BASE_URL =
 export class ApiError extends Error {
   constructor(
     public status: number,
-    public body: string
+    public body: string,
+    /** The backend's X-Request-ID echo — the exact thread to pull in the logs. */
+    public requestId: string | null = null
   ) {
     super(`API error ${status}: ${body}`);
     this.name = "ApiError";
   }
 }
+
+/** What the most recent failed request looked like, for the error screen.
+ *
+ *  Module-level on purpose: the pages that render ErrorState get `isError` from
+ *  react-query and mostly do not thread the error object through, so a prop
+ *  would mean touching every page to light this up on none of them. Breadcrumbs
+ *  for a support report, not a source of truth — the truth is in the backend
+ *  logs, keyed by this id.
+ */
+// ponytail: last-write-wins across concurrent failures; per-query plumbing if a
+// clinic ever reports the "wrong" reference (the logs still tie them together).
+export interface LastApiFailure {
+  requestId: string | null;
+  path: string;
+  status: number;
+  at: number;
+}
+let lastFailure: LastApiFailure | null = null;
+export const getLastApiFailure = () => lastFailure;
 
 /** Join a FastAPI-style validation array of `{msg}` entries into one string. */
 function joinValidationMsgs(arr: unknown[]): string | null {
@@ -115,7 +136,9 @@ export async function apiClient<T>(
   });
 
   if (!res.ok) {
-    throw new ApiError(res.status, await res.text().catch(() => ""));
+    const requestId = res.headers.get("X-Request-ID");
+    lastFailure = { requestId, path, status: res.status, at: Date.now() };
+    throw new ApiError(res.status, await res.text().catch(() => ""), requestId);
   }
 
   const json: unknown = await res.json();
