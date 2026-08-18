@@ -26,6 +26,7 @@ const LINKS: [string, string, string?][] = [
   ["/admin/leads", "Leads", "manage_leads"],
   ["/admin/staff", "Staff", "manage_dentiva_staff"],
   ["/admin/feature-flags", "Feature flags", "manage_feature_flags"],
+  ["/admin/reports", "Reported problems", "view_system_health"],
   ["/admin/system-health", "System health", "view_system_health"],
   ["/admin/call-qa", "Call QA", "view_system_health"],
   ["/admin/audit-logs", "Audit log", "view_audit_logs"],

@@ -28,6 +28,7 @@ import { couponValue, couponDuration } from "@/lib/schemas/coupons";
 import { fmtCents } from "@/lib/schemas/billing";
 import type { AdminInvoice } from "@/lib/schemas/clinic-billing";
 import type { ClinicDetail } from "@/lib/schemas/admin";
+import { CanAdmin } from "@/components/auth/can";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import {
@@ -66,13 +67,32 @@ export default function AdminClinicDetailPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl font-semibold text-foreground">{c.name}</h1>
-        <Button
-          variant="outline"
-          disabled={impersonate.isPending}
-          onClick={() => impersonate.mutate(id)}
-        >
-          Impersonate (read-only)
-        </Button>
+        <div className="flex gap-2">
+          {/* Approval used to hide inside "Override subscription" — a billing
+              form doing lifecycle work, findable only by whoever built it. Same
+              action, honest name, where the decision is actually made. */}
+          {c.status === "onboarding" && (
+            <CanAdmin permission="manage_subscriptions">
+              <Button
+                disabled={override.isPending}
+                onClick={() =>
+                  override.mutate({ status: "pilot" }, { onSuccess: () => refetch() })
+                }
+              >
+                {override.isPending ? "Approving…" : "Approve for pilot"}
+              </Button>
+            </CanAdmin>
+          )}
+          <CanAdmin permission="impersonate_clinic">
+            <Button
+              variant="outline"
+              disabled={impersonate.isPending}
+              onClick={() => impersonate.mutate(id)}
+            >
+              Impersonate (read-only)
+            </Button>
+          </CanAdmin>
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -86,7 +106,9 @@ export default function AdminClinicDetailPage() {
         <Field label="Timezone" value={c.timezone} />
       </div>
 
-      {/* Per-client override (MANAGE_SUBSCRIPTIONS server-side; 403 if not allowed). */}
+      {/* MANAGE_SUBSCRIPTIONS server-side. Hidden rather than rendered-then-403:
+          a form that refuses on Apply reads as a broken product. */}
+      <CanAdmin permission="manage_subscriptions">
       <div className="rounded-xl border border-gray-200 bg-white p-5">
         <h2 className="text-sm font-semibold">Override subscription</h2>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -127,9 +149,16 @@ export default function AdminClinicDetailPage() {
           </Button>
         </div>
       </div>
+      </CanAdmin>
 
       <ProfileBlock clinic={c} onSaved={() => refetch()} />
-      <PmsBridgeBlock clinic={c} />
+      {/* Both write through MANAGE_CLINIC_STATUS. finance can change a status
+          but cannot link a PMS or buy a number — showing those to them was an
+          invitation to a 403. */}
+      <CanAdmin permission="manage_clinic_status">
+        <NumberBlock clinic={c} onDone={() => refetch()} />
+        <PmsBridgeBlock clinic={c} />
+      </CanAdmin>
       <SubscriptionBlock clinic={c} />
       <InvoicesBlock clinicId={id} />
       <BaaHistoryBlock clinicId={id} />
@@ -217,6 +246,81 @@ function ProfileBlock({ clinic, onSaved }: { clinic: ClinicDetail; onSaved: () =
             value={`${clinic.call_count} calls · ${clinic.booking_count} bookings`} />
         </div>
       )}
+    </section>
+  );
+}
+
+/** The clinic's phone number, and the operator's way to give it one.
+ *
+ *  ai_phone_number had two writers: the onboarding wizard and the canary
+ *  bootstrap. When provisioning failed mid-wizard — Retell down for a minute —
+ *  the clinic finished setup with no number, the wizard never returns there,
+ *  and the repair was SQL against production. Routing keys off this column, so
+ *  a clinic without it is a clinic whose calls reach nobody. */
+function NumberBlock({ clinic, onDone }: { clinic: ClinicDetail; onDone: () => void }) {
+  const { getToken } = useAuth();
+  const [manual, setManual] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function provision(number?: string) {
+    setBusy(true);
+    try {
+      const token = await getToken();
+      const res = await adminApi.provisionNumber(clinic.id, number, token);
+      showToast.success(`Number attached: ${res.ai_phone_number}`);
+      setManual("");
+      onDone();
+    } catch (e) {
+      // The backend's refusals name the reason — whose number it already is,
+      // or "approve the clinic first". Flattening that would send the operator
+      // hunting for what the server just told us.
+      showToast.error(apiErrorDetail(e) ?? "Couldn't attach a number.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // A practice that already has its number needs a display, not controls — the
+  // endpoint refuses overwrites anyway, so buttons here would be theater.
+  if (clinic.ai_phone_number) {
+    return (
+      <section className="rounded-xl border border-gray-200 bg-white p-5">
+        <h2 className="text-sm font-semibold">Dentovox number</h2>
+        <p className="mt-1 font-mono text-sm">{clinic.ai_phone_number}</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Inbound calls route on this number. It cannot be changed from here —
+          calls are live on it.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+      <h2 className="text-sm font-semibold text-amber-950">No phone number</h2>
+      <p className="mt-1 text-xs text-amber-900">
+        This clinic cannot receive calls. Buy one from Retell, or attach a number
+        bought by hand in the Retell dashboard.
+      </p>
+      <div className="mt-3 flex flex-wrap items-end gap-2">
+        <Button size="sm" disabled={busy} onClick={() => provision()}>
+          {busy ? "Working…" : "Buy a number"}
+        </Button>
+        <span className="self-center text-xs text-muted-foreground">or</span>
+        <Input
+          value={manual}
+          onChange={(e) => setManual(e.target.value)}
+          placeholder="+1 (620) 555-0100"
+          className="h-9 w-44"
+        />
+        <Button
+          size="sm" variant="outline"
+          disabled={busy || !manual.trim()}
+          onClick={() => provision(manual.trim())}
+        >
+          Attach
+        </Button>
+      </div>
     </section>
   );
 }

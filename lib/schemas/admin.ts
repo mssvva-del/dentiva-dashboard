@@ -173,3 +173,21 @@ export const ImpersonateResponseSchema = z.object({
   granted_at: z.string(),
   note: z.string(),
 });
+
+/** A problem a clinic reported with the button on a broken screen. */
+export const ReportedProblemSchema = z.object({
+  id: z.string(),
+  created_at: z.string(),
+  kind: z.string(),
+  practice_id: z.string().nullable().optional(),
+  practice_name: z.string().nullable().optional(),
+  screen: z.string().nullable().optional(),
+  status_code: z.string().nullable().optional(),
+  request_id: z.string().nullable().optional(),
+  // Always present, even when nothing parsed out of it — an unparseable report
+  // is still a report, and this is what stops it disappearing.
+  detail: z.string(),
+  resolved_at: z.string().nullable().optional(),
+  resolved_by: z.string().nullable().optional(),
+});
+export type ReportedProblem = z.infer<typeof ReportedProblemSchema>;

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useCan, useIsInternal } from "@/lib/hooks/use-me";
+import { useAdminMe } from "@/lib/hooks/use-admin";
 import type { Permission } from "@/lib/schemas/me";
 import { LoadingState } from "@/components/features/page-states";
 
@@ -76,4 +77,33 @@ function AccessDenied() {
       </p>
     </div>
   );
+}
+
+/**
+ * Element-level gate for ADMIN controls.
+ *
+ * `Can` reads the CLINIC permission set; internal staff carry a different one
+ * (ADMIN_ROLE_PERMISSIONS server-side), so admin screens were ungated — a
+ * support or sales operator saw Approve, Override subscription, Edit profile
+ * and PMS Connect fully rendered, and got a 403 on click. A control that looks
+ * available and refuses is worse than one that is absent: it reads as a broken
+ * product rather than a permission they do not hold.
+ *
+ * UX only. Every one of those endpoints re-checks server-side — this hides the
+ * button, it does not guard the door.
+ */
+export function CanAdmin({
+  permission,
+  children,
+  fallback = null,
+}: {
+  permission: string;
+  children: ReactNode;
+  fallback?: ReactNode;
+}) {
+  const { data: me } = useAdminMe();
+  // Nothing until we know. Rendering optimistically would flash a control the
+  // operator is about to lose, which is how you teach someone to click fast.
+  if (me === undefined) return null;
+  return <>{me.permissions.includes(permission) ? children : fallback}</>;
 }
