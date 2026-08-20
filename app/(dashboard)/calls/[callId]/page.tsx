@@ -121,6 +121,21 @@ function CallSummaryCard({ call }: { call: CallDetail }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {/* The appointment this call produced. The API has returned
+                booking_id all along and nothing linked to it, so "the AI booked
+                someone — which appointment?" meant going to Bookings and
+                matching by name and time, on a screen where the name is
+                redacted. It goes to the appointment itself — a link into a
+                filtered list would be "View the appointment" delivering "here
+                is every appointment". */}
+            {call.booking_id && (
+              <Link
+                href={`/bookings/${call.booking_id}`}
+                className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-teal"
+              >
+                View the appointment
+              </Link>
+            )}
             <OutcomeBadge outcome={call.outcome} />
           </div>
         </div>

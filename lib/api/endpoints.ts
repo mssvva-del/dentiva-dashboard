@@ -719,6 +719,15 @@ export const adminApi = {
     }),
   auditLogs: (token?: string | null) =>
     apiClient("/api/admin/audit-logs", { schema: AuditResponseSchema, token }),
+  // One clinic's history. The global list answers "what happened lately"; this
+  // answers "why is this clinic like this", which is the question being asked
+  // when somebody opens a clinic that is behaving strangely.
+  clinicHistory: (practiceId: string, token?: string | null) =>
+    apiClient("/api/admin/audit-logs", {
+      schema: AuditResponseSchema,
+      params: { practice_id: practiceId, limit: 50 },
+      token,
+    }),
   qaCallReview: (limit: number, token?: string | null) =>
     apiClient<import("@/lib/schemas/admin").QaReview>(
       `/api/admin/qa/call-review?limit=${limit}`,

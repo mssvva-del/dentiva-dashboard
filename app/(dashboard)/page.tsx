@@ -12,6 +12,9 @@ import { PeakHoursChart } from "@/components/features/peak-hours-chart";
 import { ConversionFunnelChart } from "@/components/features/conversion-funnel-chart";
 import { useDashboardToday } from "@/lib/hooks/use-dashboard";
 import { ROICard } from "@/components/features/roi-card";
+import Link from "next/link";
+import { Printer } from "lucide-react";
+import { NeedsAttention } from "@/components/features/needs-attention";
 import { RecallWidget } from "@/components/features/recall-widget";
 import { RecentCallsPanel } from "@/components/features/recent-calls-panel";
 import { TalkToReceptionist } from "@/components/features/talk-to-receptionist";
@@ -44,6 +47,20 @@ export default function DashboardHomePage() {
       <ActiveCallBanner />
       <DailyBriefingCard />
       <PageHeader breadcrumb="Dashboard / Today" title={greeting} subtitle={today} />
+      {/* Above everything that reports; this is the part that asks. */}
+      <NeedsAttention />
+      <div className="mb-4">
+        {/* A front desk runs the morning off paper taped beside the phone. It
+            survives a closed tab, a sleeping laptop, and the walk to the
+            operatory to check who is next. */}
+        <Link
+          href="/today/print"
+          className="inline-flex items-center gap-1.5 text-sm text-teal"
+        >
+          <Printer className="h-4 w-4" aria-hidden />
+          Print today&apos;s list
+        </Link>
+      </div>
 
       {/* Live voice demo — click to talk to the AI receptionist */}
       <div className="mb-4">
