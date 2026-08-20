@@ -162,6 +162,9 @@ export default function AdminClinicDetailPage() {
       <SubscriptionBlock clinic={c} />
       <InvoicesBlock clinicId={id} />
       <BaaHistoryBlock clinicId={id} />
+      <CanAdmin permission="view_audit_logs">
+        <ClinicHistoryBlock clinicId={id} />
+      </CanAdmin>
       <CouponBlock practiceId={id} />
       <NotesBlock clinicId={id} />
     </div>
@@ -441,6 +444,51 @@ function PmsBridgeBlock({ clinic }: { clinic: ClinicDetail }) {
           connect each one on their side first. Until then a location id can be
           typed in by hand.
         </p>
+      )}
+    </section>
+  );
+}
+
+/** What WE did to this clinic, on the clinic's own card.
+ *
+ *  The audit list answers "what happened lately" across everything. The question
+ *  actually being asked, with a clinic open that is behaving strangely, is "who
+ *  approved it, who changed its plan, who connected its PMS" — and answering
+ *  that from a 500-row global list meant reading every line for one uuid. */
+function ClinicHistoryBlock({ clinicId }: { clinicId: string }) {
+  const { getToken } = useAuth();
+  const { data } = useQuery({
+    queryKey: ["admin", "clinic-history", clinicId],
+    queryFn: async () => adminApi.clinicHistory(clinicId, await getToken()),
+    staleTime: 30_000,
+  });
+
+  return (
+    <section className="rounded-xl border border-gray-200 bg-white p-5">
+      <h2 className="text-sm font-semibold text-navy">History</h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Admin actions on this clinic — approvals, plan changes, PMS links.
+      </p>
+      {data === undefined ? null : data.length === 0 ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          Nothing recorded for this clinic yet.
+        </p>
+      ) : (
+        <ul className="mt-3 space-y-2 text-sm">
+          {data.map((row) => (
+            <li key={row.id} className="flex flex-wrap items-baseline gap-x-2">
+              <span className="tabular-nums text-xs text-muted-foreground">
+                {new Date(row.created_at).toLocaleString()}
+              </span>
+              <span className="font-medium">{row.action.replace(/_/g, " ")}</span>
+              {/* A deleted account still leaves its actions behind — the row
+                  stays, unnamed, rather than dropping out of the history. */}
+              <span className="text-xs text-muted-foreground">
+                {row.actor ?? "unknown user"}
+              </span>
+            </li>
+          ))}
+        </ul>
       )}
     </section>
   );

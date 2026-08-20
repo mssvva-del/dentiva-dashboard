@@ -160,6 +160,9 @@ export const AuditRowSchema = z.object({
   id: z.string(),
   practice_id: z.string().nullable(),
   user_id: z.string().nullable(),
+  // Who, in a form a human recognises. Optional so an older API that only sent
+  // the uuid still renders — the dashboard deploys separately from the backend.
+  actor: z.string().nullable().optional(),
   action: z.string(),
   resource_type: z.string(),
   created_at: z.string(),
