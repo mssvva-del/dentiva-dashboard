@@ -283,19 +283,10 @@ function NumberBlock({ clinic, onDone }: { clinic: ClinicDetail; onDone: () => v
     }
   }
 
-  // A practice that already has its number needs a display, not controls — the
-  // endpoint refuses overwrites anyway, so buttons here would be theater.
+  // A practice that already has its number gets a display and exactly one
+  // control: the way to correct a wrong one.
   if (clinic.ai_phone_number) {
-    return (
-      <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <h2 className="text-sm font-semibold">Dentovox number</h2>
-        <p className="mt-1 font-mono text-sm">{clinic.ai_phone_number}</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Inbound calls route on this number. It cannot be changed from here —
-          calls are live on it.
-        </p>
-      </section>
-    );
+    return <AttachedNumber clinic={clinic} onSaved={onDone} />;
   }
 
   return (
@@ -336,6 +327,84 @@ function NumberBlock({ clinic, onDone }: { clinic: ClinicDetail; onDone: () => v
  *
  *  Which is also why "PMS: eaglesoft" above is not the answer to "is it
  *  connected": that field is what the practice runs, not what we can reach. */
+/** The number a clinic answers on, and the way to correct it.
+ *
+ *  This block used to say "it cannot be changed from here" and stop. The guard
+ *  behind that is right — swapping a live number from a form silently stops a
+ *  practice's calls — but it left no way to undo a mistake, and the first real
+ *  clinic made one: their OWN practice line was attached as the Dentovox
+ *  number, so nothing could route there.
+ *
+ *  A guard that prevents accidents must not also prevent corrections. Removing
+ *  is deliberate: the number has to be typed, because the usual reason one is
+ *  wrong is that somebody clicked through once already. */
+function AttachedNumber({
+  clinic, onSaved,
+}: { clinic: ClinicDetail; onSaved: () => void }) {
+  const { getToken } = useAuth();
+  const [removing, setRemoving] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function detach() {
+    setBusy(true);
+    try {
+      const token = await getToken();
+      await adminApi.detachNumber(clinic.id, typed, token);
+      showToast.success("Number removed — this clinic cannot receive calls now.");
+      setRemoving(false);
+      setTyped("");
+      onSaved();
+    } catch (e) {
+      showToast.error(apiErrorDetail(e) ?? "Couldn't remove the number.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="rounded-xl border border-gray-200 bg-white p-5">
+      <h2 className="text-sm font-semibold">Dentovox number</h2>
+      <p className="mt-1 font-mono text-sm">{clinic.ai_phone_number}</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Inbound calls route on this number. Removing it stops every call to this
+        clinic, so it is not something to do while they are open.
+      </p>
+      {removing ? (
+        <div className="mt-3 flex flex-wrap items-end gap-2">
+          <label className="text-sm">
+            <span className="block text-xs text-muted-foreground">
+              Type {clinic.ai_phone_number} to confirm
+            </span>
+            <Input value={typed} onChange={(e) => setTyped(e.target.value)} />
+          </label>
+          <Button size="sm" variant="destructive" disabled={busy} onClick={detach}>
+            {busy ? "Removing…" : "Remove number"}
+          </Button>
+          <Button size="sm" variant="ghost" disabled={busy}
+            onClick={() => { setRemoving(false); setTyped(""); }}>
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setRemoving(true)}
+          className="mt-3 text-xs font-medium text-red-700 underline"
+        >
+          Wrong number? Remove it
+        </button>
+      )}
+      {/* Said plainly, because the alternative is an operator assuming we
+          stopped paying for a number we still own. */}
+      <p className="mt-3 text-xs text-muted-foreground">
+        Removing it here does not release it at Retell. If we bought it and no
+        longer want it, release it in the Retell dashboard too.
+      </p>
+    </section>
+  );
+}
+
 function PmsBridgeBlock({ clinic }: { clinic: ClinicDetail }) {
   const save = useSetPmsCredentials(clinic.id);
   const { data: locations } = useAdminPmsLocations();

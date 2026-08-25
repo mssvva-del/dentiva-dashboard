@@ -679,6 +679,13 @@ export const adminApi = {
       schema: z.object({ practice_id: z.string(), ai_phone_number: z.string() }),
       method: "POST", body: number ? { number } : {}, token,
     }),
+  // Correcting a wrong number. The confirmation is the number itself, typed —
+  // the usual reason one is wrong is that somebody clicked through once already.
+  detachNumber: (id: string, confirmNumber: string, token?: string | null) =>
+    apiClient(`/api/admin/clinics/${id}/number`, {
+      schema: z.object({ practice_id: z.string(), ai_phone_number: z.string() }),
+      method: "DELETE", body: { confirm_number: confirmNumber }, token,
+    }),
   reports: (includeResolved: boolean, token?: string | null) =>
     apiClient(`/api/admin/reports`, {
       schema: z.array(ReportedProblemSchema),
