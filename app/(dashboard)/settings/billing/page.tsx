@@ -159,10 +159,25 @@ function Billing() {
           ) : (
             <div className="divide-y divide-gray-100">
               {s.invoices.map((inv) => (
-                <div key={inv.id} className="flex items-center justify-between py-2.5 text-sm">
+                <div key={inv.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
                   <span>{new Date(inv.created_at).toLocaleDateString()}</span>
                   <span className="tabular-nums">{fmtCents(inv.amount_cents)}</span>
                   <StatusPill status={inv.status} />
+                  {/* The practice has a bookkeeper, and a row of date+amount is
+                      not something they can file. Absent on older invoices —
+                      show nothing rather than a link that goes nowhere. */}
+                  {inv.invoice_pdf_url || inv.hosted_invoice_url ? (
+                    <a
+                      href={inv.invoice_pdf_url ?? inv.hosted_invoice_url ?? "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium hover:bg-gray-50"
+                    >
+                      Receipt
+                    </a>
+                  ) : (
+                    <span className="w-[62px]" aria-hidden />
+                  )}
                 </div>
               ))}
             </div>
