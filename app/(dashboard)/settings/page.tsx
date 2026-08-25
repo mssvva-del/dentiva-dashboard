@@ -9,6 +9,8 @@ import { LoadingState, ErrorState } from "@/components/features/page-states";
 import { Can } from "@/components/auth/can";
 import { PERM } from "@/lib/schemas/me";
 import { usePracticeMe, usePatchPracticeMe } from "@/lib/hooks/use-dashboard";
+import { useOnboardingState } from "@/lib/hooks/use-onboarding";
+import { PmsInstallBlock } from "@/components/features/pms-install";
 import { COPY } from "@/lib/constants";
 import { formatPhone } from "@/lib/utils/format";
 import { cn } from "@/lib/utils";
@@ -54,6 +56,10 @@ const DAY_INDEX_MAP: Record<number, keyof BusinessHours> = {
 
 export default function SettingsPage() {
   const { data, isLoading, isError, refetch } = usePracticeMe();
+  // The installer key lives on the onboarding state, which a finished practice
+  // never sees again — that is exactly who needs it when their IT gets round to
+  // the install.
+  const { data: onboarding } = useOnboardingState();
   const patchMutation = usePatchPracticeMe();
   const todayKey = DAY_INDEX_MAP[new Date().getDay()];
 
@@ -357,6 +363,12 @@ export default function SettingsPage() {
                   />
                 </div>
               )}
+              {/* The status above said "connecting — 1-2 business days" and gave
+                  the clinic nothing to do about it. The one action that actually
+                  moves it — the installer key and guide — lived only inside the
+                  wizard, so a practice that had finished setup could never reach
+                  it again. Same block, both places. */}
+              <PmsInstallBlock state={onboarding} />
             </CardContent>
           </Card>
 

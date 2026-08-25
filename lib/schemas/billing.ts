@@ -34,6 +34,11 @@ export const InvoiceSchema = z.object({
   period_end: z.string().nullable(),
   paid_at: z.string().nullable(),
   created_at: z.string(),
+  // Optional, not just nullable: invoices recorded before these were stored come
+  // back without the keys at all, and a stricter schema throws and blanks the
+  // whole billing page over a missing receipt link.
+  hosted_invoice_url: z.string().nullable().optional(),
+  invoice_pdf_url: z.string().nullable().optional(),
 });
 
 export const BillingSummarySchema = z.object({
