@@ -515,22 +515,36 @@ function PhoneStep({ state, saving, onSave }: StepProps) {
 }
 
 // ── Step 4: PMS ──────────────────────────────────────────────────────────────
+/** The systems a dentist can actually name.
+ *
+ *  This list used to be "Open Dental", "NexHealth" and "Skip for now" — our two
+ *  integrations, offered as though they were the whole world of dental
+ *  software. A practice running Eaglesoft opened this step, did not find their
+ *  own system, and drew the only reasonable conclusion. NexHealth is a BRIDGE to
+ *  most of these rather than a product a practice runs, so listing it beside
+ *  Open Dental was asking the wrong question in the first place. */
+type PmsChoice =
+  | "eaglesoft" | "dentrix" | "dentrix_ascend" | "dentrix_enterprise"
+  | "denticon" | "curve" | "cloud9" | "open_dental" | "other" | "none";
+
+const PMS_CHOICES: [PmsChoice, string][] = [
+  ["eaglesoft", "Eaglesoft"],
+  ["dentrix", "Dentrix"],
+  ["dentrix_ascend", "Dentrix Ascend"],
+  ["dentrix_enterprise", "Dentrix Enterprise"],
+  ["denticon", "Denticon"],
+  ["curve", "Curve Dental"],
+  ["cloud9", "Cloud 9"],
+  ["open_dental", "Open Dental"],
+  ["other", "Something else"],
+  ["none", "Skip for now — use built-in scheduling"],
+];
+
 function PmsStep({ state, saving, onSave }: StepProps) {
-  const [pms, setPms] = useState<"open_dental" | "nexhealth" | "none">(
-    (["open_dental", "nexhealth", "none"].includes(state.pms_system)
-      ? state.pms_system : "none") as "open_dental" | "nexhealth" | "none",
+  const [pms, setPms] = useState<PmsChoice>(
+    (PMS_CHOICES.some(([v]) => v === state.pms_system)
+      ? state.pms_system : "none") as PmsChoice,
   );
-  // Honest copy: choosing here records the preference; the actual connection is
-  // completed with our team (credentials/API keys) — a radio button that says
-  // "Connect" but connects nothing reads as broken.
-  const OPTIONS: [typeof pms, string, string][] = [
-    ["open_dental", "Open Dental",
-      "Runs on a computer in your office, so it has to be opened up from your side. We'll email a short checklist and finish it with you — usually 1–2 business days."],
-    ["nexhealth", "NexHealth",
-      "NexHealth installs a sync for your specific practice. We'll start that request and keep you posted — usually 1–2 business days."],
-    ["none", "Skip for now",
-      "Use the built-in scheduling; connect a practice system later from Settings."],
-  ];
   return (
     <div>
       <StepHeader
@@ -543,17 +557,27 @@ function PmsStep({ state, saving, onSave }: StepProps) {
         time. Connecting your practice software later adds two things: it reads your
         existing calendar, and bookings land straight in it.
       </div>
-      <div className="space-y-3">
-        {OPTIONS.map(([val, label, desc]) => (
-          <label key={val} className="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
-            <input type="radio" checked={pms === val} onChange={() => setPms(val)} className="mt-1" />
-            <div>
-              <p className="text-sm font-medium">{label}</p>
-              <p className="text-xs text-muted-foreground">{desc}</p>
-            </div>
-          </label>
-        ))}
-      </div>
+      <label className="block text-sm">
+        <span className="mb-1 block font-medium">Which system does your practice run?</span>
+        {/* A select, not ten radio buttons: the list is long enough that radios
+            turn a one-second answer into a page of scrolling. */}
+        <select
+          value={pms}
+          onChange={(e) => setPms(e.target.value as PmsChoice)}
+          className="h-10 w-full max-w-sm rounded-md border border-input bg-background px-2 text-sm"
+        >
+          {PMS_CHOICES.map(([val, label]) => (
+            <option key={val} value={val}>{label}</option>
+          ))}
+        </select>
+      </label>
+      {pms !== "none" && (
+        <p className="mt-3 rounded-lg bg-gray-50 p-3 text-xs text-muted-foreground">
+          {pms === "other"
+            ? "Tell us which one and we'll check whether we can reach it — we connect to most dental software through NexHealth."
+            : "Your schedule lives on a computer in your office, so a small sync program has to run on that machine. It takes about five minutes for whoever looks after it, and the next screen gives them the key and the guide."}
+        </p>
+      )}
       <PmsInstallBlock state={state} />
       <Button className="mt-6" disabled={saving}
         onClick={() => onSave((t) => onboardingApi.pms({ pms_system: pms }, t))}>
