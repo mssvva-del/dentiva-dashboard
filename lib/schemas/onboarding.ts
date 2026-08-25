@@ -57,7 +57,12 @@ export interface PhoneStepInput {
   transfer_number?: string | null;
 }
 export interface PmsStepInput {
-  pms_system: "open_dental" | "nexhealth" | "none";
+  // Mirrors the Literal on the backend. Widened past our two integrations
+  // because a practice has to be able to name the software it actually runs —
+  // NexHealth is a bridge to most of these, not something a clinic installs.
+  pms_system:
+    | "eaglesoft" | "dentrix" | "dentrix_ascend" | "dentrix_enterprise"
+    | "denticon" | "curve" | "cloud9" | "open_dental" | "other" | "none";
 }
 export interface AgentStepInput {
   agent_name: string;
