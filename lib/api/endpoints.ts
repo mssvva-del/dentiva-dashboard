@@ -686,6 +686,13 @@ export const adminApi = {
       schema: z.object({ practice_id: z.string(), ai_phone_number: z.string() }),
       method: "DELETE", body: { confirm_number: confirmNumber }, token,
     }),
+  // Knowledge and hours, set on a clinic's behalf. The body is the same shape
+  // the clinic's own endpoints take — see dentiva-backend#156 for why a second,
+  // looser validator was not an option.
+  fillClinicProfile: (id: string, body: unknown, token?: string | null) =>
+    apiClient(`/api/admin/clinics/${id}/profile-fill`, {
+      schema: z.unknown(), method: "PUT", body: body as Record<string, unknown>, token,
+    }),
   reports: (includeResolved: boolean, token?: string | null) =>
     apiClient(`/api/admin/reports`, {
       schema: z.array(ReportedProblemSchema),
