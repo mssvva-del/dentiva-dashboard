@@ -158,6 +158,7 @@ export default function AdminClinicDetailPage() {
       <CanAdmin permission="manage_clinic_status">
         <NumberBlock clinic={c} onDone={() => refetch()} />
         <PmsBridgeBlock clinic={c} />
+        <ProfileFillBlock clinic={c} onSaved={() => refetch()} />
       </CanAdmin>
       <SubscriptionBlock clinic={c} />
       <InvoicesBlock clinicId={id} />
@@ -401,6 +402,71 @@ function AttachedNumber({
         Removing it here does not release it at Retell. If we bought it and no
         longer want it, release it in the Retell dashboard too.
       </p>
+    </section>
+  );
+}
+
+/** Knowledge and hours, filled in for a clinic that sent them to us.
+ *
+ *  A dentist messages their insurance list and appointment lengths and expects
+ *  us to handle it; a group will never have two hundred locations each open a
+ *  wizard. Asking the owner to type what we are already holding is how a launch
+ *  slips a week.
+ *
+ *  A textarea rather than a generated form, deliberately: the knowledge base is
+ *  a nested shape that changes as the agent learns to use more of it, and a form
+ *  built against today's fields becomes the reason tomorrow's cannot be set. The
+ *  server validates against the clinic-facing schema either way, so a malformed
+ *  paste is refused with the field named — the same answer the clinic would get.
+ */
+function ProfileFillBlock({
+  clinic, onSaved,
+}: { clinic: ClinicDetail; onSaved: () => void }) {
+  const { getToken } = useAuth();
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function save() {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      showToast.error("That is not valid JSON — check for a missing comma or quote.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const token = await getToken();
+      await adminApi.fillClinicProfile(clinic.id, parsed, token);
+      showToast.success("Saved. The agent uses this on the next call.");
+      setText("");
+      onSaved();
+    } catch (e) {
+      showToast.error(apiErrorDetail(e) ?? "Couldn't save.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="rounded-xl border border-gray-200 bg-white p-5">
+      <h2 className="text-sm font-semibold">Fill knowledge &amp; hours</h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Paste {"{ knowledge_base, business_hours }"}. Either key on its own is
+        fine. A section you send REPLACES what is stored — this is not a merge,
+        so send the whole list, not the additions.
+      </p>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={10}
+        spellCheck={false}
+        placeholder={'{\n  "knowledge_base": { "insurances": ["Delta Dental"] }\n}'}
+        className="mt-3 w-full rounded-md border border-input bg-background p-2 font-mono text-xs"
+      />
+      <Button size="sm" className="mt-2" disabled={busy || !text.trim()} onClick={save}>
+        {busy ? "Saving…" : "Save"}
+      </Button>
     </section>
   );
 }
