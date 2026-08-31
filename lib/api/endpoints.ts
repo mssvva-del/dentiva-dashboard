@@ -215,6 +215,11 @@ export interface PatchPracticeMeData {
   booking_alerts_enabled?: boolean;
   agent_name?: string;
   agent_greeting?: string;
+  // A record of what the clinic asked their CARRIER for — the network forwards
+  // the call before we ever see it, so these change the instructions we show,
+  // not the behaviour of their line. The backend validates both.
+  answer_mode?: string;
+  rings_before_ai?: number;
 }
 
 export const practiceApi = {
