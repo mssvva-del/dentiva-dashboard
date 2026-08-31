@@ -183,13 +183,23 @@ function ProfileBlock({ clinic, onSaved }: { clinic: ClinicDetail; onSaved: () =
     transfer_phone_number: clinic.transfer_phone_number ?? "",
     agent_name: clinic.agent_name ?? "",
     agent_greeting: clinic.agent_greeting ?? "",
+    // A RECORD of what the clinic asked their carrier for, not a control over
+    // it — the network forwards a call before we see it. Editable here because
+    // it drives the forwarding instruction the practice reads out, and until
+    // now that text was frozen at whatever onboarding happened to capture.
+    answer_mode: clinic.answer_mode ?? "overflow",
+    rings_before_ai: String(clinic.rings_before_ai ?? 3),
   });
 
   async function save() {
     setSaving(true);
     try {
       const token = await getToken();
-      await adminApi.editClinic(clinic.id, f, token);
+      await adminApi.editClinic(
+        clinic.id,
+        { ...f, rings_before_ai: Number(f.rings_before_ai) },
+        token,
+      );
       showToast.success("Clinic updated.");
       setEditing(false);
       onSaved();
@@ -220,6 +230,32 @@ function ProfileBlock({ clinic, onSaved }: { clinic: ClinicDetail; onSaved: () =
               <Input value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} />
             </label>
           ))}
+          <label className="text-sm">
+            <span className="text-xs text-muted-foreground">When Dentovox answers</span>
+            <select
+              value={f.answer_mode}
+              onChange={(e) => setF({ ...f, answer_mode: e.target.value })}
+              className="mt-1 h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            >
+              <option value="overflow">Busy or no answer</option>
+              <option value="after_hours">Outside opening hours</option>
+              <option value="full_time">Every call</option>
+            </select>
+          </label>
+          <label className="text-sm">
+            <span className="text-xs text-muted-foreground">
+              Rings before forwarding (1-10)
+            </span>
+            <Input
+              value={f.rings_before_ai}
+              onChange={(e) => setF({ ...f, rings_before_ai: e.target.value })}
+            />
+          </label>
+          <p className="col-span-full text-xs text-muted-foreground">
+            These two regenerate the clinic&apos;s forwarding instruction. The
+            carrier is what forwards the call — changing them here does not
+            change their line.
+          </p>
           <div className="col-span-full flex gap-2">
             <Button size="sm" disabled={saving} onClick={save}>
               {saving ? "Saving…" : "Save"}
