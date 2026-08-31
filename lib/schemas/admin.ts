@@ -47,6 +47,11 @@ export const ClinicDetailSchema = z.object({
   business_hours: z.record(z.string(), z.unknown()).optional(),
   agent_name: z.string().nullable().optional(),
   agent_greeting: z.string().nullable().optional(),
+  // Optional, not merely nullable: a backend that has not shipped these yet
+  // returns a payload without the keys, and a stricter schema throws and blanks
+  // the whole clinic screen over two fields nobody was looking at.
+  answer_mode: z.string().optional(),
+  rings_before_ai: z.number().optional(),
   onboarding_step: z.number().optional(),
   created_at: z.string().nullable().optional(),
   owner_email: z.string().nullable().optional(),
