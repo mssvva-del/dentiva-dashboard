@@ -627,6 +627,12 @@ export default function SettingsPage() {
                       {data.forwarding_instruction}
                     </p>
                   ) : null}
+                  <ForwardingChoice
+                    answerMode={data.answer_mode ?? "overflow"}
+                    rings={data.rings_before_ai ?? 3}
+                    saving={patchMutation.isPending}
+                    onChange={(patch) => patchMutation.mutate(patch)}
+                  />
                   <CarrierForwardingGuide aiNumber={data.ai_phone_number} />
                 </>
               ) : (
@@ -781,6 +787,80 @@ function AgentCard({
 }
 
 /** Read-only metric: small uppercase label + value in navy */
+/** When calls should reach us, and after how long.
+ *
+ *  Both values are a RECORD of what the clinic asked their carrier for, not a
+ *  control over it. The phone network hands us a call that has already been
+ *  forwarded — while their line is still ringing we cannot see it, so nothing
+ *  here can change a ring count. What it changes is the instruction above,
+ *  which is what somebody reads out to their provider.
+ *
+ *  Saying that plainly matters more than the control: a dial in a dashboard
+ *  that silently does nothing is worse than no dial, because the person who
+ *  moved it believes the line now behaves differently.
+ */
+function ForwardingChoice({
+  answerMode, rings, saving, onChange,
+}: {
+  answerMode: string;
+  rings: number;
+  saving: boolean;
+  onChange: (patch: { answer_mode?: string; rings_before_ai?: number }) => void;
+}) {
+  const MODES: [string, string][] = [
+    ["overflow", "When we're busy or don't pick up"],
+    ["after_hours", "Outside our opening hours only"],
+    ["full_time", "Every call — Dentovox is our main line"],
+  ];
+  return (
+    <div className="rounded-md border border-gray-200 p-3">
+      <p className="text-sm font-medium">When should Dentovox answer?</p>
+      <div className="mt-2 flex flex-wrap items-end gap-3">
+        <label className="text-sm">
+          <select
+            value={answerMode}
+            disabled={saving}
+            onChange={(e) => onChange({ answer_mode: e.target.value })}
+            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+          >
+            {MODES.map(([v, label]) => (
+              <option key={v} value={v}>{label}</option>
+            ))}
+          </select>
+        </label>
+        {answerMode !== "full_time" && (
+          <label className="text-sm">
+            <span className="block text-xs text-muted-foreground">Rings first</span>
+            <input
+              type="number"
+              min={1}
+              max={10}
+              defaultValue={rings}
+              disabled={saving}
+              onBlur={(e) => {
+                const n = Number(e.target.value);
+                if (n >= 1 && n <= 10 && n !== rings) onChange({ rings_before_ai: n });
+              }}
+              className="mt-1 h-9 w-20 rounded-md border border-input bg-background px-2 text-sm"
+            />
+          </label>
+        )}
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">
+        Changing this updates the instructions above. Your phone provider is what
+        actually forwards the call, so ask them to match it — we can&apos;t change
+        your line from here.
+      </p>
+      {answerMode === "overflow" && (
+        <p className="mt-1 text-xs text-muted-foreground">
+          Days you&apos;re closed are covered automatically: nobody answers, so the
+          call forwards after the rings above. No separate schedule needed.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function Metric({
   label,
   value,
