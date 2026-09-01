@@ -52,6 +52,9 @@ export const ClinicDetailSchema = z.object({
   // the whole clinic screen over two fields nobody was looking at.
   answer_mode: z.string().optional(),
   rings_before_ai: z.number().optional(),
+  // No PHI: staff names, plan names, house rules. Withholding it meant an
+  // operator could see THAT a clinic had three insurances and never which.
+  knowledge_base: z.record(z.string(), z.unknown()).nullable().optional(),
   readiness: z.array(z.object({
     key: z.string(),
     label: z.string(),
