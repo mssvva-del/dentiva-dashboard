@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { VIEW_AS_HEADER, getViewingAs } from "@/lib/impersonation";
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -125,11 +127,18 @@ export async function apiClient<T>(
 ): Promise<T> {
   const { schema, token, params, body, headers, ...rest } = options;
 
+  // Carried on EVERY method, not just GET. Omitting it on writes would silently
+  // apply an operator's click to their OWN practice instead of the one on
+  // screen; sending it makes the backend refuse the write out loud, which is the
+  // behaviour we want. Admin endpoints ignore the header entirely.
+  const viewingAs = getViewingAs();
+
   const res = await fetch(buildUrl(path, params), {
     ...rest,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(viewingAs ? { [VIEW_AS_HEADER]: viewingAs.id } : {}),
       ...headers,
     },
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),

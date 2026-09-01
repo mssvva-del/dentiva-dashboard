@@ -3,6 +3,7 @@ import { Topbar } from "@/components/layout/topbar";
 import { OnboardingRedirect } from "@/components/auth/onboarding-redirect";
 import { SetupBanner } from "@/components/features/setup-banner";
 import { AssistantWidget } from "@/components/features/assistant-widget";
+import { ViewingAsBanner } from "@/components/features/viewing-as-banner";
 
 export default function DashboardLayout({
   children,
@@ -17,6 +18,7 @@ export default function DashboardLayout({
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar />
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
+          <ViewingAsBanner />
           <SetupBanner />
           {children}
         </main>

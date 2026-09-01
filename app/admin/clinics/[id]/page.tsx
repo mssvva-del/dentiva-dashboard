@@ -96,7 +96,7 @@ export default function AdminClinicDetailPage() {
               disabled={impersonate.isPending}
               onClick={() => impersonate.mutate(id)}
             >
-              Impersonate (read-only)
+              {impersonate.isPending ? "Opening…" : "Open their dashboard"}
             </Button>
           </CanAdmin>
         </div>
