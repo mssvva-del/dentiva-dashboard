@@ -87,7 +87,7 @@ export default function AdminReportsPage() {
             {rows.map((r) => (
               <tr key={r.id} className={r.resolved_at ? "opacity-50" : undefined}>
                 <td className="px-4 py-2.5 whitespace-nowrap text-muted-foreground">
-                  {new Date(r.created_at).toLocaleString()}
+                  {new Date(r.created_at).toLocaleString("en-US")}
                 </td>
                 <td className="px-4 py-2.5">
                   {r.practice_id ? (

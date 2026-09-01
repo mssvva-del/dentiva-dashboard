@@ -40,7 +40,7 @@ export function ROICard() {
             <ROIMetric
               icon={<DollarSign className="h-4 w-4" />}
               label="Cost Saved"
-              value={`$${data.cost_saved_usd.toLocaleString()}`}
+              value={`$${data.cost_saved_usd.toLocaleString("en-US")}`}
               sub="Est. at $25/hr"
               color="#C9A961"
             />
