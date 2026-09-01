@@ -56,7 +56,7 @@ export function AssistantWidget() {
           role: "assistant",
           content:
             apiErrorDetail(err) ??
-            "I'm having trouble right now. For anything urgent, email support@dentovox.com.",
+            "I'm having trouble right now. For anything urgent, email info@dentovox.com.",
         },
       ]);
     } finally {
