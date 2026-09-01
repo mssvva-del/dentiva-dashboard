@@ -29,6 +29,12 @@ import { fmtCents } from "@/lib/schemas/billing";
 import type { AdminInvoice } from "@/lib/schemas/clinic-billing";
 import type { ClinicDetail } from "@/lib/schemas/admin";
 import { cn } from "@/lib/utils";
+
+const DAYS: [string, string][] = [
+  ["mon", "Mon"], ["tue", "Tue"], ["wed", "Wed"], ["thu", "Thu"],
+  ["fri", "Fri"], ["sat", "Sat"], ["sun", "Sun"],
+];
+const PROVIDER_TYPES = ["general", "hygienist", "orthodontist", "surgeon", "other"];
 import { CanAdmin } from "@/components/auth/can";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
@@ -515,40 +521,73 @@ function AttachedNumber({
   );
 }
 
-/** Knowledge and hours, filled in for a clinic that sent them to us.
+/** Hours, providers, insurances and appointment lengths — as fields.
  *
- *  A dentist messages their insurance list and appointment lengths and expects
- *  us to handle it; a group will never have two hundred locations each open a
- *  wizard. Asking the owner to type what we are already holding is how a launch
- *  slips a week.
+ *  This started as a textarea you pasted JSON into. It worked and it was
+ *  unusable: changing one doctor's name meant retyping the whole knowledge base,
+ *  because the save is a full replace. Nobody does that on a call with a
+ *  dentist, so nothing got corrected.
  *
- *  A textarea rather than a generated form, deliberately: the knowledge base is
- *  a nested shape that changes as the agent learns to use more of it, and a form
- *  built against today's fields becomes the reason tomorrow's cannot be set. The
- *  server validates against the clinic-facing schema either way, so a malformed
- *  paste is refused with the field named — the same answer the clinic would get.
+ *  The clinic has had proper forms for these all along. The operator, who is the
+ *  one actually filling them in during onboarding, had a text box.
  */
 function ProfileFillBlock({
   clinic, onSaved,
 }: { clinic: ClinicDetail; onSaved: () => void }) {
   const { getToken } = useAuth();
-  const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const kb = (clinic.knowledge_base ?? {}) as {
+    providers?: { name?: string; type?: string }[];
+    insurances?: string[];
+    appointment_types?: { name?: string; minutes?: number; provider_type?: string }[];
+  };
+  const bh = (clinic.business_hours ?? {}) as Record<
+    string, { open?: string; close?: string } | null
+  >;
+
+  const [hours, setHours] = useState<Record<string, { open: string; close: string } | null>>(
+    () => Object.fromEntries(DAYS.map(([d]) => {
+      const v = bh[d];
+      return [d, v?.open && v?.close ? { open: v.open, close: v.close } : null];
+    })),
+  );
+  const [providers, setProviders] = useState(
+    () => (kb.providers ?? []).map((p) => ({ name: p.name ?? "", type: p.type ?? "general" })),
+  );
+  const [insurances, setInsurances] = useState((kb.insurances ?? []).join("\n"));
+  const [appts, setAppts] = useState(
+    () => (kb.appointment_types ?? []).map((a) => ({
+      name: a.name ?? "", minutes: String(a.minutes ?? 30),
+      provider_type: a.provider_type ?? "general",
+    })),
+  );
+
   async function save() {
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(text);
-    } catch {
-      showToast.error("That is not valid JSON — check for a missing comma or quote.");
-      return;
-    }
     setBusy(true);
     try {
       const token = await getToken();
-      await adminApi.fillClinicProfile(clinic.id, parsed, token);
+      await adminApi.fillClinicProfile(clinic.id, {
+        business_hours: hours,
+        knowledge_base: {
+          // Everything the clinic already had that this form does not edit —
+          // policies, emergency handling, the current offer. The save is a full
+          // replace, so anything not sent here is deleted.
+          ...kb,
+          providers: providers
+            .filter((p) => p.name.trim())
+            .map((p) => ({ name: p.name.trim(), type: p.type })),
+          insurances: insurances.split("\n").map((x) => x.trim()).filter(Boolean),
+          appointment_types: appts
+            .filter((a) => a.name.trim())
+            .map((a) => ({
+              name: a.name.trim(),
+              minutes: Number(a.minutes) || 30,
+              provider_type: a.provider_type,
+            })),
+        },
+      }, token);
       showToast.success("Saved. The agent uses this on the next call.");
-      setText("");
       onSaved();
     } catch (e) {
       showToast.error(apiErrorDetail(e) ?? "Couldn't save.");
@@ -559,21 +598,161 @@ function ProfileFillBlock({
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-5">
-      <h2 className="text-sm font-semibold">Fill knowledge &amp; hours</h2>
+      <h2 className="text-sm font-semibold">Hours, providers &amp; services</h2>
       <p className="mt-1 text-xs text-muted-foreground">
-        Paste {"{ knowledge_base, business_hours }"}. Either key on its own is
-        fine. A section you send REPLACES what is stored — this is not a merge,
-        so send the whole list, not the additions.
+        The same things the clinic can edit in their own settings — here so an
+        operator can fix them while the practice is on the phone.
       </p>
+
+      <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Opening hours
+      </h3>
+      <div className="mt-2 space-y-1">
+        {DAYS.map(([day, label]) => {
+          // Narrowed once, up here: TypeScript cannot see that the closed branch
+          // below already returned, and the spread in each handler would widen
+          // the value back to a partial day.
+          const v: { open: string; close: string } | null = hours[day] ?? null;
+          return (
+            <div key={day} className="flex items-center gap-2 text-sm">
+              <span className="w-10 text-xs text-muted-foreground">{label}</span>
+              <input
+                type="checkbox"
+                checked={v !== null}
+                onChange={(e) =>
+                  setHours({ ...hours, [day]: e.target.checked ? { open: "09:00", close: "17:00" } : null })
+                }
+              />
+              {v === null ? (
+                <span className="text-xs text-muted-foreground">Closed</span>
+              ) : (
+                <>
+                  <Input
+                    className="h-8 w-24"
+                    value={v.open}
+                    onChange={(e) => setHours({ ...hours, [day]: { ...v, open: e.target.value } })}
+                  />
+                  <span className="text-xs text-muted-foreground">to</span>
+                  <Input
+                    className="h-8 w-24"
+                    value={v.close}
+                    onChange={(e) => setHours({ ...hours, [day]: { ...v, close: e.target.value } })}
+                  />
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Providers
+      </h3>
+      <div className="mt-2 space-y-1">
+        {providers.map((p, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <Input
+              className="h-8"
+              placeholder="Dr. Jane Roe"
+              value={p.name}
+              onChange={(e) => {
+                const next = [...providers]; next[i] = { ...p, name: e.target.value };
+                setProviders(next);
+              }}
+            />
+            <select
+              value={p.type}
+              onChange={(e) => {
+                const next = [...providers]; next[i] = { ...p, type: e.target.value };
+                setProviders(next);
+              }}
+              className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+            >
+              {PROVIDER_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <button
+              type="button"
+              className="text-xs text-red-700 underline"
+              onClick={() => setProviders(providers.filter((_, k) => k !== i))}
+            >
+              remove
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          className="text-xs font-medium underline"
+          onClick={() => setProviders([...providers, { name: "", type: "general" }])}
+        >
+          + add provider
+        </button>
+      </div>
+
+      <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Insurances accepted
+      </h3>
       <textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        rows={10}
-        spellCheck={false}
-        placeholder={'{\n  "knowledge_base": { "insurances": ["Delta Dental"] }\n}'}
-        className="mt-3 w-full rounded-md border border-input bg-background p-2 font-mono text-xs"
+        value={insurances}
+        onChange={(e) => setInsurances(e.target.value)}
+        rows={5}
+        placeholder={"Delta Dental\nMassHealth\nCigna"}
+        className="mt-2 w-full rounded-md border border-input bg-background p-2 text-xs"
       />
-      <Button size="sm" className="mt-2" disabled={busy || !text.trim()} onClick={save}>
+      <p className="text-xs text-muted-foreground">One per line.</p>
+
+      <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Appointment lengths
+      </h3>
+      <div className="mt-2 space-y-1">
+        {appts.map((a, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <Input
+              className="h-8"
+              placeholder="Cleaning"
+              value={a.name}
+              onChange={(e) => {
+                const next = [...appts]; next[i] = { ...a, name: e.target.value };
+                setAppts(next);
+              }}
+            />
+            <Input
+              className="h-8 w-20"
+              value={a.minutes}
+              onChange={(e) => {
+                const next = [...appts]; next[i] = { ...a, minutes: e.target.value };
+                setAppts(next);
+              }}
+            />
+            <span className="text-xs text-muted-foreground">min</span>
+            <select
+              value={a.provider_type}
+              onChange={(e) => {
+                const next = [...appts]; next[i] = { ...a, provider_type: e.target.value };
+                setAppts(next);
+              }}
+              className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+            >
+              {PROVIDER_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <button
+              type="button"
+              className="text-xs text-red-700 underline"
+              onClick={() => setAppts(appts.filter((_, k) => k !== i))}
+            >
+              remove
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          className="text-xs font-medium underline"
+          onClick={() => setAppts([...appts, { name: "", minutes: "30", provider_type: "general" }])}
+        >
+          + add appointment type
+        </button>
+      </div>
+
+      <Button size="sm" className="mt-4" disabled={busy} onClick={save}>
         {busy ? "Saving…" : "Save"}
       </Button>
     </section>
