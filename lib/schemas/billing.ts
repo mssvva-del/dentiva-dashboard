@@ -55,10 +55,17 @@ export type BillingSummary = z.infer<typeof BillingSummarySchema>;
 
 export const CheckoutResponseSchema = z.object({ url: z.string() });
 
-/** Format cents → "$1,234.56" (or "$149" when whole dollars). */
+/** Format cents → "$1,234.56" (or "$149" when whole dollars).
+ *
+ *  PINNED to en-US, not the viewer's locale. These are US dollars billed to US
+ *  dental practices, and an unpinned toLocaleString renders them in whatever
+ *  language the browser happens to be set to — a Russian-locale browser showed
+ *  "$1 234,56", which to an American reader is either a different number or a
+ *  broken page. The money does not change because of who is looking at it.
+ */
 export function fmtCents(cents: number): string {
   const dollars = cents / 100;
   return dollars % 1 === 0
-    ? `$${dollars.toLocaleString()}`
-    : `$${dollars.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+    ? `$${dollars.toLocaleString("en-US")}`
+    : `$${dollars.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 }

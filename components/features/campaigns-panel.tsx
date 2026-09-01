@@ -130,7 +130,12 @@ function NewCampaignForm({ onDone }: { onDone: () => void }) {
               value={contacts}
               onChange={(e) => setContacts(e.target.value)}
               rows={5}
-              placeholder={"Mike,7322840545\n9175722233\n+1 (908) 555-0140"}
+              // 555-01xx only. This placeholder shipped with a real name and two
+              // real mobile numbers in it, one of them ours — a field whose
+              // whole purpose is "paste people's phone numbers here" is the
+              // last place to put somebody's actual number, and a hurried
+              // operator pastes over an example rather than clearing it.
+              placeholder={"Jane Doe,555-0142\n(617) 555-0188\n+1 (908) 555-0140"}
               className="mt-2 w-full rounded-md border border-input bg-background p-2 font-mono text-xs"
             />
           </label>

@@ -722,7 +722,7 @@ function ClinicHistoryBlock({ clinicId }: { clinicId: string }) {
           {data.map((row) => (
             <li key={row.id} className="flex flex-wrap items-baseline gap-x-2">
               <span className="tabular-nums text-xs text-muted-foreground">
-                {new Date(row.created_at).toLocaleString()}
+                {new Date(row.created_at).toLocaleString("en-US")}
               </span>
               <span className="font-medium">{row.action.replace(/_/g, " ")}</span>
               {/* A deleted account still leaves its actions behind — the row
@@ -1000,7 +1000,7 @@ function NotesBlock({ clinicId }: { clinicId: string }) {
                 </button>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                {n.author_email ?? "—"} · {new Date(n.created_at).toLocaleString()}
+                {n.author_email ?? "—"} · {new Date(n.created_at).toLocaleString("en-US")}
               </p>
             </li>
           ))

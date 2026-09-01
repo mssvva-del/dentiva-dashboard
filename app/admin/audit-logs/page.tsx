@@ -26,7 +26,7 @@ export default function AdminAuditLogsPage() {
             {(data ?? []).map((a) => (
               <tr key={a.id}>
                 <td className="px-4 py-2.5 whitespace-nowrap text-muted-foreground">
-                  {new Date(a.created_at).toLocaleString()}
+                  {new Date(a.created_at).toLocaleString("en-US")}
                 </td>
                 <td className="px-4 py-2.5 font-medium">{a.action}</td>
                 <td className="px-4 py-2.5 text-muted-foreground">{a.resource_type}</td>

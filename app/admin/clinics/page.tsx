@@ -209,11 +209,11 @@ export default function AdminClinicsPage() {
                     {quietness(c.last_call_at).label}
                   </td>
                   <td className={`px-4 py-2.5 text-right tabular-nums ${className}`}>
-                    {Math.round(c.period_minutes_used).toLocaleString()}
+                    {Math.round(c.period_minutes_used).toLocaleString("en-US")}
                     {c.period_minutes_included ? (
                       <span className="text-muted-foreground">
                         {" / "}
-                        {c.period_minutes_included.toLocaleString()}
+                        {c.period_minutes_included.toLocaleString("en-US")}
                         {pct !== null ? ` · ${pct}%` : ""}
                       </span>
                     ) : (
