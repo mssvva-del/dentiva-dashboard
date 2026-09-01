@@ -861,13 +861,17 @@ function PmsBridgeBlock({ clinic }: { clinic: ClinicDetail }) {
           {save.isPending ? "Saving…" : "Connect"}
         </Button>
       </div>
-      {isNex && locations && locations.length === 0 && (
-        <p className="mt-2 text-xs text-amber-600">
-          No practices are connected to our NexHealth account yet — NexHealth
-          connect each one on their side first. Until then a location id can be
-          typed in by hand.
+      {isNex && clinic.pms_bridge ? (
+        <p className="mt-2 text-xs text-green-700">
+          This clinic is connected and answering from its own calendar. The
+          picker above is only needed to link a NEW clinic.
         </p>
-      )}
+      ) : isNex && locations && locations.length === 0 ? (
+        <p className="mt-2 text-xs text-amber-600">
+          The practice picker is empty — NexHealth connects each practice on
+          their side first. A location id can be typed in by hand meanwhile.
+        </p>
+      ) : null}
     </section>
   );
 }
