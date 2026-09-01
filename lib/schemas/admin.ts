@@ -52,6 +52,13 @@ export const ClinicDetailSchema = z.object({
   // the whole clinic screen over two fields nobody was looking at.
   answer_mode: z.string().optional(),
   rings_before_ai: z.number().optional(),
+  readiness: z.array(z.object({
+    key: z.string(),
+    label: z.string(),
+    done: z.boolean(),
+    todo: z.string(),
+    blocking: z.boolean(),
+  })).optional(),
   onboarding_step: z.number().optional(),
   created_at: z.string().nullable().optional(),
   owner_email: z.string().nullable().optional(),
