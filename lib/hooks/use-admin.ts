@@ -2,7 +2,9 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { adminApi, adminMeApi, type AdminMe } from "@/lib/api/endpoints";
+import { setViewingAs } from "@/lib/impersonation";
 import { showToast } from "@/lib/toast";
 
 /**
@@ -55,21 +57,28 @@ export function useCreateClinic() {
   });
 }
 
+/** Open a clinic's own dashboard, read-only.
+ *
+ *  This used to set a flag, show a toast, and stop there — the operator was told
+ *  they were "now viewing as" a clinic and then looked at their own screens.
+ *  The POST is still what writes the audit row; what makes the feature real is
+ *  storing the target (every later request carries it) and actually navigating
+ *  into the clinic dashboard.
+ */
 export function useImpersonate() {
   const { getToken } = useAuth();
+  const qc = useQueryClient();
+  const router = useRouter();
   return useMutation({
     mutationFn: async (id: string) => adminApi.impersonate(id, await getToken()),
     onSuccess: (res) => {
-      // Persist a lightweight banner flag for the session (UI-only signal).
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem(
-          "dentiva_impersonating",
-          JSON.stringify({ id: res.practice_id, name: res.practice_name }),
-        );
-      }
-      showToast.info(`Now viewing as ${res.practice_name} (logged).`);
+      setViewingAs({ id: res.practice_id, name: res.practice_name });
+      // Everything already fetched belongs to the previous identity.
+      void qc.invalidateQueries();
+      showToast.info(`Viewing ${res.practice_name} — read-only, and logged.`);
+      router.push("/");
     },
-    onError: () => showToast.error("Couldn't start impersonation."),
+    onError: () => showToast.error("Couldn't open that clinic."),
   });
 }
 

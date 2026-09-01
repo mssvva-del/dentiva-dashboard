@@ -18,6 +18,9 @@ export const MeResponseSchema = z.object({
   role: z.string(), // clinic role, or "" for pure-internal users
   staff_role: z.string().nullable(), // Dentovox-internal role when is_internal
   permissions: z.array(z.string()), // resolved permission strings for this caller
+  // Present only while Dentovox staff are viewing a clinic read-only. Optional
+  // so a backend that predates the field still parses.
+  viewing_as_practice_id: z.string().nullable().optional(),
 });
 export type MeResponse = z.infer<typeof MeResponseSchema>;
 
