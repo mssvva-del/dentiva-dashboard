@@ -28,6 +28,7 @@ import { couponValue, couponDuration } from "@/lib/schemas/coupons";
 import { fmtCents } from "@/lib/schemas/billing";
 import type { AdminInvoice } from "@/lib/schemas/clinic-billing";
 import type { ClinicDetail } from "@/lib/schemas/admin";
+import { cn } from "@/lib/utils";
 import { CanAdmin } from "@/components/auth/can";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
@@ -151,6 +152,7 @@ export default function AdminClinicDetailPage() {
       </div>
       </CanAdmin>
 
+      <ReadinessBlock clinic={c} />
       <ProfileBlock clinic={c} onSaved={() => refetch()} />
       {/* Both write through MANAGE_CLINIC_STATUS. finance can change a status
           but cannot link a PMS or buy a number — showing those to them was an
@@ -173,6 +175,77 @@ export default function AdminClinicDetailPage() {
 }
 
 /** ADM-CLIENT-360: the full clinic profile in one place — all data + edit. */
+/** Can this clinic take a real patient call, and if not, what is left.
+ *
+ *  Every fact here was already on this page, spread across three cards and six
+ *  fields. Assembling it is not tidying: onboarding means reading the screen and
+ *  deciding, and somebody doing that live on a call with the dentist gets it
+ *  wrong. At a group's scale nobody does it at all.
+ *
+ *  Blocking items are separated from the rest because the distinction is the
+ *  whole message: "we cannot go live" and "the agent will not name your
+ *  hygienist yet" are different conversations. */
+function ReadinessBlock({ clinic }: { clinic: ClinicDetail }) {
+  const items = clinic.readiness ?? [];
+  if (items.length === 0) return null;
+
+  const blockers = items.filter((i) => !i.done && i.blocking);
+  const gaps = items.filter((i) => !i.done && !i.blocking);
+  const done = items.filter((i) => i.done);
+
+  return (
+    <section className="rounded-xl border border-gray-200 bg-white p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold">Ready for patients?</h2>
+        <span
+          className={cn(
+            "rounded-full px-2.5 py-1 text-xs font-medium",
+            blockers.length > 0
+              ? "bg-red-50 text-red-900"
+              : gaps.length > 0
+                ? "bg-amber-50 text-amber-900"
+                : "bg-green-50 text-green-900",
+          )}
+        >
+          {blockers.length > 0
+            ? `${blockers.length} blocking`
+            : gaps.length > 0
+              ? `Live — ${gaps.length} to improve`
+              : "Everything set"}
+        </span>
+      </div>
+
+      {blockers.length > 0 && (
+        <ul className="mt-3 space-y-2">
+          {blockers.map((i) => (
+            <li key={i.key} className="rounded-lg border border-red-200 bg-red-50 p-3">
+              <p className="text-sm font-medium text-red-900">{i.label}</p>
+              <p className="mt-0.5 text-xs text-red-900/80">{i.todo}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {gaps.length > 0 && (
+        <ul className="mt-3 space-y-2">
+          {gaps.map((i) => (
+            <li key={i.key} className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="text-sm font-medium text-amber-950">{i.label}</p>
+              <p className="mt-0.5 text-xs text-amber-950/80">{i.todo}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {done.length > 0 && (
+        <p className="mt-3 text-xs text-muted-foreground">
+          Done: {done.map((i) => i.label).join(" · ")}
+        </p>
+      )}
+    </section>
+  );
+}
+
 function ProfileBlock({ clinic, onSaved }: { clinic: ClinicDetail; onSaved: () => void }) {
   const { getToken } = useAuth();
   const [editing, setEditing] = useState(false);
