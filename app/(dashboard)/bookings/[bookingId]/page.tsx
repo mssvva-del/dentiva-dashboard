@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
 import { useBookingDetail } from "@/lib/hooks/use-bookings";
+import { useClinicTime } from "@/lib/hooks/use-clinic-zone";
 import { formatDateTime } from "@/lib/utils/format";
 import { COPY } from "@/lib/constants";
 
@@ -66,6 +67,7 @@ export default function BookingDetailPage({
 }) {
   const { bookingId } = params;
   const { data, isLoading, isError, refetch } = useBookingDetail(bookingId);
+  const clinic = useClinicTime();
 
   const statusLabel = data?.status
     ? data.status.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())
@@ -140,7 +142,9 @@ export default function BookingDetailPage({
                 <DetailRow
                   icon={<Calendar className="h-4 w-4" />}
                   label="Date & Time"
-                  value={formatDateTime(data.appointment_at)}
+                  value={`${clinic.format(data.appointment_at)} ${clinic.zoneLabel(
+                    data.appointment_at
+                  )}`}
                 />
                 <DetailRow
                   icon={<Clock className="h-4 w-4" />}

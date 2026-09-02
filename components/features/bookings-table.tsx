@@ -15,6 +15,7 @@ import {
 } from "@/components/features/page-states";
 import { useBookingsList, useUpdateBookingStatus } from "@/lib/hooks/use-bookings";
 import { showToast } from "@/lib/toast";
+import { useClinicTime } from "@/lib/hooks/use-clinic-zone";
 import { formatDateTime } from "@/lib/utils/format";
 import { COPY } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -162,6 +163,7 @@ function BookingFilterBar({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function BookingsTable() {
+  const clinic = useClinicTime();
   const router = useRouter();
   const { getToken } = useAuth();
 
@@ -305,7 +307,7 @@ export function BookingsTable() {
                         {b.patient_name_redacted ?? "—"}
                       </td>
                       <td className="px-5 py-3.5 text-[12px] text-gray-500">
-                        {formatDateTime(b.appointment_at)}
+                        {clinic.format(b.appointment_at)}
                       </td>
                       <td className="px-5 py-3.5 text-sm text-gray-700">{b.procedure_type}</td>
                       <td className="px-5 py-3.5 text-[12px] text-gray-500">

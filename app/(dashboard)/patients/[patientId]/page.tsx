@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
 import { usePatientDetail } from "@/lib/hooks/use-patients";
 import { formatPhone, telHref } from "@/lib/phone";
+import { useClinicTime } from "@/lib/hooks/use-clinic-zone";
 import { formatDateTime, formatDate } from "@/lib/utils/format";
 
 const BOOKING_STATUS_STYLE: Record<string, React.CSSProperties> = {
@@ -50,6 +51,7 @@ export default function PatientDetailPage({
 }) {
   const { patientId } = params;
   const { data, isLoading, isError, refetch } = usePatientDetail(patientId);
+  const clinic = useClinicTime();
 
   return (
     <div className="max-w-3xl">
@@ -153,7 +155,7 @@ export default function PatientDetailPage({
                           {b.provider_name ? ` · ${b.provider_name}` : ""}
                         </p>
                         <p className="text-[11px] text-gray-500">
-                          {formatDateTime(b.appointment_at)}
+                          {clinic.format(b.appointment_at)}
                           {b.source === "ai_call" ? " · AI booked" : ""}
                         </p>
                       </div>
