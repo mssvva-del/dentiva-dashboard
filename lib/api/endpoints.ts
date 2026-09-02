@@ -192,6 +192,24 @@ export const bookingsApi = {
       schema: BookingSchema,
       token,
     }),
+  /** Move or amend an appointment. The backend also moves it in the practice's
+   *  own calendar, so this must never be used to "fix" our copy alone. */
+  edit: (
+    bookingId: string,
+    data: {
+      appointment_at?: string;
+      duration_minutes?: number;
+      procedure_type?: string;
+      provider_name?: string;
+    },
+    token?: string | null
+  ) =>
+    apiClient<Booking>("/api/bookings/" + bookingId, {
+      schema: BookingSchema,
+      method: "PATCH",
+      body: data,
+      token,
+    }),
   updateStatus: (
     bookingId: string,
     status: Booking["status"],

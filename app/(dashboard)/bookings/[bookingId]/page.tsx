@@ -11,6 +11,7 @@ import {
   Stethoscope,
   Phone,
 } from "lucide-react";
+import { BookingEditor } from "@/components/features/booking-editor";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -166,6 +167,8 @@ export default function BookingDetailPage({
               </div>
             </CardContent>
           </Card>
+
+          <BookingEditor booking={data} />
 
           {/* Source call link */}
           {data.source_call_id && (

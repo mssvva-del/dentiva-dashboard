@@ -7,6 +7,7 @@ import {
   keepPreviousData,
 } from "@tanstack/react-query";
 import { useApiToken } from "./use-api-token";
+import { apiErrorDetail } from "@/lib/api/client";
 import { bookingsApi, type ListBookingsParams } from "@/lib/api/endpoints";
 import type { Booking } from "@/lib/schemas/bookings";
 import { POLL_INTERVAL_MS } from "@/lib/constants";
@@ -37,6 +38,35 @@ const STATUS_TOAST: Record<Booking["status"], string> = {
   cancelled: "Appointment cancelled",
   confirmed: "Marked as confirmed",
 };
+
+export function useEditBooking() {
+  const queryClient = useQueryClient();
+  const getToken = useApiToken();
+  return useMutation({
+    mutationFn: async (vars: {
+      id: string;
+      data: {
+        appointment_at?: string;
+        duration_minutes?: number;
+        procedure_type?: string;
+        provider_name?: string;
+      };
+    }) => bookingsApi.edit(vars.id, vars.data, await getToken()),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["booking", vars.id] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "activity"] });
+      showToast.success("Appointment updated");
+    },
+    onError: (err) => {
+      // 409 is the interesting one: another appointment already covers that
+      // time, or this one is cancelled. Say which — "couldn't update" sends the
+      // front desk to the practice software to find out why.
+      showToast.error(apiErrorDetail(err) ?? "Couldn't update appointment");
+    },
+  });
+}
+
 
 export function useUpdateBookingStatus() {
   const queryClient = useQueryClient();
