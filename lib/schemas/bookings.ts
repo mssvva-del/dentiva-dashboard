@@ -16,6 +16,9 @@ export const BookingSchema = z.object({
   // rendered mid-deploy still shows something.
   patient_name: z.string().nullable().optional(),
   patient_phone: z.string().nullable().optional(),
+  // Whether the practice's OWN calendar took it. False means the appointment
+  // exists here and nowhere else, while the patient has been told otherwise.
+  in_pms: z.boolean().optional(),
   patient_id: z.string().nullable().optional(),
   appointment_at: z.string(),
   duration_minutes: z.number(),

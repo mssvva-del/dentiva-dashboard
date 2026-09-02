@@ -157,6 +157,20 @@ export default function BookingDetailPage({
                   value={data.provider_name ?? "—"}
                 />
                 <DetailRow
+                  label="In practice calendar"
+                  value={
+                    data.in_pms ? (
+                      "Yes"
+                    ) : (
+                      <span className="text-amber-700">
+                        Not yet — this appointment is only in Dentovox. Add it to
+                        your practice software, or reschedule it to a time your
+                        calendar has free.
+                      </span>
+                    )
+                  }
+                />
+                <DetailRow
                   label="Source"
                   value={
                     data.source === "ai_call"
