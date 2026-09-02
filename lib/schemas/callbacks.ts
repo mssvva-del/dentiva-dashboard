@@ -8,6 +8,11 @@ export const CallbackSummarySchema = z.object({
   call_id: z.string().nullable().optional(),
   patient_name_redacted: z.string().nullable().optional(),
   phone_last4: z.string().nullable().optional(),
+  // The clinic's own patients on the clinic's own screen: the full name and a
+  // number the front desk can actually dial. The masked fields stay so a page
+  // rendered mid-deploy still shows something.
+  patient_name: z.string().nullable().optional(),
+  patient_phone: z.string().nullable().optional(),
   reason: z.string().nullable().optional(),
   urgent: z.boolean(),
   status: CallbackStatusSchema,

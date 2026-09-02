@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPhone } from "@/lib/phone";
 import * as React from "react";
 import { Clock, Check, X, BellRing } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -52,6 +53,9 @@ function preferenceLine(e: WaitlistSummary): string {
     e.preferred_date,
   ].filter(Boolean);
   const base = parts.length ? parts.join(" · ") : "No preference given";
+  // A waitlist exists to be phoned the moment somebody cancels.
+  const phone = formatPhone(e.patient_phone);
+  if (phone) return `${base} · ${phone}`;
   return e.phone_last4 ? `${base} · ⋯${e.phone_last4}` : base;
 }
 

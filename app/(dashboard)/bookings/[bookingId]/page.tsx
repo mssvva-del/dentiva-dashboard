@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPhone, telHref } from "@/lib/phone";
 import * as React from "react";
 import Link from "next/link";
 import {
@@ -114,7 +115,26 @@ export default function BookingDetailPage({
                 <DetailRow
                   icon={<User className="h-4 w-4" />}
                   label="Patient"
-                  value={data.patient_name_redacted ?? "—"}
+                  value={data.patient_name ?? data.patient_name_redacted ?? "—"}
+                />
+                {/* The number the front desk rings to confirm or reschedule.
+                    Without it this page describes an appointment nobody can
+                    phone about. */}
+                <DetailRow
+                  icon={<Phone className="h-4 w-4" />}
+                  label="Phone"
+                  value={
+                    data.patient_phone ? (
+                      <a
+                        href={telHref(data.patient_phone) ?? undefined}
+                        className="text-teal-700 hover:underline"
+                      >
+                        {formatPhone(data.patient_phone)}
+                      </a>
+                    ) : (
+                      "—"
+                    )
+                  }
                 />
                 <DetailRow
                   icon={<Calendar className="h-4 w-4" />}
