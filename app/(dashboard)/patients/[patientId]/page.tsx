@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
 import { usePatientDetail } from "@/lib/hooks/use-patients";
+import { formatPhone, telHref } from "@/lib/phone";
 import { formatDateTime, formatDate } from "@/lib/utils/format";
 
 const BOOKING_STATUS_STYLE: Record<string, React.CSSProperties> = {
@@ -76,7 +77,7 @@ export default function PatientDetailPage({
                 className="flex items-center gap-2 font-display font-semibold text-navy"
                 style={{ fontSize: 20 }}
               >
-                {data.name_redacted ?? "Unknown patient"}
+                {data.name ?? data.name_redacted ?? "Unknown patient"}
                 {data.sms_opt_out && (
                   <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gray-500">
                     SMS opted out
@@ -93,7 +94,16 @@ export default function PatientDetailPage({
             <CardContent className="p-6">
               <div className="mb-5 flex items-center gap-2 text-[13px] text-gray-600">
                 <Phone className="h-4 w-4 opacity-60" />
-                {data.phone_masked ?? "No phone on file"}
+                {data.phone ? (
+                  <a
+                    href={telHref(data.phone) ?? undefined}
+                    className="text-teal-700 hover:underline"
+                  >
+                    {formatPhone(data.phone)}
+                  </a>
+                ) : (
+                  (data.phone_masked ?? "No phone on file")
+                )}
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <Stat label="Visits" value={data.total_visits} />
@@ -128,9 +138,14 @@ export default function PatientDetailPage({
               ) : (
                 <div role="list">
                   {data.bookings.map((b) => (
-                    <div
+                    /* The card describes appointments the front desk then has to
+                       act on — reschedule, cancel, ring about. Reading them here
+                       and hunting for the same row under Bookings is the kind of
+                       small friction that gets a screen abandoned. */
+                    <Link
+                      href={`/bookings/${b.id}`}
                       key={b.id}
-                      className="flex items-center gap-4 border-b border-gray-100 px-6 py-3.5 last:border-b-0"
+                      className="flex items-center gap-4 border-b border-gray-100 px-6 py-3.5 last:border-b-0 hover:bg-gray-50"
                     >
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[13px] font-semibold text-navy">
@@ -153,7 +168,7 @@ export default function PatientDetailPage({
                       >
                         {titleCase(b.status)}
                       </span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
