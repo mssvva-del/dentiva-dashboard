@@ -24,6 +24,10 @@ export const PatientSummarySchema = z.object({
   patient_id: z.string(),
   name_redacted: z.string().nullable().optional(),
   phone_masked: z.string().nullable().optional(),
+  // The practice's own patient on the practice's own screen: the name the
+  // front desk greets them by and a number they can actually dial.
+  name: z.string().nullable().optional(),
+  phone: z.string().nullable().optional(),
   last_visit_date: z.string().nullable().optional(),
   next_visit_date: z.string().nullable().optional(),
   total_visits: z.number(),
@@ -73,6 +77,10 @@ export const PatientDetailResponseSchema = z.object({
   patient_id: z.string(),
   name_redacted: z.string().nullable().optional(),
   phone_masked: z.string().nullable().optional(),
+  // The practice's own patient on the practice's own screen: the name the
+  // front desk greets them by and a number they can actually dial.
+  name: z.string().nullable().optional(),
+  phone: z.string().nullable().optional(),
   status: PatientStatusSchema,
   last_visit_date: z.string().nullable().optional(),
   next_visit_date: z.string().nullable().optional(),

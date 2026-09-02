@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPhone } from "@/lib/phone";
 import * as React from "react";
 import Link from "next/link";
 import { Users, X } from "lucide-react";
@@ -48,11 +49,11 @@ function PatientRow({ patient }: { patient: PatientSummary }) {
         style={{ background: "rgba(0,137,123,0.10)" }}
         aria-hidden
       >
-        {(patient.name_redacted ?? "?").slice(0, 1).toUpperCase()}
+        {(patient.name ?? patient.name_redacted ?? "?").slice(0, 1).toUpperCase()}
       </div>
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 truncate text-[13.5px] font-semibold text-navy">
-          {patient.name_redacted ?? "Unknown patient"}
+          {patient.name ?? patient.name_redacted ?? "Unknown patient"}
           {patient.no_show_count > 0 && (
             <span
               className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
@@ -64,7 +65,7 @@ function PatientRow({ patient }: { patient: PatientSummary }) {
           )}
         </p>
         <p className="truncate text-[11px] text-gray-500">
-          {patient.phone_masked ?? "No phone on file"}
+          {formatPhone(patient.phone) ?? patient.phone_masked ?? "No phone on file"}
         </p>
       </div>
       <div className="hidden w-28 text-[12px] text-gray-500 sm:block">
