@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPhone, telHref } from "@/lib/phone";
 import * as React from "react";
 import { PhoneCall, AlertTriangle, Check, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -85,8 +86,17 @@ function CallbackRow({ cb }: { cb: CallbackSummary }) {
         </p>
         <p className="truncate text-[11px] text-gray-500">
           {cb.reason ?? "No reason given"}
-          {cb.phone_last4 ? ` · ⋯${cb.phone_last4}` : ""}
         </p>
+        {cb.patient_phone ? (
+          <a
+            href={telHref(cb.patient_phone) ?? undefined}
+            className="text-[12px] font-medium text-teal-700 hover:underline"
+          >
+            {formatPhone(cb.patient_phone)}
+          </a>
+        ) : cb.phone_last4 ? (
+          <span className="text-[11px] text-gray-400">⋯{cb.phone_last4}</span>
+        ) : null}
       </div>
 
       <div className="hidden w-28 text-[12px] text-gray-500 sm:block">
