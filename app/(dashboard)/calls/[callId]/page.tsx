@@ -249,12 +249,15 @@ function RecordingSection({ url }: { url: string | null | undefined }) {
       <CardContent className="pb-4">
         {url ? (
           /* eslint-disable-next-line jsx-a11y/media-has-caption */
-          <audio
-            controls
-            src={url}
-            className="w-full"
-            aria-label="Call recording"
-          />
+          <audio controls className="w-full" aria-label="Call recording">
+            {/* The type has to be declared here. Retell's recordings are served
+                from S3 as application/octet-stream, and a bare <audio src> asks
+                the browser to guess: it does not, the player renders 0:00 / 0:00,
+                and the clinic decides the recording was never made. Naming the
+                format is what makes the play button work. */}
+            <source src={url} type="audio/wav" />
+            <source src={url} />
+          </audio>
         ) : (
           <p className="text-sm text-muted-foreground">
             {COPY.callDetailNoRecording}
