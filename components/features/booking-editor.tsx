@@ -10,6 +10,11 @@ import {
   useEditBooking,
   useUpdateBookingStatus,
 } from "@/lib/hooks/use-bookings";
+import { useClinicTime } from "@/lib/hooks/use-clinic-zone";
+import {
+  fromClinicInputValue,
+  toClinicInputValue,
+} from "@/lib/utils/clinic-time";
 import type { Booking } from "@/lib/schemas/bookings";
 
 /** Move, amend or cancel an appointment.
@@ -20,23 +25,17 @@ import type { Booking } from "@/lib/schemas/bookings";
  *  one and forget the other, and then the agent offers an hour that is not free.
  */
 
-/** A datetime-local input wants "YYYY-MM-DDTHH:mm" in LOCAL time, and the API
- *  speaks UTC. Getting this wrong is how a reschedule lands hours off. */
-function toLocalInput(iso: string): string {
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return (
-    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
-    `T${pad(d.getHours())}:${pad(d.getMinutes())}`
-  );
-}
-
 export function BookingEditor({ booking }: { booking: Booking }) {
   const edit = useEditBooking();
   const status = useUpdateBookingStatus();
+  // The box shows and reads the CLINIC's wall clock. It used to use the
+  // browser's, so rescheduling a Massachusetts appointment from Israel would
+  // have moved a real patient by six hours — silently, and in their own
+  // practice software as well.
+  const { timeZone, zoneLabel } = useClinicTime();
 
   const [when, setWhen] = React.useState(() =>
-    toLocalInput(booking.appointment_at)
+    toClinicInputValue(booking.appointment_at, timeZone)
   );
   const [minutes, setMinutes] = React.useState(
     String(booking.duration_minutes ?? 60)
@@ -46,22 +45,23 @@ export function BookingEditor({ booking }: { booking: Booking }) {
 
   // The row can change under us — someone else edits it, or the agent moves it.
   React.useEffect(() => {
-    setWhen(toLocalInput(booking.appointment_at));
+    setWhen(toClinicInputValue(booking.appointment_at, timeZone));
     setMinutes(String(booking.duration_minutes ?? 60));
     setProcedure(booking.procedure_type ?? "");
-  }, [booking.appointment_at, booking.duration_minutes, booking.procedure_type]);
+  }, [booking.appointment_at, booking.duration_minutes, booking.procedure_type,
+      timeZone]);
 
   const isCancelled = booking.status === "cancelled";
   const dirty =
-    when !== toLocalInput(booking.appointment_at) ||
+    when !== toClinicInputValue(booking.appointment_at, timeZone) ||
     minutes !== String(booking.duration_minutes ?? 60) ||
     procedure !== (booking.procedure_type ?? "");
 
   const save = () => {
     const data: Record<string, string | number> = {};
-    if (when !== toLocalInput(booking.appointment_at)) {
-      // Local wall-clock in the box → the instant the API stores.
-      data.appointment_at = new Date(when).toISOString();
+    if (when !== toClinicInputValue(booking.appointment_at, timeZone)) {
+      // The clinic's wall clock in the box → the instant the API stores.
+      data.appointment_at = fromClinicInputValue(when, timeZone);
     }
     if (minutes !== String(booking.duration_minutes ?? 60)) {
       data.duration_minutes = Number(minutes);
@@ -97,7 +97,9 @@ export function BookingEditor({ booking }: { booking: Booking }) {
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="appointment-at">Date &amp; time</Label>
+            <Label htmlFor="appointment-at">
+              Date &amp; time{zoneLabel() ? ` (${zoneLabel()})` : ""}
+            </Label>
             <Input
               id="appointment-at"
               type="datetime-local"
