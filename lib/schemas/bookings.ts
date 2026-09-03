@@ -35,6 +35,9 @@ export const BookingSchema = z.object({
   // What the caller said that no other field holds. Written by the agent during
   // the call, edited by the front desk after.
   notes: z.string().nullable().optional(),
+  // Empty when our calendar and the practice's agree. Otherwise what their
+  // software said when we last wrote to it.
+  pms_sync_status: z.string().nullable().optional(),
   created_at: z.string(),
 });
 export type Booking = z.infer<typeof BookingSchema>;

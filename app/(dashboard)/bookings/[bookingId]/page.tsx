@@ -17,7 +17,11 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
-import { useBookingDetail, useEditBooking } from "@/lib/hooks/use-bookings";
+import {
+  useBookingDetail,
+  useEditBooking,
+  useResyncBooking,
+} from "@/lib/hooks/use-bookings";
 import { useClinicTime } from "@/lib/hooks/use-clinic-zone";
 import { formatDateTime } from "@/lib/utils/format";
 import { COPY } from "@/lib/constants";
@@ -69,6 +73,7 @@ export default function BookingDetailPage({
   const { bookingId } = params;
   const { data, isLoading, isError, refetch } = useBookingDetail(bookingId);
   const editBooking = useEditBooking();
+  const resync = useResyncBooking();
   const clinic = useClinicTime();
 
   const statusLabel = data?.status
@@ -187,6 +192,29 @@ export default function BookingDetailPage({
               </div>
             </CardContent>
           </Card>
+
+          {/* The two calendars disagree. Said here, where somebody is looking
+              at the appointment they believe is settled — an alert in our logs
+              is not where the front desk finds out the chair is still blocked. */}
+          {data.pms_sync_status && (
+            <Card className="overflow-hidden border-amber-300 bg-amber-50/70 shadow-none">
+              <CardContent className="space-y-2 p-4">
+                <p className="text-sm font-semibold text-amber-900">
+                  Not {data.status === "cancelled" ? "cancelled" : "updated"} in
+                  your practice calendar
+                </p>
+                <p className="text-[13px] text-amber-800">{data.pms_sync_status}</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={resync.isPending}
+                  onClick={() => resync.mutate(bookingId)}
+                >
+                  {resync.isPending ? "Trying again…" : "Try again"}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* What the caller said, above the editor: it is the thing the front
               desk needs before the patient walks in. */}

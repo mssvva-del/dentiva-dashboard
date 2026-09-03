@@ -213,6 +213,13 @@ export const bookingsApi = {
       body: data,
       token,
     }),
+  /** Ask the practice's own calendar again after it refused a change. */
+  resync: (bookingId: string, token?: string | null) =>
+    apiClient<Booking>("/api/bookings/" + bookingId + "/resync", {
+      schema: BookingSchema,
+      method: "POST",
+      token,
+    }),
   updateStatus: (
     bookingId: string,
     status: Booking["status"],
@@ -444,6 +451,13 @@ export const callbacksApi = {
       params: { ...params },
       token,
     }),
+  /** Ask the practice's own calendar again after it refused a change. */
+  resync: (bookingId: string, token?: string | null) =>
+    apiClient<Booking>("/api/bookings/" + bookingId + "/resync", {
+      schema: BookingSchema,
+      method: "POST",
+      token,
+    }),
   updateStatus: (
     callbackId: string,
     status: CallbackStatus,
@@ -468,6 +482,13 @@ export const waitlistApi = {
     apiClient<WaitlistListResponse>("/api/waitlist", {
       schema: WaitlistListResponseSchema,
       params: { ...params },
+      token,
+    }),
+  /** Ask the practice's own calendar again after it refused a change. */
+  resync: (bookingId: string, token?: string | null) =>
+    apiClient<Booking>("/api/bookings/" + bookingId + "/resync", {
+      schema: BookingSchema,
+      method: "POST",
       token,
     }),
   updateStatus: (

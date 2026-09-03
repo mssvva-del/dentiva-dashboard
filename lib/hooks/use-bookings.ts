@@ -88,3 +88,26 @@ export function useUpdateBookingStatus() {
     },
   });
 }
+
+
+export function useResyncBooking() {
+  const queryClient = useQueryClient();
+  const getToken = useApiToken();
+  return useMutation({
+    mutationFn: async (id: string) => bookingsApi.resync(id, await getToken()),
+    onSuccess: (data, id) => {
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["booking", id] });
+      if (data.pms_sync_status) {
+        // It refused again, and said why. Repeating the reason beats a green
+        // tick over two calendars that still disagree.
+        showToast.error(data.pms_sync_status);
+      } else {
+        showToast.success("Your practice calendar is up to date");
+      }
+    },
+    onError: (err) => {
+      showToast.error(apiErrorDetail(err) ?? "Couldn't reach your practice software");
+    },
+  });
+}
