@@ -8,6 +8,8 @@ import {
 } from "@/lib/schemas/calls";
 import {
   BookingSchema,
+  OutOfStepSchema,
+  type OutOfStep,
   ListBookingsResponseSchema,
   type Booking,
   type ListBookingsResponse,
@@ -211,6 +213,12 @@ export const bookingsApi = {
       schema: BookingSchema,
       method: "PATCH",
       body: data,
+      token,
+    }),
+  /** How many upcoming appointments the practice's own calendar does not have. */
+  outOfStep: (token?: string | null) =>
+    apiClient<OutOfStep>("/api/bookings/out-of-step", {
+      schema: OutOfStepSchema,
       token,
     }),
   /** Ask the practice's own calendar again after it refused a change. */
@@ -451,13 +459,6 @@ export const callbacksApi = {
       params: { ...params },
       token,
     }),
-  /** Ask the practice's own calendar again after it refused a change. */
-  resync: (bookingId: string, token?: string | null) =>
-    apiClient<Booking>("/api/bookings/" + bookingId + "/resync", {
-      schema: BookingSchema,
-      method: "POST",
-      token,
-    }),
   updateStatus: (
     callbackId: string,
     status: CallbackStatus,
@@ -482,13 +483,6 @@ export const waitlistApi = {
     apiClient<WaitlistListResponse>("/api/waitlist", {
       schema: WaitlistListResponseSchema,
       params: { ...params },
-      token,
-    }),
-  /** Ask the practice's own calendar again after it refused a change. */
-  resync: (bookingId: string, token?: string | null) =>
-    apiClient<Booking>("/api/bookings/" + bookingId + "/resync", {
-      schema: BookingSchema,
-      method: "POST",
       token,
     }),
   updateStatus: (
