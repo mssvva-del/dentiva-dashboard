@@ -6,6 +6,7 @@ import {
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
+import { apiErrorDetail } from "@/lib/api/client";
 import { patientsApi, type ListPatientsParams } from "@/lib/api/endpoints";
 import { showToast } from "@/lib/toast";
 
@@ -66,18 +67,43 @@ export function useSendRecallSms() {
   });
 }
 
-export function useEditPatientNotes() {
+type PatientEdit = {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  date_of_birth?: string;
+  preferred_language?: string;
+  notes?: string;
+};
+
+function useSavePatient(saved: string, failed: string) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { id: string; notes: string }) =>
-      patientsApi.editNotes(vars.id, vars.notes, await getToken()),
+    mutationFn: async (vars: { id: string; data: PatientEdit }) =>
+      patientsApi.edit(vars.id, vars.data, await getToken()),
     onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["patients"] });
       queryClient.invalidateQueries({ queryKey: ["patients", "detail", vars.id] });
-      showToast.success("Note saved");
+      showToast.success(saved);
     },
-    onError: () => {
-      showToast.error("Couldn't save the note");
+    onError: (err) => {
+      // The backend refuses a birthday that is not a date and a "number" that is
+      // a fragment, and says which. "Couldn't save" sends the front desk hunting.
+      showToast.error(apiErrorDetail(err) ?? failed);
     },
   });
+}
+
+export function useEditPatient() {
+  return useSavePatient("Patient updated", "Couldn't save the changes");
+}
+
+export function useEditPatientNotes() {
+  const save = useSavePatient("Note saved", "Couldn't save the note");
+  return {
+    ...save,
+    mutate: (vars: { id: string; notes: string }) =>
+      save.mutate({ id: vars.id, data: { notes: vars.notes } }),
+  };
 }

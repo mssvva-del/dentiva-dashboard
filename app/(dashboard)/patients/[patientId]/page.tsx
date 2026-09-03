@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
 import { NotesCard } from "@/components/features/notes-card";
+import { PatientEditor } from "@/components/features/patient-editor";
 import {
   usePatientDetail,
   useEditPatientNotes,
@@ -130,6 +131,10 @@ export default function PatientDetailPage({
               </div>
             </CardContent>
           </Card>
+
+          {/* Every field on the card above came off a phone call, so every one
+              of them can be wrong. */}
+          <PatientEditor patient={data} />
 
           {/* What the practice knows about this person, not about one visit. */}
           <NotesCard

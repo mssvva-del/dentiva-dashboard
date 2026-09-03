@@ -407,13 +407,24 @@ export const patientsApi = {
       schema: PatientDetailResponseSchema,
       token,
     }),
-  /** The only thing the dashboard may change on a patient. Names, phone and
-   *  date of birth belong to the practice software and are pulled from it. */
-  editNotes: (patientId: string, notes: string, token?: string | null) =>
+  /** Correct what the call got wrong: every field the agent fills is a field it
+   *  can get wrong. Saved in Dentovox; the practice software keeps its own. */
+  edit: (
+    patientId: string,
+    data: {
+      first_name?: string;
+      last_name?: string;
+      phone?: string;
+      date_of_birth?: string;
+      preferred_language?: string;
+      notes?: string;
+    },
+    token?: string | null
+  ) =>
     apiClient<PatientDetailResponse>(`/api/patients/${patientId}`, {
       schema: PatientDetailResponseSchema,
       method: "PATCH",
-      body: { notes },
+      body: data,
       token,
     }),
 };
