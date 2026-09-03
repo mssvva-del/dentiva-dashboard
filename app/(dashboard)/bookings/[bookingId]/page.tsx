@@ -188,9 +188,7 @@ export default function BookingDetailPage({
                       "Yes"
                     ) : (
                       <span className="text-amber-700">
-                        Not yet — this appointment is only in Dentovox. Add it to
-                        your practice software, or reschedule it to a time your
-                        calendar has free.
+                        Not yet — this appointment is only in Dentovox.
                       </span>
                     )
                   }
@@ -214,7 +212,31 @@ export default function BookingDetailPage({
           {/* The two calendars disagree. Said here, where somebody is looking
               at the appointment they believe is settled — an alert in our logs
               is not where the front desk finds out the chair is still blocked. */}
-          {data.pms_sync_status && (
+          {/* It never reached the practice at all. Same button: send it across
+              now, rather than leaving the front desk to retype it. */}
+          {!data.in_pms && data.status !== "cancelled" && (
+            <Card className="overflow-hidden border-amber-300 bg-amber-50/70 shadow-none">
+              <CardContent className="space-y-2 p-4">
+                <p className="text-sm font-semibold text-amber-900">
+                  Not in your practice calendar
+                </p>
+                <p className="text-[13px] text-amber-800">
+                  {data.pms_sync_status ??
+                    "This appointment is only in Dentovox. Send it to your practice software."}
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={resync.isPending}
+                  onClick={() => resync.mutate(bookingId)}
+                >
+                  {resync.isPending ? "Sending…" : "Send to practice calendar"}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {data.in_pms && data.pms_sync_status && (
             <Card className="overflow-hidden border-amber-300 bg-amber-50/70 shadow-none">
               <CardContent className="space-y-2 p-4">
                 <p className="text-sm font-semibold text-amber-900">
