@@ -14,6 +14,14 @@ export function useKnowledgeBase() {
   });
 }
 
+export function useKnowledgeGaps() {
+  const getToken = useApiToken();
+  return useQuery({
+    queryKey: ["knowledge-base", "gaps"],
+    queryFn: async () => knowledgeBaseApi.gaps(await getToken()),
+  });
+}
+
 export function useSaveKnowledgeBase() {
   const queryClient = useQueryClient();
   const getToken = useApiToken();
