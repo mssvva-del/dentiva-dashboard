@@ -32,6 +32,9 @@ export const BookingSchema = z.object({
   status: BookingStatusSchema,
   source: z.string().nullable().optional(),
   source_call_id: z.string().nullable().optional(),
+  // What the caller said that no other field holds. Written by the agent during
+  // the call, edited by the front desk after.
+  notes: z.string().nullable().optional(),
   created_at: z.string(),
 });
 export type Booking = z.infer<typeof BookingSchema>;

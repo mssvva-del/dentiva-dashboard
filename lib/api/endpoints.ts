@@ -203,6 +203,7 @@ export const bookingsApi = {
       duration_minutes?: number;
       procedure_type?: string;
       provider_name?: string;
+      notes?: string;
     },
     token?: string | null
   ) =>
@@ -404,6 +405,15 @@ export const patientsApi = {
   detail: (patientId: string, token?: string | null) =>
     apiClient<PatientDetailResponse>(`/api/patients/${patientId}`, {
       schema: PatientDetailResponseSchema,
+      token,
+    }),
+  /** The only thing the dashboard may change on a patient. Names, phone and
+   *  date of birth belong to the practice software and are pulled from it. */
+  editNotes: (patientId: string, notes: string, token?: string | null) =>
+    apiClient<PatientDetailResponse>(`/api/patients/${patientId}`, {
+      schema: PatientDetailResponseSchema,
+      method: "PATCH",
+      body: { notes },
       token,
     }),
 };
