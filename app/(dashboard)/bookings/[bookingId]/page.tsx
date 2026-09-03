@@ -12,11 +12,12 @@ import {
   Phone,
 } from "lucide-react";
 import { BookingEditor } from "@/components/features/booking-editor";
+import { NotesCard } from "@/components/features/notes-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
-import { useBookingDetail } from "@/lib/hooks/use-bookings";
+import { useBookingDetail, useEditBooking } from "@/lib/hooks/use-bookings";
 import { useClinicTime } from "@/lib/hooks/use-clinic-zone";
 import { formatDateTime } from "@/lib/utils/format";
 import { COPY } from "@/lib/constants";
@@ -67,6 +68,7 @@ export default function BookingDetailPage({
 }) {
   const { bookingId } = params;
   const { data, isLoading, isError, refetch } = useBookingDetail(bookingId);
+  const editBooking = useEditBooking();
   const clinic = useClinicTime();
 
   const statusLabel = data?.status
@@ -185,6 +187,19 @@ export default function BookingDetailPage({
               </div>
             </CardContent>
           </Card>
+
+          {/* What the caller said, above the editor: it is the thing the front
+              desk needs before the patient walks in. */}
+          <NotesCard
+            title="Call notes"
+            hint="Written by your receptionist during the call. Edit it if the patient tells you something different."
+            placeholder="Nothing was noted on this call."
+            value={data.notes}
+            saving={editBooking.isPending}
+            onSave={(notes) =>
+              editBooking.mutate({ id: bookingId, data: { notes } })
+            }
+          />
 
           <BookingEditor booking={data} />
 

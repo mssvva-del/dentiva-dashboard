@@ -50,6 +50,7 @@ export function useEditBooking() {
         duration_minutes?: number;
         procedure_type?: string;
         provider_name?: string;
+        notes?: string;
       };
     }) => bookingsApi.edit(vars.id, vars.data, await getToken()),
     onSuccess: (_data, vars) => {

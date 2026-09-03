@@ -87,6 +87,8 @@ export const PatientDetailResponseSchema = z.object({
   total_visits: z.number(),
   no_show_count: z.number(),
   sms_opt_out: z.boolean(),
+  // About the person, not one visit — allergies, who drives them, how they pay.
+  notes: z.string().nullable().optional(),
   created_at: z.string(),
   bookings: z.array(PatientBookingRowSchema),
   waitlist: z.array(PatientWaitlistRowSchema),

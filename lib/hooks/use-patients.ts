@@ -65,3 +65,19 @@ export function useSendRecallSms() {
     },
   });
 }
+
+export function useEditPatientNotes() {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { id: string; notes: string }) =>
+      patientsApi.editNotes(vars.id, vars.notes, await getToken()),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["patients", "detail", vars.id] });
+      showToast.success("Note saved");
+    },
+    onError: () => {
+      showToast.error("Couldn't save the note");
+    },
+  });
+}

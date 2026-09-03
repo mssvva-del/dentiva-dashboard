@@ -7,7 +7,11 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
-import { usePatientDetail } from "@/lib/hooks/use-patients";
+import { NotesCard } from "@/components/features/notes-card";
+import {
+  usePatientDetail,
+  useEditPatientNotes,
+} from "@/lib/hooks/use-patients";
 import { formatPhone, telHref } from "@/lib/phone";
 import { useClinicTime } from "@/lib/hooks/use-clinic-zone";
 import { formatDateTime, formatDate } from "@/lib/utils/format";
@@ -51,6 +55,7 @@ export default function PatientDetailPage({
 }) {
   const { patientId } = params;
   const { data, isLoading, isError, refetch } = usePatientDetail(patientId);
+  const editNotes = useEditPatientNotes();
   const clinic = useClinicTime();
 
   return (
@@ -125,6 +130,16 @@ export default function PatientDetailPage({
               </div>
             </CardContent>
           </Card>
+
+          {/* What the practice knows about this person, not about one visit. */}
+          <NotesCard
+            title="Notes"
+            hint="Only your practice sees this. It stays on the patient, not on one appointment."
+            placeholder="Allergies, who usually brings them, how they prefer to pay…"
+            value={data.notes}
+            saving={editNotes.isPending}
+            onSave={(notes) => editNotes.mutate({ id: patientId, notes })}
+          />
 
           {/* Appointment timeline */}
           <Card className="overflow-hidden shadow-sm">
