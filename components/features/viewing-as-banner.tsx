@@ -18,7 +18,7 @@ export function ViewingAsBanner() {
   const router = useRouter();
   const qc = useQueryClient();
 
-  // sessionStorage is not readable during SSR, so resolve after mount.
+  // Browser storage is not readable during SSR, so resolve after mount.
   useEffect(() => setTarget(getViewingAs()), []);
 
   if (!target) return null;
@@ -34,7 +34,8 @@ export function ViewingAsBanner() {
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
       <p className="text-sm text-amber-900">
         <span className="font-semibold">Viewing {target.name}</span> — this is
-        the clinic&apos;s own view. Read-only, and every page you open is logged.
+        the clinic&apos;s own view. You can fix appointments and patient records
+        here; everything you do is logged under your name.
       </p>
       <button
         type="button"

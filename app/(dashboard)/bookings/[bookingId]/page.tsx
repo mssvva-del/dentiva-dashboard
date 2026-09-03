@@ -25,6 +25,7 @@ import {
 import { useClinicTime } from "@/lib/hooks/use-clinic-zone";
 import { formatDateTime } from "@/lib/utils/format";
 import { COPY } from "@/lib/constants";
+import { ApiError } from "@/lib/api/client";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Status badge styles
@@ -71,7 +72,12 @@ export default function BookingDetailPage({
   params: { bookingId: string };
 }) {
   const { bookingId } = params;
-  const { data, isLoading, isError, refetch } = useBookingDetail(bookingId);
+  const { data, isLoading, isError, error, refetch } = useBookingDetail(bookingId);
+  // Not found means it belongs to a clinic other than the one on screen — the
+  // ordinary way a Dentovox operator lands here from a link. "Something went
+  // wrong on our end" sent the person to Retry a page that was never going to
+  // load, on a morning they had a chair to free.
+  const wrongClinic = error instanceof ApiError && error.status === 404;
   const editBooking = useEditBooking();
   const resync = useResyncBooking();
   const clinic = useClinicTime();
@@ -95,6 +101,18 @@ export default function BookingDetailPage({
 
       {isLoading ? (
         <LoadingState />
+      ) : wrongClinic ? (
+        <Card className="shadow-sm">
+          <CardContent className="space-y-2 p-6">
+            <p className="font-semibold text-navy">
+              This appointment isn&apos;t in the clinic you&apos;re viewing.
+            </p>
+            <p className="text-sm text-gray-600">
+              Open the right clinic first — Admin Console → Clinics → the
+              practice → Open their dashboard — then come back to this link.
+            </p>
+          </CardContent>
+        </Card>
       ) : isError ? (
         <ErrorState onRetry={() => refetch()} />
       ) : data ? (
