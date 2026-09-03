@@ -73,6 +73,8 @@ import {
   KnowledgeBaseResponseSchema,
   type KnowledgeBase,
   type KnowledgeBaseResponse,
+  KnowledgeGapsSchema,
+  type KnowledgeGaps,
 } from "@/lib/schemas/knowledge-base";
 import {
   AdminInvoicesResponseSchema,
@@ -266,6 +268,11 @@ export const knowledgeBaseApi = {
       schema: KnowledgeBaseResponseSchema,
       method: "PUT",
       body: data,
+      token,
+    }),
+  gaps: (token?: string | null) =>
+    apiClient<KnowledgeGaps>("/api/knowledge-base/gaps", {
+      schema: KnowledgeGapsSchema,
       token,
     }),
 };

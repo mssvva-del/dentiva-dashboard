@@ -754,6 +754,44 @@ function ReviewStep(
           The instruction is always available in Settings → Call Forwarding.
         </p>
       ) : null}
+      {/* What the receptionist still cannot answer, at the moment the clinic
+          decides to go live. This used to be invisible: a practice went live
+          with whatever its website happened to mention, met real patients
+          answering "the team will confirm that", and nobody found out until
+          somebody read a transcript weeks later. */}
+      {(state.knowledge_gaps?.total ?? 0) > 0 && (
+        <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50/60 p-4">
+          <p className="text-sm font-semibold text-amber-900">
+            {state.knowledge_gaps!.total === 1
+              ? "One thing your receptionist can't answer yet"
+              : `${state.knowledge_gaps!.total} things your receptionist can't answer yet`}
+          </p>
+          <p className="mt-0.5 text-xs text-amber-800">
+            You can go live without these — patients just hear &ldquo;the team
+            will confirm that&rdquo;. Add them any time in Knowledge Base.
+          </p>
+          <ul className="mt-3 space-y-2">
+            {state.knowledge_gaps!.gaps.map((gap) => (
+              <li
+                key={gap.field}
+                className="rounded-md border border-amber-200 bg-white px-3 py-2"
+              >
+                <p className="text-[13px] font-medium">
+                  {gap.question}
+                  {gap.blocking && (
+                    <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-700">
+                      Needed
+                    </span>
+                  )}
+                </p>
+                <p className="mt-0.5 text-[12px] text-muted-foreground">
+                  {gap.consequence}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="mt-5 rounded-lg bg-teal/5 p-3 text-xs text-muted-foreground">
         Billing is set up separately with your Dentovox contact (pilot pricing). You
         can go live now and we&apos;ll handle the plan.

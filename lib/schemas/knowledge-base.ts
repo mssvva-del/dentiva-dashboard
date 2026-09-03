@@ -68,3 +68,24 @@ export const KnowledgeBaseResponseSchema = z.object({
   knowledge_base: KnowledgeBaseSchema.nullable(),
 });
 export type KnowledgeBaseResponse = z.infer<typeof KnowledgeBaseResponseSchema>;
+
+
+/** What the agent still cannot answer about this practice.
+ *
+ *  Each entry is the question in the clinic's own words plus what the CALLER
+ *  hears until it is answered — "your profile is 60% complete" is not something
+ *  anybody acts on.
+ */
+export const KnowledgeGapsSchema = z.object({
+  total: z.number(),
+  blocking: z.number(),
+  gaps: z.array(
+    z.object({
+      field: z.string(),
+      question: z.string(),
+      consequence: z.string(),
+      blocking: z.boolean(),
+    })
+  ),
+});
+export type KnowledgeGaps = z.infer<typeof KnowledgeGapsSchema>;

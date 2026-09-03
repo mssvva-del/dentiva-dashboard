@@ -27,6 +27,22 @@ export const OnboardingStateSchema = z.object({
   // that throws on an older payload takes the whole wizard down with it.
   pms_install_key: z.string().nullable().optional(),
   pms_connected: z.boolean().optional(),
+  // What the agent still cannot answer, so the clinic sees it before going live.
+  knowledge_gaps: z
+    .object({
+      total: z.number(),
+      blocking: z.number(),
+      gaps: z.array(
+        z.object({
+          field: z.string(),
+          question: z.string(),
+          consequence: z.string(),
+          blocking: z.boolean(),
+        })
+      ),
+    })
+    .nullable()
+    .optional(),
   languages_enabled: z.array(z.string()),
   agent_settings: z
     .object({

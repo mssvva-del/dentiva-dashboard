@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { RequirePermission } from "@/components/auth/can";
 import { PERM } from "@/lib/schemas/me";
+import { KnowledgeGaps } from "@/components/features/knowledge-gaps";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -295,6 +296,10 @@ function KnowledgeBasePageContent() {
       />
 
       <div className="space-y-5">
+        {/* What the agent still cannot answer, in the clinic's own words. A
+            practice used to have no way of knowing this until somebody read a
+            transcript weeks later. */}
+        <KnowledgeGaps />
         {/* Providers */}
         <SectionCard
           title="Providers"
