@@ -81,6 +81,12 @@ export const PatientDetailResponseSchema = z.object({
   // front desk greets them by and a number they can actually dial.
   name: z.string().nullable().optional(),
   phone: z.string().nullable().optional(),
+  // The fields as the agent filled them, separately — a joined name cannot be
+  // typed back apart, and each of these is editable.
+  first_name: z.string().nullable().optional(),
+  last_name: z.string().nullable().optional(),
+  date_of_birth: z.string().nullable().optional(),
+  preferred_language: z.string().nullable().optional(),
   status: PatientStatusSchema,
   last_visit_date: z.string().nullable().optional(),
   next_visit_date: z.string().nullable().optional(),
