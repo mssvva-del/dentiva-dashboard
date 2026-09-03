@@ -49,3 +49,10 @@ export const ListBookingsResponseSchema = z.object({
   has_more: z.boolean().optional(),
 });
 export type ListBookingsResponse = z.infer<typeof ListBookingsResponseSchema>;
+
+/** Matches GET /api/bookings/out-of-step */
+export const OutOfStepSchema = z.object({
+  count: z.number(),
+  pms_connected: z.boolean(),
+});
+export type OutOfStep = z.infer<typeof OutOfStepSchema>;

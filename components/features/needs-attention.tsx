@@ -3,8 +3,13 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
-import { AlertTriangle, Clock, PhoneMissed } from "lucide-react";
-import { billingApi, callbacksApi, waitlistApi } from "@/lib/api/endpoints";
+import { AlertTriangle, CalendarX, Clock, PhoneMissed } from "lucide-react";
+import {
+  billingApi,
+  bookingsApi,
+  callbacksApi,
+  waitlistApi,
+} from "@/lib/api/endpoints";
 
 /**
  * The one block that says "do something", above everything that says "here is
@@ -28,15 +33,20 @@ function useAttentionCounts() {
     queryFn: async () => {
       const token = await getToken();
       // Two requests, limit 1 — we want the totals, not the rows.
-      const [callbacks, waitlist, billing] = await Promise.all([
+      const [callbacks, waitlist, billing, outOfStep] = await Promise.all([
         callbacksApi.list({ status: "pending", limit: 1 }, token),
         waitlistApi.list({ limit: 1 }, token),
         // Best-effort: a clinic whose role cannot see billing still gets the
         // rest of the strip, rather than the whole block dying on one 403.
         billingApi.summary(token).catch(() => null),
+        // Appointments that exist here and not in the practice's own calendar.
+        // A live clinic found theirs missing before we did, because the only
+        // place that said so was one booking page at a time.
+        bookingsApi.outOfStep(token).catch(() => null),
       ]);
       const usage = billing?.usage ?? null;
       return {
+        outOfStep: outOfStep?.count ?? 0,
         pendingCallbacks: callbacks.total,
         urgentCallbacks: callbacks.pending_urgent,
         // The dedicated count, not total-with-a-filter: the API computes it
@@ -67,6 +77,19 @@ export function NeedsAttention() {
   if (!data) return null;
 
   const items = [
+    // First: the patient believes they have an appointment the practice cannot
+    // see. Nobody finds out until the day, and then it is the patient standing
+    // at the desk.
+    data.outOfStep > 0 && {
+      key: "out-of-step",
+      href: "/bookings",
+      icon: <CalendarX className="h-4 w-4" aria-hidden />,
+      label:
+        data.outOfStep === 1
+          ? "1 appointment isn't in your practice calendar"
+          : `${data.outOfStep} appointments aren't in your practice calendar`,
+      tone: "border-red-200 bg-red-50 text-red-900",
+    },
     data.urgentCallbacks > 0 && {
       key: "urgent",
       href: "/callbacks",
