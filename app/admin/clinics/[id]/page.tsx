@@ -48,12 +48,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-// New billing catalog (ADM7). Kept in sync with backend billing/plans.py.
+// The billing catalog, by its own keys. These were the July marketing names —
+// the backend translated them through an alias table, and a clinic put on
+// "Full-Time" here was billed as "Front Desk" everywhere else.
 const PLAN_OPTIONS = [
-  { value: "after_hours", label: "After-Hours" },
-  { value: "full_time", label: "Full-Time" },
-  { value: "growth", label: "Growth" },
-  { value: "multi", label: "Multi-Location" },
+  { value: "overflow", label: "Overflow — $299, 400 min" },
+  { value: "front_desk", label: "Front Desk — $499, 650 min" },
+  { value: "revenue", label: "Revenue — $749, 1,000 min" },
+  { value: "multi", label: "Multi-Location — $649/location, 900 min" },
 ];
 
 /** Clinic detail (Phase E) — VIEW_CLINIC_DETAIL (audited) + override/impersonate. */

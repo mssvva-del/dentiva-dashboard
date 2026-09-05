@@ -132,6 +132,10 @@ function LeadDrawer({ lead, onClose }: { lead: Lead | null; onClose: () => void 
               <Detail label="Phone" value={lead.phone} copyable />
               <Detail label="Clinic" value={lead.clinic_name} />
               <Detail label="Message" value={lead.message} multiline />
+              <Detail label="Landing page" value={lead.landing_page ?? null} />
+              <Detail label="Referrer" value={lead.referrer ?? null} />
+              <Detail label="UTM" value={lead.utm ?? null} />
+              <Detail label="Sent from" value={lead.submitted_from ?? null} />
 
               <label className="block text-sm">
                 <span className="block text-xs font-medium text-muted-foreground">Status</span>

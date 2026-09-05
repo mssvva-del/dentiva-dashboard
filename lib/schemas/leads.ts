@@ -19,6 +19,12 @@ export const LeadSchema = z.object({
   status: LeadStatusSchema,
   notes: z.string().nullable(),
   created_at: z.string(),
+  // First-touch attribution the site attaches to every demo request. Without it
+  // the inbox says a demo was asked for and never which channel earned it.
+  landing_page: z.string().nullable().optional(),
+  referrer: z.string().nullable().optional(),
+  utm: z.string().nullable().optional(),
+  submitted_from: z.string().nullable().optional(),
 });
 export type Lead = z.infer<typeof LeadSchema>;
 
