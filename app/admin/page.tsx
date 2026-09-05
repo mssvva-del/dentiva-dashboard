@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMe } from "@/lib/hooks/use-me";
 import { useAdminRevenue, useAdminClinics } from "@/lib/hooks/use-admin";
+import { useNewLeadsCount } from "@/lib/hooks/use-leads";
 import { fmtCents } from "@/lib/schemas/billing";
 
 /** Admin overview (Phase E): revenue snapshot + clinic counts. */
@@ -10,6 +11,7 @@ export default function AdminOverviewPage() {
   const { data: me } = useMe();
   const revenue = useAdminRevenue();
   const clinics = useAdminClinics();
+  const newLeads = useNewLeadsCount();
   const r = revenue.data;
 
   return (
@@ -22,6 +24,16 @@ export default function AdminOverviewPage() {
         </p>
       </div>
 
+      {/* A demo request has no other way to reach anyone: no email channel,
+          texting off until carrier registration. This is where it is seen. */}
+      {newLeads > 0 && (
+        <Link
+          href="/admin/leads"
+          className="flex items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm font-medium text-teal-900"
+        >
+          {newLeads === 1 ? "1 new lead waiting" : `${newLeads} new leads waiting`} →
+        </Link>
+      )}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="MRR" value={r ? fmtCents(r.total_mrr_cents) : "—"} />
         <Stat label="Active clinics" value={r ? String(r.active_clinics) : "—"} />
