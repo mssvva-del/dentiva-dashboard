@@ -97,6 +97,24 @@ export const BaaHistoryRowSchema = z.object({
 });
 export type BaaHistoryRow = z.infer<typeof BaaHistoryRowSchema>;
 
+// The clinic's own calendar, read through its PMS bridge. Matches admin.py PmsCalendar.
+export const PmsCalendarRowSchema = z.object({
+  start: z.string(),
+  end: z.string().nullable().optional(),
+  provider: z.string().nullable().optional(),
+  patient: z.string().nullable().optional(),
+  note: z.string().nullable().optional(),
+  cancelled: z.boolean(),
+  ours: z.boolean(),
+});
+export const PmsCalendarSchema = z.object({
+  bridge: z.string().nullable(),
+  reachable: z.boolean(),
+  error: z.string().nullable().optional(),
+  appointments: z.array(PmsCalendarRowSchema),
+});
+export type PmsCalendar = z.infer<typeof PmsCalendarSchema>;
+
 // QA-LOOP-1: self-learning review of failed calls. Matches admin.py QaReview.
 export const QaFindingSchema = z.object({
   call_id: z.string(),

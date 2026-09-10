@@ -43,6 +43,7 @@ import {
   ClinicsResponseSchema,
   ClinicDetailSchema,
   BaaHistoryRowSchema,
+  PmsCalendarSchema,
   PmsCredentialsStatusSchema,
   PmsLocationSchema,
   ReportedProblemSchema,
@@ -714,6 +715,11 @@ export const adminApi = {
     }),
   clinic: (id: string, token?: string | null) =>
     apiClient<ClinicDetail>(`/api/admin/clinics/${id}`, { schema: ClinicDetailSchema, token }),
+  clinicPmsCalendar: (id: string, token?: string | null) =>
+    apiClient<import("@/lib/schemas/admin").PmsCalendar>(
+      `/api/admin/clinics/${id}/pms-calendar`,
+      { schema: PmsCalendarSchema, token },
+    ),
   clinicBaaHistory: (id: string, token?: string | null) =>
     apiClient<import("@/lib/schemas/admin").BaaHistoryRow[]>(
       `/api/admin/clinics/${id}/baa-history`,
