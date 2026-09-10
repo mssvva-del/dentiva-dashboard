@@ -170,6 +170,7 @@ export default function AdminClinicDetailPage() {
         <PmsBridgeBlock clinic={c} />
         <ProfileFillBlock clinic={c} onSaved={() => refetch()} />
       </CanAdmin>
+      {c.pms_bridge && <PmsCalendarBlock clinicId={id} />}
       <SubscriptionBlock clinic={c} />
       <InvoicesBlock clinicId={id} />
       <BaaHistoryBlock clinicId={id} />
@@ -918,6 +919,72 @@ function ClinicHistoryBlock({ clinicId }: { clinicId: string }) {
             </li>
           ))}
         </ul>
+      )}
+    </section>
+  );
+}
+
+/** The clinic's own calendar, as its PMS holds it.
+ *
+ *  Nobody outside a practice can sign in to its Eaglesoft. "Did the appointment
+ *  we booked actually land there?" had no answer except phoning the front desk.
+ *  We already hold a working link for the voice agent; this looks through it.
+ */
+function PmsCalendarBlock({ clinicId }: { clinicId: string }) {
+  const { getToken } = useAuth();
+  const { data, isFetching, refetch } = useQuery({
+    queryKey: ["admin", "pms-calendar", clinicId],
+    queryFn: async () => adminApi.clinicPmsCalendar(clinicId, await getToken()),
+    staleTime: 60_000,
+  });
+
+  return (
+    <section className="rounded-xl border border-gray-200 bg-white p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-navy">Their calendar — next 14 days</h2>
+        <Button variant="outline" size="sm" disabled={isFetching} onClick={() => refetch()}>
+          {isFetching ? "Reading…" : "Refresh"}
+        </Button>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Read live from the practice&apos;s own software. <b>Ours</b> marks appointments Dentovox booked.
+      </p>
+      {data === undefined ? null : !data.reachable ? (
+        <p className="mt-3 text-sm text-amber-800">{data.error ?? "Calendar unavailable."}</p>
+      ) : data.appointments.length === 0 ? (
+        <p className="mt-3 text-sm text-muted-foreground">Nothing booked in the next 14 days.</p>
+      ) : (
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-muted-foreground">
+                <th className="py-1 pr-3 font-medium">When</th>
+                <th className="py-1 pr-3 font-medium">Patient</th>
+                <th className="py-1 pr-3 font-medium">Provider</th>
+                <th className="py-1 pr-3 font-medium">Note</th>
+                <th className="py-1 font-medium" />
+              </tr>
+            </thead>
+            <tbody>
+              {data.appointments.map((a, i) => (
+                <tr key={`${a.start}-${i}`} className={a.cancelled ? "text-muted-foreground line-through" : ""}>
+                  <td className="py-1 pr-3 tabular-nums">
+                    {new Date(a.start).toLocaleString("en-US", {
+                      weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+                    })}
+                  </td>
+                  <td className="py-1 pr-3">{a.patient ?? "—"}</td>
+                  <td className="py-1 pr-3">{a.provider ?? "—"}</td>
+                  <td className="py-1 pr-3">{a.note ?? ""}</td>
+                  <td className="py-1 text-xs">
+                    {a.ours && <span className="rounded bg-teal-50 px-1.5 py-0.5 font-medium text-teal-700">Ours</span>}
+                    {a.cancelled && <span className="ml-1">cancelled</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </section>
   );
