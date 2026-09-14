@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useNewLeadsCount } from "@/lib/hooks/use-leads";
-import { useAdminMe } from "@/lib/hooks/use-admin";
+import { useAdminClinics, useAdminMe } from "@/lib/hooks/use-admin";
+import { owedCallbacks } from "@/lib/owed-callbacks";
 
 /**
  * Admin side nav (Phase E).
@@ -37,13 +38,21 @@ export function AdminNav() {
   // Badge count of new leads (only fetched for users who hold MANAGE_LEADS).
   const newLeads = useNewLeadsCount();
   const { data: me } = useAdminMe();
+  // Patients the clinics still owe a call. Red once anyone has waited a day.
+  const owed = owedCallbacks(useAdminClinics().data);
   const allowed = (permission?: string) =>
     permission === undefined || me === undefined || me.permissions.includes(permission);
   return (
     <nav className="hidden w-48 shrink-0 flex-col gap-0.5 md:flex">
       {LINKS.filter(([, , permission]) => allowed(permission)).map(([href, label]) => {
         const active = href === "/admin" ? path === "/admin" : path.startsWith(href);
-        const badge = href === "/admin/leads" && newLeads > 0 ? newLeads : null;
+        const badge =
+          href === "/admin/leads" && newLeads > 0
+            ? newLeads
+            : href === "/admin/clinics" && owed.total > 0
+              ? owed.total
+              : null;
+        const red = href === "/admin/clinics" && owed.late;
         return (
           <Link
             key={href}
@@ -55,7 +64,9 @@ export function AdminNav() {
           >
             <span>{label}</span>
             {badge !== null && (
-              <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-teal px-1.5 text-xs font-semibold text-white">
+              <span
+                className={`ml-2 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold text-white ${red ? "bg-red-600" : "bg-teal"}`}
+              >
                 {badge}
               </span>
             )}

@@ -5,6 +5,7 @@ import * as React from "react";
 import { useAdminClinics, useCreateClinic } from "@/lib/hooks/use-admin";
 import type { ClinicRow } from "@/lib/schemas/admin";
 import { fmtCents } from "@/lib/schemas/billing";
+import { waitLabel } from "@/lib/owed-callbacks";
 import { LoadingState, ErrorState } from "@/components/features/page-states";
 
 /**
@@ -54,7 +55,7 @@ function quietness(lastCallAt: string | null) {
 function waitingCallbacks(count: number, oldest: string | null) {
   if (!count || !oldest) return { label: "—", className: "text-muted-foreground" };
   const hours = (Date.now() - new Date(oldest).getTime()) / 3_600_000;
-  const age = hours < 24 ? `${Math.max(1, Math.floor(hours))}h` : `${Math.floor(hours / 24)}d`;
+  const age = waitLabel(hours * 3_600_000);
   return {
     label: `${count} · oldest ${age}`,
     // A patient who asked to be called back and heard nothing for a day has

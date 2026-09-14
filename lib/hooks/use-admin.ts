@@ -22,8 +22,8 @@ function useAdminQuery<T>(key: unknown[], fn: (t: string | null) => Promise<T>, 
   });
 }
 
-export const useAdminClinics = () =>
-  useAdminQuery(["admin", "clinics"], (t) => adminApi.clinics(t));
+export const useAdminClinics = (enabled = true) =>
+  useAdminQuery(["admin", "clinics"], (t) => adminApi.clinics(t), enabled);
 export const useAdminClinic = (id: string) =>
   useAdminQuery(["admin", "clinic", id], (t) => adminApi.clinic(id, t), !!id);
 export const useAdminRevenue = () =>
