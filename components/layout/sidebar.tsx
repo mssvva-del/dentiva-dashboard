@@ -29,6 +29,8 @@ import { usePracticeMe, useDashboardToday } from "@/lib/hooks/use-dashboard";
 import { useCallbacksList } from "@/lib/hooks/use-callbacks";
 import { useWaitlistList } from "@/lib/hooks/use-waitlist";
 import { useIsInternal, useCan } from "@/lib/hooks/use-me";
+import { useAdminClinics } from "@/lib/hooks/use-admin";
+import { owedCallbacks } from "@/lib/owed-callbacks";
 import { useOnboardingState } from "@/lib/hooks/use-onboarding";
 import { PERM } from "@/lib/schemas/me";
 
@@ -70,6 +72,8 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   // route itself is independently guarded (RequireInternal + backend), so this
   // is purely so clinic users never see a link they can't use.
   const { isInternal } = useIsInternal();
+  // Staff only: callbacks every clinic still owes, on the way into the console.
+  const owedAcrossClinics = owedCallbacks(useAdminClinics(!!isInternal).data);
   // Team management is owner/manager only (MANAGE_TEAM); the page + API re-check.
   const { allowed: canManageTeam } = useCan(PERM.MANAGE_TEAM);
   // Billing is visible to manager+ (VIEW_BILLING); changing the plan is owner-only.
@@ -190,6 +194,8 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             href="/admin"
             label="Admin Console"
             icon={ShieldCheck}
+            count={owedAcrossClinics.total}
+            urgent={owedAcrossClinics.late}
             onNavigate={onNavigate}
           />
         </>

@@ -5,6 +5,7 @@ import { useMe } from "@/lib/hooks/use-me";
 import { useAdminRevenue, useAdminClinics } from "@/lib/hooks/use-admin";
 import { useNewLeadsCount } from "@/lib/hooks/use-leads";
 import { fmtCents } from "@/lib/schemas/billing";
+import { owedCallbacks, waitLabel, waitedMs } from "@/lib/owed-callbacks";
 
 /** Admin overview (Phase E): revenue snapshot + clinic counts. */
 export default function AdminOverviewPage() {
@@ -13,6 +14,7 @@ export default function AdminOverviewPage() {
   const clinics = useAdminClinics();
   const newLeads = useNewLeadsCount();
   const r = revenue.data;
+  const owed = owedCallbacks(clinics.data);
 
   return (
     <div className="space-y-6">
@@ -33,6 +35,28 @@ export default function AdminOverviewPage() {
         >
           {newLeads === 1 ? "1 new lead waiting" : `${newLeads} new leads waiting`} →
         </Link>
+      )}
+      {/* A clinic's callbacks are the clinic's to work — but a patient left
+          waiting is lost revenue for them and churn for us, and until now
+          nothing on this side showed it. */}
+      {owed.total > 0 && (
+        <div
+          className={`rounded-xl border p-4 ${owed.late ? "border-red-200 bg-red-50 text-red-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}
+        >
+          <p className="text-sm font-semibold">
+            {owed.total === 1 ? "1 patient is" : `${owed.total} patients are`} waiting for a call back
+          </p>
+          <ul className="mt-2 space-y-1 text-sm">
+            {owed.owing.map((c) => (
+              <li key={c.id}>
+                <Link href={`/admin/clinics/${c.id}`} className="font-medium underline">
+                  {c.name}
+                </Link>
+                {` — ${c.pending_callbacks} waiting, oldest ${waitLabel(waitedMs(c))}`}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="MRR" value={r ? fmtCents(r.total_mrr_cents) : "—"} />
