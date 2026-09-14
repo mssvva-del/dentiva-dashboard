@@ -18,6 +18,9 @@ export const ClinicRowSchema = z.object({
   // Silence is the failure nobody notices: if the number breaks or the practice
   // turns forwarding off, calls simply stop and everything stays green.
   last_call_at: z.string().nullable(),
+  // Patients the clinic still owes a call, and since when.
+  pending_callbacks: z.number(),
+  oldest_pending_callback_at: z.string().nullable(),
 });
 export type ClinicRow = z.infer<typeof ClinicRowSchema>;
 export const ClinicsResponseSchema = z.array(ClinicRowSchema);

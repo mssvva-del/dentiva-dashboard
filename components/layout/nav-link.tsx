@@ -7,8 +7,16 @@ import { PERM, type Permission } from "@/lib/schemas/me";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** A count chip (teal) or a "Soon" roadmap chip (gold). */
-function NavBadge({ count, comingSoon }: { count?: number; comingSoon?: boolean }) {
+/** A count chip (teal, red when urgent) or a "Soon" roadmap chip (gold). */
+function NavBadge({
+  count,
+  comingSoon,
+  urgent,
+}: {
+  count?: number;
+  comingSoon?: boolean;
+  urgent?: boolean;
+}) {
   if (comingSoon) {
     return (
       <span
@@ -23,7 +31,11 @@ function NavBadge({ count, comingSoon }: { count?: number; comingSoon?: boolean 
     return (
       <span
         className="ml-auto grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[10px] font-semibold tabular-nums"
-        style={{ background: "rgba(0, 137, 123, 0.22)", color: "#4DB6AC" }}
+        style={
+          urgent
+            ? { background: "rgba(220, 38, 38, 0.85)", color: "#FFFFFF" }
+            : { background: "rgba(0, 137, 123, 0.22)", color: "#4DB6AC" }
+        }
       >
         {count}
       </span>
@@ -37,6 +49,7 @@ export function NavLink({
   label,
   icon: Icon,
   count,
+  urgent,
   comingSoon,
   permission,
   onNavigate,
@@ -45,6 +58,8 @@ export function NavLink({
   label: string;
   icon: LucideIcon;
   count?: number;
+  /** Paint the count red: something in it can't wait. */
+  urgent?: boolean;
   comingSoon?: boolean;
   /** Hide this link when the signed-in user lacks the permission. UX only — the
    *  page guards itself and the API re-checks; this stops the nav offering a

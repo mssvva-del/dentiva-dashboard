@@ -49,6 +49,20 @@ function quietness(lastCallAt: string | null) {
   return { label, days, className: "text-muted-foreground" };
 }
 
+/** Callbacks the clinic still owes, and how long the oldest has waited. The
+ *  clinic sees the rows; this is how we see a clinic that isn't working them. */
+function waitingCallbacks(count: number, oldest: string | null) {
+  if (!count || !oldest) return { label: "—", className: "text-muted-foreground" };
+  const hours = (Date.now() - new Date(oldest).getTime()) / 3_600_000;
+  const age = hours < 24 ? `${Math.max(1, Math.floor(hours))}h` : `${Math.floor(hours / 24)}d`;
+  return {
+    label: `${count} · oldest ${age}`,
+    // A patient who asked to be called back and heard nothing for a day has
+    // usually called another practice.
+    className: hours >= 24 ? "font-semibold text-red-600" : "text-amber-600",
+  };
+}
+
 function NewClinicForm() {
   const create = useCreateClinic();
   const [open, setOpen] = React.useState(false);
@@ -175,6 +189,7 @@ export default function AdminClinicsPage() {
               <th className="px-4 py-2.5">Status</th>
               <th className="px-4 py-2.5">Plan</th>
               <th className="px-4 py-2.5">Last call</th>
+              <th className="px-4 py-2.5">Callbacks waiting</th>
               <th className="px-4 py-2.5 text-right">Minutes this period</th>
               <th className="px-4 py-2.5 text-right">MRR</th>
             </tr>
@@ -208,6 +223,13 @@ export default function AdminClinicsPage() {
                   <td className={`px-4 py-2.5 ${quietness(c.last_call_at).className}`}>
                     {quietness(c.last_call_at).label}
                   </td>
+                  <td
+                    className={`px-4 py-2.5 ${
+                      waitingCallbacks(c.pending_callbacks, c.oldest_pending_callback_at).className
+                    }`}
+                  >
+                    {waitingCallbacks(c.pending_callbacks, c.oldest_pending_callback_at).label}
+                  </td>
                   <td className={`px-4 py-2.5 text-right tabular-nums ${className}`}>
                     {Math.round(c.period_minutes_used).toLocaleString("en-US")}
                     {c.period_minutes_included ? (
@@ -228,7 +250,7 @@ export default function AdminClinicsPage() {
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                   {query ? "No clinic matches that." : "No clinics yet."}
                 </td>
               </tr>

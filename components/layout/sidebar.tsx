@@ -20,6 +20,8 @@ import {
   BookOpen,
   Wand2,
 } from "lucide-react";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { NavLink } from "./nav-link";
 import { NAV } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -38,12 +40,28 @@ function GroupLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** "(2) Dentovox — AI Receptionist" while callbacks wait. A front desk keeps the
+ *  dashboard in a background tab, where no badge inside the page can be seen. */
+function useCallbacksInTabTitle() {
+  const { data } = useCallbacksList({ status: "pending" });
+  const pathname = usePathname();
+  const count = data?.total ?? 0;
+  useEffect(() => {
+    const base = document.title.replace(/^\(\d+\) /, "");
+    document.title = count > 0 ? `(${count}) ${base}` : base;
+  }, [count, pathname]);
+}
+
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { data: today } = useDashboardToday();
   // Front Desk badge surfaces calls that still need a human glance.
   const frontDeskCount = today?.calls_missed ?? 0;
-  // Callbacks badge surfaces pending urgent call-back requests.
+  // Every pending callback is a patient waiting to hear back, so all of them
+  // count. The badge used to count only urgent ones — and the callbacks the AI
+  // files itself when a call ends unfinished are never urgent, so a live clinic
+  // saw 0 here while one waited six days. Red while any of them is urgent.
   const { data: callbacks } = useCallbacksList({ status: "pending" });
+  const pendingCallbacks = callbacks?.total ?? 0;
   const urgentCallbacks = callbacks?.pending_urgent ?? 0;
   // Waitlist badge surfaces how many callers are still waiting for a slot.
   const { data: waitlist } = useWaitlistList({ status: "waiting" });
@@ -91,7 +109,8 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         permission={PERM.VIEW_CALLS}
         label="Callbacks"
         icon={PhoneCall}
-        count={urgentCallbacks}
+        count={pendingCallbacks}
+        urgent={urgentCallbacks > 0}
         onNavigate={onNavigate}
       />
       <NavLink
@@ -247,6 +266,8 @@ function PracticeCard() {
 }
 
 export function Sidebar({ className }: { className?: string }) {
+  // Here, not in SidebarNav: that one mounts a second time inside the mobile menu.
+  useCallbacksInTabTitle();
   return (
     <aside
       className={cn(
