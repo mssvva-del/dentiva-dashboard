@@ -34,8 +34,9 @@ export function ViewingAsBanner() {
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
       <p className="text-sm text-amber-900">
         <span className="font-semibold">Viewing {target.name}</span> — this is
-        the clinic&apos;s own view. You can fix appointments and patient records
-        here; everything you do is logged under your name.
+        the clinic&apos;s own view. You can fix appointments and patient records,
+        and close callbacks and waitlist entries here; everything you do is
+        logged under your name.
       </p>
       <button
         type="button"
