@@ -32,6 +32,8 @@ function Billing() {
   const plans = usePlans();
   const checkout = useStartCheckout();
   const [cycle, setCycle] = useState<"monthly" | "annual">("monthly");
+  // Partner brochure codes ("Dentlot", "DentalLab") → 30 free days.
+  const [promo, setPromo] = useState("");
 
   if (summary.isLoading) return <LoadingState label="Loading billing…" />;
   if (summary.isError) return <ErrorState onRetry={() => summary.refetch()} />;
@@ -128,6 +130,18 @@ function Billing() {
               contact — pick one below and we&apos;ll take care of the rest.
               Self-serve checkout is coming soon.
             </p>
+            <label className="mb-4 flex max-w-sm flex-col gap-1 text-sm">
+              <span className="font-medium text-foreground">Promo code (optional)</span>
+              <input
+                value={promo}
+                onChange={(e) => setPromo(e.target.value)}
+                placeholder="From a partner brochure"
+                className="rounded-lg border border-gray-200 px-3 py-1.5"
+              />
+              <span className="text-xs text-muted-foreground">
+                A valid code gives 30 free days — you&apos;re charged only after that.
+              </span>
+            </label>
             {plans.isLoading ? (
               <LoadingState label="Loading plans…" />
             ) : (
@@ -139,7 +153,13 @@ function Billing() {
                     cycle={cycle}
                     current={s.plan === p.key}
                     pending={checkout.isPending}
-                    onChoose={() => checkout.mutate({ plan: p.key, billing_cycle: cycle })}
+                    onChoose={() =>
+                      checkout.mutate({
+                        plan: p.key,
+                        billing_cycle: cycle,
+                        promo_code: promo.trim() || undefined,
+                      })
+                    }
                   />
                 ))}
               </div>

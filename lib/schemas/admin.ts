@@ -21,6 +21,8 @@ export const ClinicRowSchema = z.object({
   // Patients the clinic still owes a call, and since when.
   pending_callbacks: z.number(),
   oldest_pending_callback_at: z.string().nullable(),
+  // Partner brochure code the clinic subscribed with (DENTLOT / DENTALLAB).
+  promo_code: z.string().nullable(),
 });
 export type ClinicRow = z.infer<typeof ClinicRowSchema>;
 export const ClinicsResponseSchema = z.array(ClinicRowSchema);

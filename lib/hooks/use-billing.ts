@@ -34,13 +34,17 @@ export function usePlans() {
 export function useStartCheckout() {
   const { getToken } = useAuth();
   return useMutation({
-    mutationFn: async (v: { plan: string; billing_cycle: "monthly" | "annual" }) =>
+    mutationFn: async (v: { plan: string; billing_cycle: "monthly" | "annual"; promo_code?: string }) =>
       billingApi.checkout(v, await getToken()),
     onSuccess: (res) => {
       if (res.url) window.location.href = res.url;
     },
     onError: (e) => {
-      if (e instanceof ApiError && e.status === 503) {
+      if (e instanceof ApiError && e.status === 422) {
+        showToast.error("That promo code isn't valid.");
+      } else if (e instanceof ApiError && e.status === 409) {
+        showToast.error("Promo codes apply to a clinic's first subscription only.");
+      } else if (e instanceof ApiError && e.status === 503) {
         showToast.info(
           "Billing isn't set up yet — your Dentovox contact will handle your plan.",
         );
