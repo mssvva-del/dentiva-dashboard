@@ -7,7 +7,7 @@ const row = (over: Partial<ClinicRow>): ClinicRow => ({
   id: "c", name: "Clinic", status: "active", plan: null, mrr_cents: 0, onboarding_step: 0,
   created_at: "2026-08-01T00:00:00Z", is_canary: false, period_minutes_used: 0,
   period_minutes_included: null, last_call_at: null, pending_callbacks: 0,
-  oldest_pending_callback_at: null, ...over,
+  oldest_pending_callback_at: null, promo_code: null, ...over,
 });
 
 describe("owedCallbacks", () => {

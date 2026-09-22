@@ -189,6 +189,7 @@ export default function AdminClinicsPage() {
               <th className="px-4 py-2.5">Clinic</th>
               <th className="px-4 py-2.5">Status</th>
               <th className="px-4 py-2.5">Plan</th>
+              <th className="px-4 py-2.5">Promo</th>
               <th className="px-4 py-2.5">Last call</th>
               <th className="px-4 py-2.5">Callbacks waiting</th>
               <th className="px-4 py-2.5 text-right">Minutes this period</th>
@@ -221,6 +222,7 @@ export default function AdminClinicsPage() {
                     {c.onboarding_step > 0 ? ` (step ${c.onboarding_step})` : ""}
                   </td>
                   <td className="px-4 py-2.5 capitalize">{c.plan ?? "—"}</td>
+                  <td className="px-4 py-2.5 text-muted-foreground">{c.promo_code ?? "—"}</td>
                   <td className={`px-4 py-2.5 ${quietness(c.last_call_at).className}`}>
                     {quietness(c.last_call_at).label}
                   </td>
@@ -251,7 +253,7 @@ export default function AdminClinicsPage() {
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                   {query ? "No clinic matches that." : "No clinics yet."}
                 </td>
               </tr>
