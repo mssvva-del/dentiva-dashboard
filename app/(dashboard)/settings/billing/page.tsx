@@ -139,7 +139,7 @@ function Billing() {
                 className="rounded-lg border border-gray-200 px-3 py-1.5"
               />
               <span className="text-xs text-muted-foreground">
-                A valid code gives 30 free days — you&apos;re charged only after that.
+                Your first 30 days are free either way — you&apos;re charged only after that.
               </span>
             </label>
             {plans.isLoading ? (
