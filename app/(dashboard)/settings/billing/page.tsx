@@ -32,7 +32,7 @@ function Billing() {
   const plans = usePlans();
   const checkout = useStartCheckout();
   const [cycle, setCycle] = useState<"monthly" | "annual">("monthly");
-  // Partner brochure codes ("Dentlot", "DentalLab") → 30 free days.
+  // Partner brochure codes ("Dentlot", "DentalLab") → 30 free days instead of 15.
   const [promo, setPromo] = useState("");
 
   if (summary.isLoading) return <LoadingState label="Loading billing…" />;
@@ -139,7 +139,7 @@ function Billing() {
                 className="rounded-lg border border-gray-200 px-3 py-1.5"
               />
               <span className="text-xs text-muted-foreground">
-                Your first 30 days are free either way — you&apos;re charged only after that.
+                Your first 15 days are free — 30 with a partner code. Your card is charged only after the free days end.
               </span>
             </label>
             {plans.isLoading ? (
