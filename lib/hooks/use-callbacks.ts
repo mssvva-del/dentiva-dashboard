@@ -43,3 +43,32 @@ export function useUpdateCallbackStatus() {
     },
   });
 }
+
+// What the backend answered, in words a front desk can act on.
+const AI_CALL_MESSAGES: Record<string, string> = {
+  placed: "Calling now — the result will appear in Calls",
+  outside_hours: "Outside calling hours (9:00–19:30 clinic time)",
+  already_tried: "The AI has already called this patient",
+  no_phone: "This request has no valid phone number",
+  not_pending: "This callback is no longer open",
+  not_configured: "AI calling isn't set up for this clinic yet",
+  failed: "The call couldn't be started — please call the patient yourself",
+};
+
+export function useAiCallback() {
+  const queryClient = useQueryClient();
+  const getToken = useApiToken();
+  return useMutation({
+    mutationFn: async (id: string) =>
+      callbacksApi.aiCall(id, await getToken()),
+    onSuccess: ({ status }) => {
+      queryClient.invalidateQueries({ queryKey: ["callbacks"] });
+      const message = AI_CALL_MESSAGES[status] ?? "Couldn't start the call";
+      if (status === "placed") showToast.success(message);
+      else showToast.info(message);
+    },
+    onError: () => {
+      showToast.error("Couldn't start the call");
+    },
+  });
+}
