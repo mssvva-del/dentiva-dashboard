@@ -2,7 +2,7 @@
 
 import { formatPhone, telHref } from "@/lib/phone";
 import * as React from "react";
-import { PhoneCall, AlertTriangle, Check, X } from "lucide-react";
+import { PhoneCall, AlertTriangle, Bot, Check, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,7 @@ import {
   EmptyState,
 } from "@/components/features/page-states";
 import {
+  useAiCallback,
   useCallbacksList,
   useUpdateCallbackStatus,
 } from "@/lib/hooks/use-callbacks";
@@ -49,6 +50,7 @@ function StatusChip({ status }: { status: CallbackStatus }) {
 
 function CallbackRow({ cb }: { cb: CallbackSummary }) {
   const update = useUpdateCallbackStatus();
+  const aiCall = useAiCallback();
   const isPending = cb.status === "pending";
 
   return (
@@ -113,6 +115,17 @@ function CallbackRow({ cb }: { cb: CallbackSummary }) {
       <Can permission={PERM.MANAGE_CALLS}>
         {isPending ? (
           <div className="flex shrink-0 items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1 text-teal"
+              disabled={aiCall.isPending}
+              onClick={() => aiCall.mutate(cb.id)}
+              aria-label="Have the AI call this patient back"
+            >
+              <Bot className="h-3.5 w-3.5" aria-hidden />
+              Have AI call back
+            </Button>
             <Button
               variant="outline"
               size="sm"

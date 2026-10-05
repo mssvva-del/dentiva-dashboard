@@ -471,6 +471,13 @@ export const callbacksApi = {
       body: { status },
       token,
     }),
+  // The clinic's own instruction to have the AI ring this patient back.
+  aiCall: (callbackId: string, token?: string | null) =>
+    apiClient<{ status: string }>(`/api/callbacks/${callbackId}/ai-call`, {
+      schema: z.object({ status: z.string() }),
+      method: "POST",
+      token,
+    }),
 };
 
 export interface ListWaitlistParams {
