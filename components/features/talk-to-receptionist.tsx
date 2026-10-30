@@ -51,10 +51,9 @@ export function TalkToReceptionist() {
     }
 
     // Step 2 — mint a token from our backend.
-    let accessToken: string;
+    let call: Awaited<ReturnType<typeof voiceApi.webCall>>;
     try {
-      const res = await voiceApi.webCall(await getToken());
-      accessToken = res.access_token;
+      call = await voiceApi.webCall(await getToken());
     } catch (err) {
       console.error("web-call token error", err);
       // Surface the backend's real reason (e.g. "provider returned 404" when the
@@ -86,7 +85,12 @@ export function TalkToReceptionist() {
         setState("idle");
         clientRef.current = null;
       });
-      await client.startCall({ accessToken });
+      await client.startCall({
+        accessToken: call.access_token,
+        callId: call.call_id ?? undefined,
+        transport: (call.transport ?? undefined) as "gateway" | "livekit" | undefined,
+        iceServers: (call.ice_servers ?? undefined) as RTCIceServer[] | undefined,
+      });
     } catch (err) {
       console.error("startCall error", err);
       showToast.error("Couldn't start the call. Please try again.");
