@@ -51,8 +51,8 @@ importers:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
       retell-client-js-sdk:
-        specifier: ^2.0.7
-        version: 2.0.7(@types/dom-mediacapture-record@1.0.22)
+        specifier: ^3.0.3
+        version: 3.0.3(@types/dom-mediacapture-record@1.0.22)
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -218,6 +218,7 @@ packages:
   '@clerk/clerk-react@5.61.8':
     resolution: {integrity: sha512-n+k3q3xeyDkIPGTVA1J4Pd0+6MbS9Ia04qNlecOztTHwFfcirO5hy4TpOXrpGnO+GzYBuUMp7pYc3//ybMdEfg==}
     engines: {node: '>=18.17.0'}
+    deprecated: 'This package is no longer supported. Please use @clerk/react instead. See the upgrade guide for more info: https://clerk.com/docs/guides/development/upgrading/upgrade-guides/core-3'
     peerDependencies:
       react: ^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0
       react-dom: ^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0
@@ -245,6 +246,7 @@ packages:
   '@clerk/types@4.101.25':
     resolution: {integrity: sha512-gPxm3hlBkP7B9EfKyp3/UDonNOjg7Z0UvqfrMj5u8gA8nyzvC1UFYtSTTmTfgSY82+5Yo38YV0DYu9vNf6t9CQ==}
     engines: {node: '>=18.17.0'}
+    deprecated: 'This package is no longer supported. Please import types from @clerk/shared/types instead. See the upgrade guide for more info: https://clerk.com/docs/guides/development/upgrading/upgrade-guides/core-3'
 
   '@csstools/color-helpers@5.1.0':
     resolution: {integrity: sha512-S11EXWJyy0Mz5SYvRmY8nJYTFFd1LCNV+7cXyAgQtOOuzb4EsgfqDufL+9esx72/eLhsRdGZwaldu/h+E4t4BA==}
@@ -2955,8 +2957,8 @@ packages:
     engines: {node: '>= 0.4'}
     hasBin: true
 
-  retell-client-js-sdk@2.0.7:
-    resolution: {integrity: sha512-56iFklXfqVZuniEioMPVKylhBqjN+Xk7Mmv8Q/lGyEnvBBi5B9R6WPJDInlcyXltWH1EsXPjLoVgJI9Xpje68w==}
+  retell-client-js-sdk@3.0.3:
+    resolution: {integrity: sha512-apws0yyJuI6mFq/1wwgvJjtasYsz/SxM3WG2z9VeUKwNrQznlWiTTTvyDuu0a+BRp24yv4Xffnb0ejJVBq5UOg==}
 
   reusify@1.1.0:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
@@ -6329,7 +6331,7 @@ snapshots:
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
 
-  retell-client-js-sdk@2.0.7(@types/dom-mediacapture-record@1.0.22):
+  retell-client-js-sdk@3.0.3(@types/dom-mediacapture-record@1.0.22):
     dependencies:
       eventemitter3: 5.0.4
       livekit-client: 2.19.1(@types/dom-mediacapture-record@1.0.22)

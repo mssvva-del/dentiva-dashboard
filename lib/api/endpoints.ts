@@ -545,12 +545,17 @@ export interface WebCallToken {
   access_token: string;
   call_id?: string | null;
   agent_id?: string | null;
+  transport?: string | null;
+  ice_servers?: unknown[] | null;
 }
 
 const WebCallTokenSchema = z.object({
   access_token: z.string(),
   call_id: z.string().nullable().optional(),
   agent_id: z.string().nullable().optional(),
+  // Retell v3 connection details; SDK 3.x needs them next to the token.
+  transport: z.string().nullable().optional(),
+  ice_servers: z.array(z.any()).nullable().optional(),
 });
 
 export const voiceApi = {
