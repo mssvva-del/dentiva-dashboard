@@ -13,7 +13,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { MetaPixelEvent } from "@/components/analytics/meta-pixel";
+import {
+  MetaPixelEvent, forgetRememberedSource, takeRememberedSource,
+} from "@/components/analytics/meta-pixel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,6 +69,17 @@ export default function OnboardingPage() {
       setSeeded(true);
     }
   }, [state, seeded, router]);
+
+  // Hand the ad/utm the sign-up URL carried to the practice record, once.
+  useEffect(() => {
+    if (!state) return;
+    const src = takeRememberedSource();
+    if (!src) return;
+    getToken()
+      .then((token) => onboardingApi.source(src, token))
+      .then(forgetRememberedSource)
+      .catch(() => { /* kept in the browser; the next visit retries */ });
+  }, [state, getToken]);
 
   if (isPending || !state) return <LoadingState label="Loading setup…" />;
 
