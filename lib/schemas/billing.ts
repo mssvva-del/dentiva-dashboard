@@ -50,6 +50,8 @@ export const BillingSummarySchema = z.object({
   included_minutes: z.number(),
   usage: UsageSchema,
   invoices: z.array(InvoiceSchema),
+  // Live Stripe with a full catalog. Absent on an older backend → not live.
+  self_serve: z.boolean().optional(),
 });
 export type BillingSummary = z.infer<typeof BillingSummarySchema>;
 
