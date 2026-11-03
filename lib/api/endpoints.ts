@@ -657,6 +657,14 @@ export const onboardingApi = {
       body: data,
       token,
     }),
+  /** First-touch utm/fbclid from the sign-up URL; the server keeps the first one. */
+  source: (src: Record<string, string>, token?: string | null) =>
+    apiClient<{ recorded: boolean }>("/api/onboarding/source", {
+      schema: z.object({ recorded: z.boolean() }),
+      method: "POST",
+      body: src,
+      token,
+    }),
   complete: (token?: string | null) =>
     apiClient<OnboardingState>("/api/onboarding/complete", {
       schema: OnboardingStateSchema,

@@ -69,3 +69,33 @@ export function MetaPixelEvent({
   }, [event, eventId, onceKey, when, params]);
   return null;
 }
+
+const SOURCE_KEY = "dvx_src";
+const SOURCE_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_content",
+  "utm_term", "fbclid", "gclid"] as const;
+
+/** On the sign-up page: remember what the ad link carried, first touch only. */
+export function RememberSource() {
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(SOURCE_KEY)) return;
+      const q = new URLSearchParams(window.location.search);
+      const src: Record<string, string> = {};
+      SOURCE_PARAMS.forEach((k) => { const v = q.get(k); if (v) src[k] = v; });
+      if (Object.keys(src).length) localStorage.setItem(SOURCE_KEY, JSON.stringify(src));
+    } catch { /* private mode: no source, nothing else breaks */ }
+  }, []);
+  return null;
+}
+
+/** The remembered source, once; the caller sends it to the practice record. */
+export function takeRememberedSource(): Record<string, string> | null {
+  try {
+    const raw = localStorage.getItem(SOURCE_KEY);
+    return raw ? (JSON.parse(raw) as Record<string, string>) : null;
+  } catch { return null; }
+}
+
+export function forgetRememberedSource() {
+  try { localStorage.removeItem(SOURCE_KEY); } catch { /* ignore */ }
+}
