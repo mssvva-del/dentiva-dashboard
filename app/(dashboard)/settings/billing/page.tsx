@@ -123,13 +123,15 @@ function Billing() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Honest pilot notice — self-serve checkout isn't live yet, so say
-                so up front instead of letting every button dead-end in a toast. */}
-            <p className="mb-4 rounded-md bg-gray-50 p-3 text-sm text-gray-600">
-              During the pilot, plans are set up personally by your Dentovox
-              contact — pick one below and we&apos;ll take care of the rest.
-              Self-serve checkout is coming soon.
-            </p>
+            {/* Honest pilot notice — shown only while self-serve checkout isn't
+                live, instead of letting every button dead-end in a toast. */}
+            {!s.self_serve && (
+              <p className="mb-4 rounded-md bg-gray-50 p-3 text-sm text-gray-600">
+                During the pilot, plans are set up personally by your Dentovox
+                contact — pick one below and we&apos;ll take care of the rest.
+                Self-serve checkout is coming soon.
+              </p>
+            )}
             <label className="mb-4 flex max-w-sm flex-col gap-1 text-sm">
               <span className="font-medium text-foreground">Promo code (optional)</span>
               <input
