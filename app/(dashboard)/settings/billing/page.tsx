@@ -18,6 +18,7 @@ import { RequirePermission, Can } from "@/components/auth/can";
 import { PERM } from "@/lib/schemas/me";
 import { fmtCents, type Plan } from "@/lib/schemas/billing";
 import { useBillingSummary, usePlans, useStartCheckout } from "@/lib/hooks/use-billing";
+import { MetaPixelEvent } from "@/components/analytics/meta-pixel";
 
 export default function BillingPage() {
   return (
@@ -34,6 +35,11 @@ function Billing() {
   const [cycle, setCycle] = useState<"monthly" | "annual">("monthly");
   // Partner brochure codes ("Dentlot", "DentalLab") → 30 free days instead of 15.
   const [promo, setPromo] = useState("");
+  // Back from Stripe Checkout. The session id doubles as the event id, so the
+  // same trial reported later from the server is counted once.
+  const [back] = useState(() =>
+    typeof window === "undefined" ? null : new URLSearchParams(window.location.search));
+  const checkoutSession = back?.get("checkout") === "success" ? back.get("session_id") ?? "ok" : null;
 
   if (summary.isLoading) return <LoadingState label="Loading billing…" />;
   if (summary.isError) return <ErrorState onRetry={() => summary.refetch()} />;
@@ -47,6 +53,13 @@ function Billing() {
 
   return (
     <div className="space-y-6">
+      <MetaPixelEvent
+        event="StartTrial"
+        params={TRIAL_PARAMS}
+        eventId={checkoutSession ?? undefined}
+        onceKey={checkoutSession ? `dvx_trial_${checkoutSession}` : undefined}
+        when={!!checkoutSession}
+      />
       <PageHeader title="Billing" subtitle="Your plan, usage, and invoices." />
 
       {/* Current plan + usage */}
@@ -209,6 +222,8 @@ function Billing() {
     </div>
   );
 }
+
+const TRIAL_PARAMS = { value: 0, currency: "USD" };
 
 function PlanCard({
   plan, cycle, current, pending, onChoose,

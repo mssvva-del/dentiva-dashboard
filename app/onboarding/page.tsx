@@ -12,7 +12,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { MetaPixelEvent } from "@/components/analytics/meta-pixel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +48,7 @@ const LAST_STEP = STEP_TITLES.length; // 7
 export default function OnboardingPage() {
   const router = useRouter();
   const { getToken } = useAuth();
+  const { user } = useUser();
   const { data: state, isPending, refetch } = useOnboardingState();
 
   // Local step (1..6), seeded from the server's saved progress once loaded.
@@ -119,6 +121,15 @@ export default function OnboardingPage() {
 
   return (
     <div>
+      {/* The wizard is where a fresh sign-up lands, so this is the registration.
+          Only for an account made in the last day: an old account finishing
+          setup is not a new registration from an ad. */}
+      <MetaPixelEvent
+        event="CompleteRegistration"
+        eventId={user?.id}
+        onceKey={user ? `dvx_reg_${user.id}` : undefined}
+        when={!!user?.createdAt && Date.now() - user.createdAt.getTime() < 86_400_000}
+      />
       <Stepper current={step} />
       {step === 1 && <SmartSetupCard onApplied={() => refetch()} />}
       <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
