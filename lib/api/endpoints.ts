@@ -1041,7 +1041,10 @@ export const billingApi = {
       token,
     }),
   checkout: (
-    data: { plan: string; billing_cycle: "monthly" | "annual"; promo_code?: string },
+    data: {
+      plan: string; billing_cycle: "monthly" | "annual"; promo_code?: string;
+      return_to?: "billing" | "onboarding";
+    },
     token?: string | null,
   ) =>
     apiClient<{ url: string }>("/api/billing/checkout", {
