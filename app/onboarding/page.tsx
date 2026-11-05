@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/lib/toast";
-import { onboardingApi, type AnalyzeWebsiteResponse } from "@/lib/api/endpoints";
+import { billingApi, onboardingApi, type AnalyzeWebsiteResponse } from "@/lib/api/endpoints";
 import { ApiError, apiErrorDetail } from "@/lib/api/client";
 import { useOnboardingState, useBaa } from "@/lib/hooks/use-onboarding";
 import { LoadingState } from "@/components/features/page-states";
@@ -42,6 +42,8 @@ const TIMEZONES = [
   "America/Phoenix", "America/Los_Angeles", "America/Anchorage", "Pacific/Honolulu",
 ];
 
+const TRIAL_PIXEL_PARAMS = { value: 0, currency: "USD" };
+
 const STEP_TITLES = [
   "Clinic", "Hours", "Phone", "PMS", "Agent", "Terms", "Go live",
 ];
@@ -51,6 +53,12 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { getToken } = useAuth();
   const { user } = useUser();
+  // Back from Stripe after adding the card in the Phone step: the trial started.
+  const [trialSession] = useState(() => {
+    if (typeof window === "undefined") return null;
+    const q = new URLSearchParams(window.location.search);
+    return q.get("checkout") === "success" ? q.get("session_id") ?? "ok" : null;
+  });
   const { data: state, isPending, refetch } = useOnboardingState();
 
   // Local step (1..6), seeded from the server's saved progress once loaded.
@@ -137,6 +145,13 @@ export default function OnboardingPage() {
       {/* The wizard is where a fresh sign-up lands, so this is the registration.
           Only for an account made in the last day: an old account finishing
           setup is not a new registration from an ad. */}
+      <MetaPixelEvent
+        event="StartTrial"
+        params={TRIAL_PIXEL_PARAMS}
+        eventId={trialSession ?? undefined}
+        onceKey={trialSession ? `dvx_trial_${trialSession}` : undefined}
+        when={!!trialSession}
+      />
       <MetaPixelEvent
         event="CompleteRegistration"
         eventId={user?.id}
@@ -419,11 +434,40 @@ function HoursStep({ state, saving, onSave }: StepProps) {
 }
 
 // ── Step 3: Phone ────────────────────────────────────────────────────────────
+// Back from Stripe with a card on file: what they typed before leaving.
+const PHONE_DRAFT_KEY = "dvx_phone_draft";
+function backFromCheckout(): { number?: string; transfer?: string } | null {
+  if (typeof window === "undefined") return null;
+  if (new URLSearchParams(window.location.search).get("checkout") !== "success") return null;
+  try { return JSON.parse(sessionStorage.getItem(PHONE_DRAFT_KEY) || "{}"); } catch { return {}; }
+}
+
 function PhoneStep({ state, saving, onSave }: StepProps) {
   const { getToken } = useAuth();
-  const [mode, setMode] = useState<"forward" | "skip">(state.phone_number ? "forward" : "skip");
-  const [number, setNumber] = useState(state.phone_number ?? "");
-  const [transfer, setTransfer] = useState(state.transfer_phone_number ?? "");
+  const [back] = useState(backFromCheckout);
+  const [mode, setMode] = useState<"forward" | "skip">(
+    state.phone_number || back ? "forward" : "skip");
+  const [number, setNumber] = useState(state.phone_number ?? back?.number ?? "");
+  const [transfer, setTransfer] = useState(state.transfer_phone_number ?? back?.transfer ?? "");
+  const [promo, setPromo] = useState("");
+  const [startingTrial, setStartingTrial] = useState(false);
+
+  // The free 15 days start with a card (Sergey 05.11): Stripe holds it, nothing
+  // is charged until day 16, and the number is issued the moment it's on file.
+  async function startTrial() {
+    setStartingTrial(true);
+    try {
+      try { sessionStorage.setItem(PHONE_DRAFT_KEY, JSON.stringify({ number, transfer })); } catch { /* ok */ }
+      const { url } = await billingApi.checkout({
+        plan: "overflow", billing_cycle: "monthly",
+        promo_code: promo.trim() || undefined, return_to: "onboarding",
+      }, await getToken());
+      window.location.assign(url);
+    } catch (e) {
+      showToast.error(apiErrorDetail(e) || "Couldn't open checkout. Please try again.");
+      setStartingTrial(false);
+    }
+  }
   // The clinic needs a real number in front of them to set forwarding up, so get
   // one as soon as they choose to forward — not after they leave this step.
   // Idempotent server-side, so a re-render can't buy a second number.
@@ -438,15 +482,24 @@ function PhoneStep({ state, saving, onSave }: StepProps) {
     if (mode !== "forward" || aiNumber || gettingNumber) return;
     setGettingNumber(true);
     (async () => {
-      try {
-        const next = await onboardingApi.provisionNumber(await getToken());
-        setAiNumber(next.ai_phone_number ?? null);
-      } catch (e) {
-        // 402 = "starts with your plan", not an error to apologise for.
-        if (e instanceof ApiError && e.status === 402) setNumberNeedsPlan(true);
-      } finally {
-        setGettingNumber(false);
+      // Straight back from Stripe, the webhook that records the card can land a
+      // few seconds after the browser does — keep asking briefly before saying
+      // "add a card" to someone who just did.
+      for (let attempt = 0; attempt < (back ? 8 : 1); attempt++) {
+        try {
+          const next = await onboardingApi.provisionNumber(await getToken());
+          setAiNumber(next.ai_phone_number ?? null);
+          setNumberNeedsPlan(false);
+          try { sessionStorage.removeItem(PHONE_DRAFT_KEY); } catch { /* ok */ }
+          break;
+        } catch (e) {
+          // 402 = "starts with your free trial", not an error to apologise for.
+          if (!(e instanceof ApiError && e.status === 402)) break;
+          setNumberNeedsPlan(true);
+          if (back) await new Promise((r) => setTimeout(r, 3000));
+        }
       }
+      setGettingNumber(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
@@ -483,16 +536,27 @@ function PhoneStep({ state, saving, onSave }: StepProps) {
                     Getting you a local Dentovox number…
                   </p>
                 ) : numberNeedsPlan ? (
-                  <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3">
-                    <p className="text-[13px] font-semibold text-amber-900">
-                      Your own phone number activates with your plan
+                  <div className="mt-3 rounded-md border border-teal-200 bg-teal-50 p-3">
+                    <p className="text-[13px] font-semibold text-teal-900">
+                      Start your free 15 days to get your number
                     </p>
-                    <p className="mt-1 text-[12.5px] text-amber-900/90">
-                      It&apos;s a local number in your area code, yours alone — that&apos;s
-                      what you forward your practice line to. Finish setup and start
-                      your plan to claim it.
+                    <p className="mt-1 text-[12.5px] text-teal-900/90">
+                      A local number in your area code, yours alone — that&apos;s what
+                      you forward your practice line to. Add a card to start: nothing
+                      is charged for 15 days, then Overflow is $299/month (400 minutes).
+                      Cancel any time before then.
                     </p>
-                    <p className="mt-1.5 text-[12.5px] text-amber-900/80">
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <Input className="h-9 w-44" placeholder="Partner code (optional)"
+                        value={promo} onChange={(e) => setPromo(e.target.value)} />
+                      <Button type="button" onClick={startTrial} disabled={startingTrial}>
+                        {startingTrial ? "Opening checkout…" : "Start my free 15 days"}
+                      </Button>
+                      <a href="/settings/billing" className="text-[12.5px] text-teal-800 underline">
+                        Other plans
+                      </a>
+                    </div>
+                    <p className="mt-1.5 text-[12px] text-teal-900/70">
                       Meanwhile you can talk to your receptionist right now from the
                       dashboard — it already knows your clinic.
                     </p>
